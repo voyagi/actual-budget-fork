@@ -26,11 +26,14 @@ RUN yarn install --immutable
 # Build the sync-server (TypeScript -> packages/sync-server/build/)
 RUN yarn workspace @actual-app/sync-server build
 
+# Build loot-core browser backend (produces kcab worker files in desktop-client/public/kcab/)
+# Must run before desktop-client build since the web build references the worker hash
+RUN yarn workspace loot-core build:browser
+
 # Build the desktop-client static files (packages/desktop-client/build/)
-# IS_GENERIC_BROWSER=1 tells Vite to resolve .browser.js files which set up
-# window.Actual (including ACTUAL_VERSION) for the browser runtime
-# The sync-server auto-resolves webRoot via @actual-app/web/package.json
-RUN IS_GENERIC_BROWSER=1 yarn workspace @actual-app/web build
+# build:browser sets IS_GENERIC_BROWSER=1 (resolves .browser.js for window.Actual)
+# and extracts REACT_APP_BACKEND_WORKER_HASH from the kcab worker filename
+RUN yarn workspace @actual-app/web build:browser
 
 # Data directory for Actual user files and server files
 ENV ACTUAL_DATA_DIR=/data
