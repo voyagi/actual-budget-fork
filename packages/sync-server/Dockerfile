@@ -27,8 +27,10 @@ RUN yarn install --immutable
 RUN yarn workspace @actual-app/sync-server build
 
 # Build the desktop-client static files (packages/desktop-client/build/)
+# IS_GENERIC_BROWSER=1 tells Vite to resolve .browser.js files which set up
+# window.Actual (including ACTUAL_VERSION) for the browser runtime
 # The sync-server auto-resolves webRoot via @actual-app/web/package.json
-RUN yarn workspace @actual-app/web build
+RUN IS_GENERIC_BROWSER=1 yarn workspace @actual-app/web build
 
 # Data directory for Actual user files and server files
 ENV ACTUAL_DATA_DIR=/data
