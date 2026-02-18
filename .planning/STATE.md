@@ -1,7 +1,7 @@
 # Project State: Actual Budget Fork - Enable Banking Edition
 
 **Last updated:** 2026-02-18
-**Session:** Plan 01-01 execution complete
+**Session:** Plan 01-02 execution complete
 
 ## Project Reference
 
@@ -9,24 +9,24 @@
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Plan 01-01 complete. Actual Budget running in Docker at localhost:5006.
+**Current Focus:** Plan 01-02 complete. Enable Banking sandbox credentials in place. Ready for Plan 01-03 (JWT auth and API client).
 
 ## Current Position
 
 **Active Phase:** 01-foundation-and-api-client
-**Active Plan:** 01-02 (next)
-**Status:** Plan 01-01 complete. Ready for Plan 01-02 (Enable Banking API client).
+**Active Plan:** 01-03 (next)
+**Status:** Plan 01-02 complete. Sandbox app ID b619fe6c-ab92-4de5-a7c2-901c0e0ef580 and RSA key ready.
 
 **Progress:**
 ```
-Phase 1: Foundation and API Client    [1/3] In progress
+Phase 1: Foundation and API Client    [2/3] In progress
 Phase 2: Bank Sync Pipeline           [ ] Not started
 Phase 3: Automation and Consent       [ ] Not started
 Phase 4: PWA Completion               [ ] Not started
 Phase 5: Infrastructure and Production[ ] Not started
 ```
 
-Overall: 0/5 phases complete (1 plan complete)
+Overall: 0/5 phases complete (2 plans complete)
 
 ## Performance Metrics
 
@@ -34,7 +34,7 @@ Overall: 0/5 phases complete (1 plan complete)
 |--------|-------|
 | Phases total | 5 |
 | Requirements mapped | 29/29 |
-| Plans complete | 1 |
+| Plans complete | 2 |
 | Phases complete | 0 |
 
 ## Key Decisions Recorded
@@ -51,6 +51,8 @@ Overall: 0/5 phases complete (1 plan complete)
 | Single docker-compose.yml (not dev+prod override) | Per locked decision from CONTEXT.md - simpler, env vars handle environment differences | 2026-02-18 |
 | ACTUAL_WEB_ROOT not hardcoded | Auto-resolves via require.resolve('@actual-app/web/package.json') - more robust than hardcoded path | 2026-02-18 |
 | Monorepo Docker build order | loot-core build:browser must precede desktop-client Vite build - loot-core browser modules are imported | 2026-02-18 |
+| Redirect URL http://localhost:5006/enablebanking/callback | Matches planned Express route in Plan 01-03. Configured on sandbox application at registration time. | 2026-02-18 |
+| RSA key is PKCS#8 format (BEGIN PRIVATE KEY) | Enable Banking browser UI generates PKCS#8. jose handles it natively - no conversion needed. | 2026-02-18 |
 
 ## Critical Pitfalls (from research)
 
@@ -114,12 +116,17 @@ Overall: 0/5 phases complete (1 plan complete)
 
 ## Session Continuity
 
-**Stopped at:** Completed 01-01-PLAN.md
+**Stopped at:** Completed 01-02-PLAN.md
 
-**Next action:** Run `/gsd:execute-phase 01 02` to start Plan 01-02 (Enable Banking API client).
+**Next action:** Run `/gsd:execute-phase 01 03` to start Plan 01-03 (JWT auth and Enable Banking API client implementation).
 
-**Prerequisite for Plan 01-02:** Create Enable Banking sandbox account at enablebanking.com/cp and download RSA keypair. Replace `secrets/eb_private.pem` with the real sandbox key.
+**Sandbox credentials ready:**
+
+- Application ID: `b619fe6c-ab92-4de5-a7c2-901c0e0ef580`
+- Private key: `secrets/eb_private.pem` (PKCS#8, RS256)
+- Redirect URL: `http://localhost:5006/enablebanking/callback`
+- API base: `https://api.enablebanking.com`
 
 ---
 *State initialized: 2026-02-18*
-*Last updated: 2026-02-18 - Plan 01-01 complete*
+*Last updated: 2026-02-18 - Plan 01-02 complete*
