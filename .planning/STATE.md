@@ -1,7 +1,7 @@
 # Project State: Actual Budget Fork - Enable Banking Edition
 
 **Last updated:** 2026-02-18
-**Session:** Initial roadmap creation
+**Session:** Plan 01-01 execution complete
 
 ## Project Reference
 
@@ -9,24 +9,24 @@
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Roadmap created. Ready for Phase 1 planning.
+**Current Focus:** Plan 01-01 complete. Actual Budget running in Docker at localhost:5006.
 
 ## Current Position
 
-**Active Phase:** None (planning complete, execution not started)
-**Active Plan:** None
-**Status:** Roadmap approved, awaiting first plan
+**Active Phase:** 01-foundation-and-api-client
+**Active Plan:** 01-02 (next)
+**Status:** Plan 01-01 complete. Ready for Plan 01-02 (Enable Banking API client).
 
 **Progress:**
 ```
-Phase 1: Foundation and API Client    [ ] Not started
+Phase 1: Foundation and API Client    [1/3] In progress
 Phase 2: Bank Sync Pipeline           [ ] Not started
 Phase 3: Automation and Consent       [ ] Not started
 Phase 4: PWA Completion               [ ] Not started
 Phase 5: Infrastructure and Production[ ] Not started
 ```
 
-Overall: 0/5 phases complete
+Overall: 0/5 phases complete (1 plan complete)
 
 ## Performance Metrics
 
@@ -34,7 +34,7 @@ Overall: 0/5 phases complete
 |--------|-------|
 | Phases total | 5 |
 | Requirements mapped | 29/29 |
-| Plans complete | 0 |
+| Plans complete | 1 |
 | Phases complete | 0 |
 
 ## Key Decisions Recorded
@@ -48,6 +48,9 @@ Overall: 0/5 phases complete
 | Caddy for HTTPS | Zero cert management overhead vs nginx + mkcert. Cloudflare Tunnel needed for iOS PWA trust | 2026-02-18 |
 | node-cron 4x/day scheduler | PSD2 maximum rate. Lives in sync-server (not loot-core) because loot-core runs in browser web worker | 2026-02-18 |
 | jose for JWT signing | RS256, zero-dependency, ESM-native. Matches Enable Banking RS256 requirement | 2026-02-18 |
+| Single docker-compose.yml (not dev+prod override) | Per locked decision from CONTEXT.md - simpler, env vars handle environment differences | 2026-02-18 |
+| ACTUAL_WEB_ROOT not hardcoded | Auto-resolves via require.resolve('@actual-app/web/package.json') - more robust than hardcoded path | 2026-02-18 |
+| Monorepo Docker build order | loot-core build:browser must precede desktop-client Vite build - loot-core browser modules are imported | 2026-02-18 |
 
 ## Critical Pitfalls (from research)
 
@@ -57,12 +60,13 @@ Overall: 0/5 phases complete
 4. **Sandbox diverges from production** - Sandbox tests HTTP wiring and JWT signing only. Phase 5 includes explicit production smoke test with real bank account as distinct milestone.
 5. **Fork merge debt** - All custom commits tagged `[eb]`, new code in new files rather than modifying existing ones. Monthly upstream sync discipline.
 6. **iOS HTTPS certificate trust** - Caddy local CA is NOT trusted by iOS Safari for PWA install. Cloudflare Tunnel (or real domain cert) required for iOS PWA success.
+7. **Docker build chain** - loot-core build:browser MUST run before desktop-client Vite build. IS_GENERIC_BROWSER=1 required for non-Electron builds. Both discovered in Plan 01-01.
 
 ## Research Flags (act before planning these phases)
 
 - **Before planning Phase 1:** Read `packages/sync-server/src/app-gocardless/` to confirm current adapter file structure and interface. GoCardless may have been refactored since July 2025.
 - **Before planning Phase 4:** Read `packages/desktop-client/vite.config.mts` to understand why the service worker build is disabled. The reason determines the fix approach.
-- **Before starting Phase 1:** Create Enable Banking sandbox account at enablebanking.com/cp and download test RSA keypair. This is a manual prerequisite, not automated.
+- ~~**Before starting Phase 1:** Create Enable Banking sandbox account at enablebanking.com/cp and download test RSA keypair. This is a manual prerequisite, not automated.~~ (Prerequisite for Plan 01-02, not 01-01)
 
 ## Accumulated Context
 
@@ -72,6 +76,15 @@ Overall: 0/5 phases complete
 - `node-cron`: 4.2.1 (sync-server) - TypeScript-native v4
 - `vite-plugin-pwa`: 1.2.0 (desktop-client devDep) - Workbox generation
 - Caddy: `caddy:2-alpine` (Docker Compose)
+
+### Docker Build Facts (discovered Plan 01-01)
+
+- Base image: `node:22-bookworm-slim`
+- Build order: `yarn install` -> `loot-core build:browser` -> `@actual-app/web build` -> `sync-server build`
+- Required env: `IS_GENERIC_BROWSER=1` for Vite build (non-Electron context)
+- Entrypoint: `node packages/sync-server/build/app.js`
+- ACTUAL_DATA_DIR=/data (named Docker volume)
+- RSA key: `./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro`
 
 ### Architecture Summary
 - `sync-server/app-enablebanking/` (NEW) - Express routes + Enable Banking API client
@@ -95,15 +108,18 @@ Overall: 0/5 phases complete
 ## Open Questions
 
 - What is the exact reason the service worker build is disabled in `vite.config.mts`? (Determines Phase 4 approach)
-- Has the GoCardless adapter been refactored or removed since July 2025? (Determines Phase 1 starting point)
+- Has the GoCardless adapter been refactored or removed since July 2025? (Determines Phase 1 starting point for Plan 01-02)
 - Cloudflare Tunnel vs LAN-only + Caddy: which approach for phone HTTPS access? (Determines Phase 5 approach for iOS)
 - Docker volume path behavior on WSL2 Docker Desktop: verify named volume behavior on setup day
 
 ## Session Continuity
 
-Next action: Run `/gsd:plan-phase 1` to create the execution plan for Phase 1.
+**Stopped at:** Completed 01-01-PLAN.md
 
-Before planning Phase 1, complete manual prerequisite: create Enable Banking sandbox account at enablebanking.com/cp.
+**Next action:** Run `/gsd:execute-phase 01 02` to start Plan 01-02 (Enable Banking API client).
+
+**Prerequisite for Plan 01-02:** Create Enable Banking sandbox account at enablebanking.com/cp and download RSA keypair. Replace `secrets/eb_private.pem` with the real sandbox key.
 
 ---
 *State initialized: 2026-02-18*
+*Last updated: 2026-02-18 - Plan 01-01 complete*

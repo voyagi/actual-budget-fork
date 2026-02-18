@@ -7,7 +7,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Foundation and API Client** - Fork is running, Enable Banking API client is sandbox-tested with RSA auth
+- [-] **Phase 1: Foundation and API Client** - Fork is running, Enable Banking API client is sandbox-tested with RSA auth
 - [ ] **Phase 2: Bank Sync Pipeline** - Full manual sync works end-to-end: OAuth, account linking, transaction import, balance update
 - [ ] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI
 - [ ] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support
@@ -17,7 +17,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and API Client | 0/3 | Planned | - |
+| 1. Foundation and API Client | 1/3 | In progress | - |
 | 2. Bank Sync Pipeline | 0/? | Not started | - |
 | 3. Automation and Consent Lifecycle | 0/? | Not started | - |
 | 4. PWA Completion | 0/? | Not started | - |
@@ -45,7 +45,7 @@
 
 Plans:
 
-- [ ] 01-01-PLAN.md - Fork setup: upstream pull, git hygiene, Docker build, Chrome verification
+- [x] 01-01-PLAN.md - Fork setup: upstream pull, git hygiene, Docker build, Chrome verification
 - [ ] 01-02-PLAN.md - Enable Banking sandbox registration (human action: credentials + RSA key)
 - [ ] 01-03-PLAN.md - Enable Banking API client scaffold, sandbox auth test, key persistence verification
 
@@ -166,4 +166,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-02-18*
-*Last updated: 2026-02-18 after initial creation*
+*Last updated: 2026-02-18 after Plan 01-01 complete*
