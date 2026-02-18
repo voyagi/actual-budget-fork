@@ -93,41 +93,42 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | — | Pending |
-| FOUND-02 | — | Pending |
-| FOUND-03 | — | Pending |
-| FOUND-04 | — | Pending |
-| SYNC-01 | — | Pending |
-| SYNC-02 | — | Pending |
-| SYNC-03 | — | Pending |
-| SYNC-04 | — | Pending |
-| SYNC-05 | — | Pending |
-| SYNC-06 | — | Pending |
-| SYNC-07 | — | Pending |
-| SYNC-08 | — | Pending |
-| SYNC-09 | — | Pending |
-| AUTO-01 | — | Pending |
-| AUTO-02 | — | Pending |
-| AUTO-03 | — | Pending |
-| AUTO-04 | — | Pending |
-| AUTO-05 | — | Pending |
-| AUTO-06 | — | Pending |
-| PWA-01 | — | Pending |
-| PWA-02 | — | Pending |
-| PWA-03 | — | Pending |
-| PWA-04 | — | Pending |
-| PWA-05 | — | Pending |
-| PWA-06 | — | Pending |
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
+| FOUND-01 | Phase 1 | Pending |
+| FOUND-02 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Pending |
+| FOUND-04 | Phase 1 | Pending |
+| SYNC-01 | Phase 2 | Pending |
+| SYNC-02 | Phase 2 | Pending |
+| SYNC-03 | Phase 2 | Pending |
+| SYNC-04 | Phase 2 | Pending |
+| SYNC-05 | Phase 2 | Pending |
+| SYNC-06 | Phase 2 | Pending |
+| SYNC-07 | Phase 2 | Pending |
+| SYNC-08 | Phase 2 | Pending |
+| SYNC-09 | Phase 2 | Pending |
+| AUTO-01 | Phase 3 | Pending |
+| AUTO-02 | Phase 3 | Pending |
+| AUTO-03 | Phase 3 | Pending |
+| AUTO-04 | Phase 3 | Pending |
+| AUTO-05 | Phase 3 | Pending |
+| AUTO-06 | Phase 3 | Pending |
+| PWA-01 | Phase 4 | Pending |
+| PWA-02 | Phase 4 | Pending |
+| PWA-03 | Phase 4 | Pending |
+| PWA-04 | Phase 4 | Pending |
+| PWA-05 | Phase 4 | Pending |
+| PWA-06 | Phase 4 | Pending |
+| INFRA-01 | Phase 5 | Pending |
+| INFRA-02 | Phase 5 | Pending |
+| INFRA-03 | Phase 5 | Pending |
+| INFRA-04 | Phase 5 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 29 total
-- Mapped to phases: 0
-- Unmapped: 29
+- Mapped to phases: 29
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-18*
-*Last updated: 2026-02-18 after initial definition*
+*Last updated: 2026-02-18 after roadmap creation (traceability complete)*
