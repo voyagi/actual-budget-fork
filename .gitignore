@@ -79,3 +79,9 @@ build/
 
 *storybook.log
 storybook-static
+
+# Enable Banking fork
+secrets/
+.env
+.env.sandbox
+.env.production
