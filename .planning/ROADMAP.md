@@ -17,7 +17,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and API Client | 3/3 | Awaiting human checkpoint | - |
+| 1. Foundation and API Client | 4/4 | Awaiting human checkpoint | - |
 | 2. Bank Sync Pipeline | 0/? | Not started | - |
 | 3. Automation and Consent Lifecycle | 0/? | Not started | - |
 | 4. PWA Completion | 0/? | Not started | - |
@@ -48,7 +48,7 @@ Plans:
 - [x] 01-01-PLAN.md - Fork setup: upstream pull, git hygiene, Docker build, Chrome verification
 - [x] 01-02-PLAN.md - Enable Banking sandbox registration (human action: credentials + RSA key)
 - [x] 01-03-PLAN.md - Enable Banking API client scaffold, sandbox auth test, key persistence verification (awaiting Task 3 human checkpoint)
-- [ ] 01-04-PLAN.md - Gap closure: fix missing [eb] tag on commit 371f06e2e (FOUND-04)
+- [x] 01-04-PLAN.md - Gap closure: fix missing [eb] tag on commit 371f06e2e (FOUND-04)
 
 ### Phase 2: Bank Sync Pipeline
 
@@ -167,4 +167,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-02-18*
-*Last updated: 2026-02-18 after Plan 01-03 complete (awaiting Phase 1 human checkpoint)*
+*Last updated: 2026-02-18 after Plan 01-04 complete (gap closure, awaiting Phase 1 human checkpoint)*

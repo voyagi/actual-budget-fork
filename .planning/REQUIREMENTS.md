@@ -12,7 +12,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **FOUND-01**: User can build and run the forked Actual Budget repo in Docker with no errors
 - [ ] **FOUND-02**: User can open the app in Chrome on Windows and create a budget
 - [x] **FOUND-03**: RSA key pair is generated and file-mounted as a Docker secret for Enable Banking auth
-- [ ] **FOUND-04**: Fork commit convention established (all custom commits tagged with `[eb]` prefix)
+- [x] **FOUND-04**: Fork commit convention established (all custom commits tagged with `[eb]` prefix)
 
 ### Bank Sync
 
@@ -96,7 +96,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUND-01 | Phase 1 | Pending |
 | FOUND-02 | Phase 1 | Pending |
 | FOUND-03 | Phase 1 | Complete |
-| FOUND-04 | Phase 1 | Pending |
+| FOUND-04 | Phase 1 | Complete |
 | SYNC-01 | Phase 2 | Pending |
 | SYNC-02 | Phase 2 | Pending |
 | SYNC-03 | Phase 2 | Pending |
@@ -131,4 +131,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-18*
-*Last updated: 2026-02-18 after roadmap creation (traceability complete)*
+*Last updated: 2026-02-18 after Plan 01-04 (FOUND-04 marked complete)*

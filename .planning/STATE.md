@@ -1,7 +1,7 @@
 # Project State: Actual Budget Fork - Enable Banking Edition
 
 **Last updated:** 2026-02-18
-**Session:** Plan 01-03 execution complete (Tasks 1-2 done, Task 3 is checkpoint:human-verify)
+**Session:** Plan 01-04 execution complete (gap closure - [eb] tag rewrite done)
 
 ## Project Reference
 
@@ -9,24 +9,24 @@
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Plan 01-03 tasks 1-2 complete. Enable Banking JWT auth verified against sandbox (`configured: true`). RSA key persistence confirmed. Awaiting Task 3 (human checkpoint: Phase 1 full verification).
+**Current Focus:** Phase 1 gap closure complete. All 11 custom commits carry [eb] tag. FOUND-04 satisfied. Phase 1 human verification checkpoint still pending (from Plan 01-03 Task 3).
 
 ## Current Position
 
 **Active Phase:** 01-foundation-and-api-client
-**Active Plan:** 01-03 (paused at checkpoint:human-verify - Task 3)
-**Status:** Tasks 1-2 complete. Sandbox API returns configured: true. Container rebuilt with EB code. Key persists across restart. Awaiting human verification of all Phase 1 success criteria.
+**Active Plan:** 01-04 complete (gap closure done)
+**Status:** All 4 Phase 1 plans complete. Commit convention (FOUND-04) now fully satisfied. Awaiting human verification of Phase 1 success criteria (from Plan 01-03 Task 3 checkpoint).
 
 **Progress:**
 ```
-Phase 1: Foundation and API Client    [3/3] Awaiting human checkpoint
+Phase 1: Foundation and API Client    [4/4] Awaiting human checkpoint
 Phase 2: Bank Sync Pipeline           [ ] Not started
 Phase 3: Automation and Consent       [ ] Not started
 Phase 4: PWA Completion               [ ] Not started
 Phase 5: Infrastructure and Production[ ] Not started
 ```
 
-Overall: 0/5 phases complete (3 plans complete, 1 awaiting human checkpoint)
+Overall: 0/5 phases complete (4 plans complete, 1 awaiting human checkpoint)
 
 ## Performance Metrics
 
@@ -34,7 +34,7 @@ Overall: 0/5 phases complete (3 plans complete, 1 awaiting human checkpoint)
 |--------|-------|
 | Phases total | 5 |
 | Requirements mapped | 29/29 |
-| Plans complete | 2 |
+| Plans complete | 4 |
 | Phases complete | 0 |
 
 ## Key Decisions Recorded
@@ -55,6 +55,7 @@ Overall: 0/5 phases complete (3 plans complete, 1 awaiting human checkpoint)
 | RSA key is PKCS#8 format (BEGIN PRIVATE KEY) | Enable Banking browser UI generates PKCS#8. jose handles it natively - no conversion needed. | 2026-02-18 |
 | Lazy key loading on first request (not startup) | Avoids startup failure when EB not configured. Module-level cache means key imported only once per process lifetime. | 2026-02-18 |
 | GET /test-auth placed before session middleware | Enables automated sandbox verification without needing Actual user session. Development-only route; production uses POST /status. | 2026-02-18 |
+| GIT_SEQUENCE_EDITOR on MSYS: use PowerShell not bash script | MSYS bash cannot find shell scripts at workspace paths when git invokes the editor. PowerShell -File with Windows-style forward-slash path resolves correctly. | 2026-02-18 |
 
 ## Critical Pitfalls (from research)
 
@@ -118,15 +119,15 @@ Overall: 0/5 phases complete (3 plans complete, 1 awaiting human checkpoint)
 
 ## Session Continuity
 
-**Stopped at:** Plan 01-03, Task 3 (checkpoint:human-verify)
+**Stopped at:** Plan 01-04 complete (gap closure)
 
-**Next action:** User must verify Phase 1 success criteria (see Task 3 in 01-03-PLAN.md). After verification, continue with Phase 2.
+**Next action:** Phase 1 human verification checkpoint still pending (from Plan 01-03 Task 3). User must verify Phase 1 success criteria. After verification, continue with Phase 2.
 
 **Phase 1 verification results (automated):**
 - `GET /enablebanking/test-auth` returns `{"status":"ok","data":{"configured":true}}`
 - RSA key persists across `docker compose down && docker compose up -d`
 - Container logs clean, server healthy at http://localhost:5006
-- All custom commits tagged `[eb]`
+- All 11 custom commits tagged `[eb]` (FOUND-04 fully satisfied after Plan 01-04 gap closure)
 
 **Sandbox credentials ready:**
 - Application ID: `b619fe6c-ab92-4de5-a7c2-901c0e0ef580`
@@ -136,4 +137,4 @@ Overall: 0/5 phases complete (3 plans complete, 1 awaiting human checkpoint)
 
 ---
 *State initialized: 2026-02-18*
-*Last updated: 2026-02-18 - Plan 01-02 complete*
+*Last updated: 2026-02-18 - Plan 01-04 complete (gap closure)*
