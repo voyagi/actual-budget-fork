@@ -1,0 +1,40 @@
+# Exclude development artifacts from Docker build context
+node_modules
+**/node_modules
+**/.cache
+**/node_modules/.cache
+
+# Yarn - keep releases and plugins but skip caches
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+
+# Build outputs (will be rebuilt inside container)
+**/build/
+**/dist/
+**/lib-dist/
+
+# Test artifacts
+**/coverage/
+**/playwright-report/
+**/test-results/
+**/*.log
+
+# Development config
+.vscode/
+.devcontainer/
+
+# Secrets (must never enter Docker context)
+secrets/
+
+# Git history (not needed in container)
+.git/
+.planning/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store

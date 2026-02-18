@@ -1,17 +1,33 @@
 ###################################################
-# This creates and stands up the development
-# docker container. Depends on the Dockerfile and
-# docker-start.sh files.
+# Enable Banking fork - Docker Compose
+# Supports both dev and prod via environment variables.
+# Copy .env.example to .env and fill in values before running.
+#
+# Required for bank sync (Plan 02+):
+#   Place RSA private key at ./secrets/eb_private.pem
+#   If the key file does not exist, the container will fail to start.
+#   For initial testing (no EB credentials yet), generate a dummy key:
+#     openssl genrsa -out secrets/eb_private.pem 2048
 ###################################################
 
 services:
-  actual-development:
-    build: .
-    image: actual-development
+  sync-server:
+    build:
+      context: .
+      dockerfile: packages/sync-server/Dockerfile
     environment:
-      - HTTPS
+      - NODE_ENV=${NODE_ENV:-production}
+      - ACTUAL_PORT=5006
+      - ACTUAL_DATA_DIR=/data
+      - ENABLE_BANKING_APP_ID=${ENABLE_BANKING_APP_ID:-}
+      - ENABLE_BANKING_KEY_PATH=/run/secrets/eb_private.pem
+      - ENABLE_BANKING_BASE_URL=${ENABLE_BANKING_BASE_URL:-https://api.enablebanking.com}
     ports:
-      - '3001:3001'
+      - "${SYNC_PORT:-5006}:5006"
     volumes:
-      - '.:/app'
-    restart: 'no'
+      - actual_data:/data
+      - ./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro
+    restart: unless-stopped
+
+volumes:
+  actual_data:
