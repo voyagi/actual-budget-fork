@@ -41,13 +41,14 @@
 
 **Research flag:** Read `packages/sync-server/src/app-gocardless/` before implementing `app-enablebanking/` to confirm the current adapter interface (GoCardless may have been refactored since July 2025).
 
-**Plans:** 3 plans
+**Plans:** 4 plans
 
 Plans:
 
 - [x] 01-01-PLAN.md - Fork setup: upstream pull, git hygiene, Docker build, Chrome verification
 - [x] 01-02-PLAN.md - Enable Banking sandbox registration (human action: credentials + RSA key)
 - [x] 01-03-PLAN.md - Enable Banking API client scaffold, sandbox auth test, key persistence verification (awaiting Task 3 human checkpoint)
+- [ ] 01-04-PLAN.md - Gap closure: fix missing [eb] tag on commit 371f06e2e (FOUND-04)
 
 ### Phase 2: Bank Sync Pipeline
 
