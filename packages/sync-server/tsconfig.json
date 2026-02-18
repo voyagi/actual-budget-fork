@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2021"],
+    "noEmit": false,
+    "outDir": "build"
+  },
+  "include": [
+    "src/**/*",
+    "migrations/**/*",
+    "types/**/*",
+    "app.ts",
+    "bin/**/*"
+  ],
+  "exclude": ["node_modules", "build", "coverage"]
+}
