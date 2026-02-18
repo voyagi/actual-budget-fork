@@ -17,7 +17,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and API Client | 0/? | Not started | - |
+| 1. Foundation and API Client | 0/3 | Planned | - |
 | 2. Bank Sync Pipeline | 0/? | Not started | - |
 | 3. Automation and Consent Lifecycle | 0/? | Not started | - |
 | 4. PWA Completion | 0/? | Not started | - |
@@ -41,7 +41,13 @@
 
 **Research flag:** Read `packages/sync-server/src/app-gocardless/` before implementing `app-enablebanking/` to confirm the current adapter interface (GoCardless may have been refactored since July 2025).
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+
+- [ ] 01-01-PLAN.md - Fork setup: upstream pull, git hygiene, Docker build, Chrome verification
+- [ ] 01-02-PLAN.md - Enable Banking sandbox registration (human action: credentials + RSA key)
+- [ ] 01-03-PLAN.md - Enable Banking API client scaffold, sandbox auth test, key persistence verification
 
 ### Phase 2: Bank Sync Pipeline
 
