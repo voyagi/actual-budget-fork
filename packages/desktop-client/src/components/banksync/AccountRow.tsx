@@ -12,6 +12,7 @@ import { tsToRelativeTime } from 'loot-core/shared/util';
 import type { AccountEntity } from 'loot-core/types/models';
 
 import { Cell, Row } from '@desktop-client/components/table';
+import { useEnableBankingSyncStatus } from '@desktop-client/hooks/useEnableBankingStatus';
 
 type AccountRowProps = {
   account: AccountEntity;
@@ -33,6 +34,14 @@ export const AccountRow = memo(
       'MMM d, yyyy, HH:mm:ss',
       { locale },
     );
+
+    // SYNC-07: Fetch Enable Banking-specific error details for EB accounts.
+    // Called unconditionally (React rules of hooks). Passes empty array for
+    // non-EB accounts so the hook is a no-op with no network cost.
+    const { statuses: ebStatuses } = useEnableBankingSyncStatus(
+      account.account_sync_source === 'enableBanking' ? [account.id] : [],
+    );
+    const ebStatus = ebStatuses?.[account.id];
 
     const potentiallyTruncatedAccountName =
       account.name.length > 30
@@ -73,7 +82,12 @@ export const AccountRow = memo(
         {account.account_sync_source ? (
           <Tooltip
             placement="bottom start"
-            content={lastSyncDateTime}
+            content={
+              lastSyncDateTime +
+              (ebStatus?.status === 'error' && ebStatus?.error_message
+                ? '\nError: ' + ebStatus.error_message
+                : '')
+            }
             style={{
               ...styles.tooltip,
             }}
@@ -92,7 +106,22 @@ export const AccountRow = memo(
               }}
               data-vrt-mask
             >
-              {lastSyncString}
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+              >
+                <span>{lastSyncString}</span>
+                {ebStatus?.status === 'error' && ebStatus?.error_message ? (
+                  <span
+                    style={{
+                      color: theme.errorText,
+                      fontSize: 11,
+                      fontWeight: 'normal',
+                    }}
+                  >
+                    {ebStatus.error_message}
+                  </span>
+                ) : null}
+              </div>
             </Cell>
           </Tooltip>
         ) : (

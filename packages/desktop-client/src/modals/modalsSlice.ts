@@ -126,6 +126,9 @@ export type Modal =
       };
     }
   | {
+      name: 'enablebanking-external-msg';
+    }
+  | {
       name: 'delete-budget';
       options: { file: File };
     }

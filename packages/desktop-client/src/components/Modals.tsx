@@ -37,6 +37,7 @@ import { EnvelopeIncomeBalanceMenuModal } from './modals/EnvelopeIncomeBalanceMe
 import { EnvelopeToBudgetMenuModal } from './modals/EnvelopeToBudgetMenuModal';
 import { FixEncryptionKeyModal } from './modals/FixEncryptionKeyModal';
 import { GoalTemplateModal } from './modals/GoalTemplateModal';
+import { EnableBankingExternalMsgModal } from './modals/EnableBankingExternalMsgModal';
 import { GoCardlessExternalMsgModal } from './modals/GoCardlessExternalMsgModal';
 import { GoCardlessInitialiseModal } from './modals/GoCardlessInitialiseModal';
 import { HoldBufferModal } from './modals/HoldBufferModal';
@@ -182,6 +183,9 @@ export function Modals() {
 
         case 'pluggyai-init':
           return <PluggyAiInitialiseModal key={key} {...modal.options} />;
+
+        case 'enablebanking-external-msg':
+          return <EnableBankingExternalMsgModal key={key} />;
 
         case 'gocardless-external-msg':
           return (
