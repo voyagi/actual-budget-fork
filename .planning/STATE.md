@@ -1,7 +1,7 @@
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-02-18
-**Session:** Plan 01-04 execution complete (gap closure - [eb] tag rewrite done)
+**Last updated:** 2026-02-19
+**Session:** Plan 02-01 execution complete (data layer, migrations, normalizer)
 
 ## Project Reference
 
@@ -13,20 +13,20 @@
 
 ## Current Position
 
-**Active Phase:** 01-foundation-and-api-client
-**Active Plan:** 01-04 complete (gap closure done)
-**Status:** Milestone complete
+**Active Phase:** 02-bank-sync-pipeline
+**Active Plan:** 02-01 complete (data layer, migrations, normalizer)
+**Status:** In progress
 
 **Progress:**
 ```
 Phase 1: Foundation and API Client    [4/4] Awaiting human checkpoint
-Phase 2: Bank Sync Pipeline           [ ] Not started
+Phase 2: Bank Sync Pipeline           [1/5] In progress (02-01 complete)
 Phase 3: Automation and Consent       [ ] Not started
 Phase 4: PWA Completion               [ ] Not started
 Phase 5: Infrastructure and Production[ ] Not started
 ```
 
-Overall: 0/5 phases complete (4 plans complete, 1 awaiting human checkpoint)
+Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
 
 ## Performance Metrics
 
@@ -34,7 +34,7 @@ Overall: 0/5 phases complete (4 plans complete, 1 awaiting human checkpoint)
 |--------|-------|
 | Phases total | 5 |
 | Requirements mapped | 29/29 |
-| Plans complete | 4 |
+| Plans complete | 5 |
 | Phases complete | 0 |
 
 ## Key Decisions Recorded
@@ -56,6 +56,12 @@ Overall: 0/5 phases complete (4 plans complete, 1 awaiting human checkpoint)
 | Lazy key loading on first request (not startup) | Avoids startup failure when EB not configured. Module-level cache means key imported only once per process lifetime. | 2026-02-18 |
 | GET /test-auth placed before session middleware | Enables automated sandbox verification without needing Actual user session. Development-only route; production uses POST /status. | 2026-02-18 |
 | GIT_SEQUENCE_EDITOR on MSYS: use PowerShell not bash script | MSYS bash cannot find shell scripts at workspace paths when git invokes the editor. PowerShell -File with Windows-style forward-slash path resolves correctly. | 2026-02-18 |
+| downloadEnableBankingTransactions takes acctId + since only (no userId/userKey/bankId) | Enable Banking session context is stored server-side - sync-server needs only accountId to look up the session. Simpler than GoCardless pattern. | 2026-02-19 |
+| SyncServerEnableBankingAccount placed in account.ts (not gocardless.ts) | Belongs to account model domain, not GoCardless-specific. Future account linking UI imports from account.ts. | 2026-02-19 |
+| eb_sync_log uses actual_account_id not account_id | The Actual Budget UUID is what the UI has when querying sync status. eb_account_uid retained for API cross-reference. | 2026-02-19 |
+| normalizeTransaction includes top-level date and notes fields | loot-core defaultMappings reads trans['date'] and trans['notes'] directly. Missing date causes thrown error on every transaction. | 2026-02-19 |
+| getTransactions pagination safeguard maxPages=100 | Returns partial results with console.warn rather than throwing - partial data beats a crashed sync job. | 2026-02-19 |
+| normalizeAccount account_id derivation must be replicated in /callback route | account_id ?? uid derivation in utils.js must match what /callback inserts into eb_account_map.eb_account_uid. | 2026-02-19 |
 
 ## Critical Pitfalls (from research)
 
@@ -119,9 +125,9 @@ Overall: 0/5 phases complete (4 plans complete, 1 awaiting human checkpoint)
 
 ## Session Continuity
 
-**Stopped at:** Plan 01-04 complete (gap closure)
+**Stopped at:** Plan 02-01 complete (data layer, migrations, normalizer)
 
-**Next action:** Phase 1 human verification checkpoint still pending (from Plan 01-03 Task 3). User must verify Phase 1 success criteria. After verification, continue with Phase 2.
+**Next action:** Phase 1 human verification checkpoint still pending (from Plan 01-03 Task 3). Phase 2 Plan 02-01 complete. Continue with 02-02 (loot-core types and sync extension).
 
 **Phase 1 verification results (automated):**
 - `GET /enablebanking/test-auth` returns `{"status":"ok","data":{"configured":true}}`
@@ -137,4 +143,4 @@ Overall: 0/5 phases complete (4 plans complete, 1 awaiting human checkpoint)
 
 ---
 *State initialized: 2026-02-18*
-*Last updated: 2026-02-18 - Plan 01-04 complete (gap closure)*
+*Last updated: 2026-02-19 - Plan 02-01 complete (data layer, migrations, normalizer)*
