@@ -69,8 +69,7 @@ export async function getAspsps(country) {
 // opaque token stored in eb_sessions for CSRF protection.
 export async function createAuth({ aspspName, aspspCountry, redirectUrl, state }) {
   const validUntil = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .split('T')[0];
+    .toISOString();
 
   const response = await ebRequest('POST', '/auth', {
     aspsp: { name: aspspName, country: aspspCountry },
