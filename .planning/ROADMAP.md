@@ -18,7 +18,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation and API Client | 4/4 | Awaiting human checkpoint | - |
-| 2. Bank Sync Pipeline | 2/5 | In progress | - |
+| 2. Bank Sync Pipeline | 3/5 | In Progress|  |
 | 3. Automation and Consent Lifecycle | 0/? | Not started | - |
 | 4. PWA Completion | 0/? | Not started | - |
 | 5. Infrastructure and Production | 0/? | Not started | - |
@@ -71,7 +71,7 @@ Plans:
 
 **Research flag:** Standard patterns. `processBankSyncDownload()` and `reconcileTransactions()` are shared loot-core APIs documented in the GoCardless adapter. No additional research needed.
 
-**Plans:** 5 plans
+**Plans:** 3/5 plans executed
 
 Plans:
 

@@ -16,13 +16,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Bank Sync
 
-- [ ] **SYNC-01**: User can initiate Enable Banking OAuth flow and authorize bank access via redirect to their bank's login page
+- [x] **SYNC-01**: User can initiate Enable Banking OAuth flow and authorize bank access via redirect to their bank's login page
 - [ ] **SYNC-02**: User can link bank accounts to Actual accounts after OAuth authorization completes
 - [x] **SYNC-03**: User can trigger a manual sync that imports transactions from linked bank accounts with deduplication (handles pending-to-booked state transitions)
 - [x] **SYNC-04**: Account balances update automatically with each sync
 - [x] **SYNC-05**: User can see pending vs booked status on imported transactions (visual indicator for PDNG vs BOOK)
-- [ ] **SYNC-06**: User can link multiple banks under separate Enable Banking sessions
-- [ ] **SYNC-07**: User can see last sync status and error message per account in the UI
+- [x] **SYNC-06**: User can link multiple banks under separate Enable Banking sessions
+- [x] **SYNC-07**: User can see last sync status and error message per account in the UI
 - [x] **SYNC-08**: Sync runs are logged to an append-only history for debugging
 - [ ] **SYNC-09**: App ships with pre-populated categorization rules for common EU merchants and payees (grocery chains, utilities, subscriptions, transport) that auto-assign categories on import
 
@@ -97,13 +97,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUND-02 | Phase 1 | Pending |
 | FOUND-03 | Phase 1 | Complete |
 | FOUND-04 | Phase 1 | Complete |
-| SYNC-01 | Phase 2 | Pending |
+| SYNC-01 | Phase 2 | Complete |
 | SYNC-02 | Phase 2 | Pending |
 | SYNC-03 | Phase 2 | Complete |
 | SYNC-04 | Phase 2 | Complete |
 | SYNC-05 | Phase 2 | Complete |
-| SYNC-06 | Phase 2 | Pending |
-| SYNC-07 | Phase 2 | Pending |
+| SYNC-06 | Phase 2 | Complete |
+| SYNC-07 | Phase 2 | Complete |
 | SYNC-08 | Phase 2 | Complete |
 | SYNC-09 | Phase 2 | Pending |
 | AUTO-01 | Phase 3 | Pending |

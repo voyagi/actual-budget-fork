@@ -18,7 +18,7 @@
 **Status:** In progress
 
 **Progress:**
-```
+[████████░░] 78%
 Phase 1: Foundation and API Client    [4/4] Awaiting human checkpoint
 Phase 2: Bank Sync Pipeline           [1/5] In progress (02-01 complete)
 Phase 3: Automation and Consent       [ ] Not started
@@ -36,6 +36,7 @@ Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
 | Requirements mapped | 29/29 |
 | Plans complete | 5 |
 | Phases complete | 0 |
+| Phase 02-bank-sync-pipeline P03 | 30 | 2 tasks | 2 files |
 
 ## Key Decisions Recorded
 
@@ -62,6 +63,10 @@ Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
 | normalizeTransaction includes top-level date and notes fields | loot-core defaultMappings reads trans['date'] and trans['notes'] directly. Missing date causes thrown error on every transaction. | 2026-02-19 |
 | getTransactions pagination safeguard maxPages=100 | Returns partial results with console.warn rather than throwing - partial data beats a crashed sync job. | 2026-02-19 |
 | normalizeAccount account_id derivation must be replicated in /callback route | account_id ?? uid derivation in utils.js must match what /callback inserts into eb_account_map.eb_account_uid. | 2026-02-19 |
+| GET /callback unauthenticated before export { app as handlers } | Bank's browser redirect has no Actual session cookie - route must be outside session middleware scope | 2026-02-19 |
+| linkEnableBankingAccount aborts on /update-account-map failure | Partial link without actual_account_id causes silent sync log failures and broken /sync-status - better to abort and let user retry | 2026-02-19 |
+| findOrCreateBank receives institution object not string | link.ts reads institution.name - must pass { name: account.institution } not bare string | 2026-02-19 |
+| ACCOUNT_NOT_MAPPED uses status:ok wrapper | loot-core post() throws on status:error and only returns data field - wrapping in status:ok lets download function check res.error_code | 2026-02-19 |
 
 ## Critical Pitfalls (from research)
 
@@ -125,9 +130,9 @@ Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
 
 ## Session Continuity
 
-**Stopped at:** Plan 02-01 complete (data layer, migrations, normalizer)
+**Stopped at:** Completed 02-03-PLAN.md
 
-**Next action:** Phase 1 human verification checkpoint still pending (from Plan 01-03 Task 3). Phase 2 Plan 02-01 complete. Continue with 02-02 (loot-core types and sync extension).
+**Next action:** Phase 2 Plan 02-03 complete. Continue with 02-04 (scheduler and background sync).
 
 **Phase 1 verification results (automated):**
 - `GET /enablebanking/test-auth` returns `{"status":"ok","data":{"configured":true}}`
