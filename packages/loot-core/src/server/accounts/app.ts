@@ -14,6 +14,7 @@ import type {
   CategoryEntity,
   GoCardlessToken,
   ImportTransactionEntity,
+  SyncServerEnableBankingAccount,
   SyncServerGoCardlessAccount,
   SyncServerPluggyAiAccount,
   SyncServerSimpleFinAccount,
@@ -73,6 +74,12 @@ export type AccountHandlers = {
   'simplefin-batch-sync': typeof simpleFinBatchSync;
   'transactions-import': typeof importTransactions;
   'account-unlink': typeof unlinkAccount;
+  'enablebanking-status': typeof enableBankingStatus;
+  'enablebanking-get-banks': typeof enableBankingGetBanks;
+  'enablebanking-create-auth': typeof enableBankingCreateAuth;
+  'enablebanking-poll-session': typeof enableBankingPollSession;
+  'enablebanking-accounts-link': typeof linkEnableBankingAccount;
+  'enablebanking-sync-status': typeof enableBankingSyncStatus;
 };
 
 async function updateAccount({
@@ -1261,6 +1268,235 @@ async function unlinkAccount({ id }: { id: AccountEntity['id'] }) {
   return 'ok';
 }
 
+// ---------------------------------------------------------------------------
+// Enable Banking IPC handlers
+// ---------------------------------------------------------------------------
+
+// Checks whether Enable Banking is configured on the sync-server (JWT key present).
+async function enableBankingStatus() {
+  const userToken = await asyncStorage.getItem('user-token');
+
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+
+  return post(
+    serverConfig.ENABLEBANKING_SERVER + '/status',
+    {},
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+}
+
+// Returns list of supported banks (ASPSPs) for a given ISO country code.
+async function enableBankingGetBanks({ country }: { country: string }) {
+  const userToken = await asyncStorage.getItem('user-token');
+
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+
+  return post(
+    serverConfig.ENABLEBANKING_SERVER + '/get-banks',
+    { country },
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+}
+
+// Initiates an OAuth bank-link flow. Returns { url, state } so the client can
+// open the bank's authorization URL and poll for completion via enablebanking-poll-session.
+async function enableBankingCreateAuth({
+  aspspName,
+  aspspCountry,
+}: {
+  aspspName: string;
+  aspspCountry: string;
+}) {
+  const userToken = await asyncStorage.getItem('user-token');
+
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+
+  return post(
+    serverConfig.ENABLEBANKING_SERVER + '/create-auth',
+    { aspspName, aspspCountry },
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+}
+
+// Polls the sync-server for session completion after the OAuth callback.
+// Returns { accounts: [...] } when the session is ready, or {} if not yet complete.
+async function enableBankingPollSession({ state }: { state: string }) {
+  const userToken = await asyncStorage.getItem('user-token');
+
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+
+  return post(
+    serverConfig.ENABLEBANKING_SERVER + '/get-accounts',
+    { state },
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+}
+
+// Links an Enable Banking account to an Actual Budget account.
+// Creates or upgrades the Actual account, populates eb_account_map.actual_account_id
+// (required for /sync-status to work), then triggers an initial transaction sync.
+async function linkEnableBankingAccount({
+  sessionId,
+  account,
+  upgradingId,
+  offBudget = false,
+  startingDate,
+  startingBalance,
+}: LinkAccountBaseParams & {
+  sessionId: string;
+  account: SyncServerEnableBankingAccount;
+}) {
+  let newAccountId: string;
+
+  // findOrCreateBank expects an institution object with a .name property.
+  const institution = { name: account.institution };
+  const bank = await link.findOrCreateBank(institution, sessionId);
+
+  if (upgradingId) {
+    const accRow = await db.first<db.DbAccount>(
+      'SELECT * FROM accounts WHERE id = ?',
+      [upgradingId],
+    );
+
+    if (!accRow) {
+      throw new Error(`Account with ID ${upgradingId} not found.`);
+    }
+
+    newAccountId = accRow.id;
+    await db.update('accounts', {
+      id: newAccountId,
+      account_id: account.account_id,
+      bank: bank.id,
+      bankName: account.institution,
+      account_sync_source: 'enableBanking',
+    });
+  } else {
+    newAccountId = uuidv4();
+    await db.insertWithUUID('accounts', {
+      id: newAccountId,
+      account_id: account.account_id,
+      name: account.name,
+      official_name: account.official_name,
+      bank: bank.id,
+      bankName: account.institution,
+      bankId: sessionId,
+      balance_current: account.balance,
+      mask: account.mask,
+      offbudget: offBudget ? 1 : 0,
+      account_sync_source: 'enableBanking',
+    });
+    await db.insertPayee({
+      name: '',
+      transfer_acct: newAccountId,
+    });
+  }
+
+  // Populate eb_account_map.actual_account_id so /sync-status queries by Actual
+  // UUID succeed. This is essential: without it, /transactions cannot log the
+  // Actual UUID and sync status lookups return no results.
+  const userToken = await asyncStorage.getItem('user-token');
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+
+  const mapRes = await post(
+    serverConfig.ENABLEBANKING_SERVER + '/update-account-map',
+    { ebAccountUid: account.account_id, actualAccountId: newAccountId },
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+
+  if (!mapRes || mapRes.status !== 'ok') {
+    throw new Error(
+      'Failed to update account map for ' +
+        account.account_id +
+        '. Aborting link.',
+    );
+  }
+
+  await bankSync.syncAccount(
+    undefined,
+    undefined,
+    newAccountId,
+    account.account_id,
+    sessionId,
+    startingDate,
+    startingBalance,
+  );
+
+  connection.send('sync-event', {
+    type: 'success',
+    tables: ['transactions'],
+  });
+
+  return 'ok';
+}
+
+// Returns the last sync log entry per account ID (array of Actual UUIDs).
+// The UI passes Actual UUIDs because that is what account entities carry.
+async function enableBankingSyncStatus({
+  accountIds,
+}: {
+  accountIds: string[];
+}) {
+  const userToken = await asyncStorage.getItem('user-token');
+
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+
+  return post(
+    serverConfig.ENABLEBANKING_SERVER + '/sync-status',
+    { accountIds },
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+}
+
 export const app = createApp<AccountHandlers>();
 
 app.method('account-update', mutator(undoable(updateAccount)));
@@ -1289,3 +1525,9 @@ app.method('accounts-bank-sync', accountsBankSync);
 app.method('simplefin-batch-sync', simpleFinBatchSync);
 app.method('transactions-import', mutator(undoable(importTransactions)));
 app.method('account-unlink', mutator(unlinkAccount));
+app.method('enablebanking-status', enableBankingStatus);
+app.method('enablebanking-get-banks', enableBankingGetBanks);
+app.method('enablebanking-create-auth', enableBankingCreateAuth);
+app.method('enablebanking-poll-session', enableBankingPollSession);
+app.method('enablebanking-accounts-link', linkEnableBankingAccount);
+app.method('enablebanking-sync-status', enableBankingSyncStatus);
