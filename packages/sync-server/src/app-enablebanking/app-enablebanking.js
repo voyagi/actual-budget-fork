@@ -151,7 +151,7 @@ app.post(
   handleError(async (req, res) => {
     const { country } = req.body || {};
     const result = await getAspsps(country);
-    res.send({ status: 'ok', data: result });
+    res.send({ status: 'ok', data: result.aspsps || [] });
   }),
 );
 
