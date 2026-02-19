@@ -38,6 +38,7 @@ import { undoable, withUndo } from '../undo';
 import * as link from './link';
 import { getStartingBalancePayee } from './payees';
 import * as bankSync from './sync';
+import { seedCategoryRules } from './eb-category-rules.js';
 
 // Shared base type for link account parameters
 type LinkAccountBaseParams = {
@@ -1461,6 +1462,10 @@ async function linkEnableBankingAccount({
     startingDate,
     startingBalance,
   );
+
+  // Seed EU merchant categorization rules once per budget (idempotent).
+  // Must run after the initial sync so the budget DB connection is available.
+  await seedCategoryRules();
 
   connection.send('sync-event', {
     type: 'success',
