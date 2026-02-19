@@ -1,7 +1,7 @@
 # Project State: Actual Budget Fork - Enable Banking Edition
 
 **Last updated:** 2026-02-19
-**Session:** Plan 02-01 execution complete (data layer, migrations, normalizer)
+**Session:** Plan 02-04 execution complete (Enable Banking desktop UI, category rules)
 
 ## Project Reference
 
@@ -9,24 +9,23 @@
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 1 gap closure complete. All 11 custom commits carry [eb] tag. FOUND-04 satisfied. Phase 1 human verification checkpoint still pending (from Plan 01-03 Task 3).
+**Current Focus:** Phase 2 Plans 01-04 complete. Full Enable Banking UI and backend pipeline done. Scheduler (02-05) is the final plan in Phase 2.
 
 ## Current Position
 
 **Active Phase:** 02-bank-sync-pipeline
-**Active Plan:** 02-01 complete (data layer, migrations, normalizer)
+**Active Plan:** 02-04 complete (desktop UI, OAuth flow, account linking, category rules)
 **Status:** In progress
 
 **Progress:**
-[████████░░] 78%
+[████████░░] 82%
 Phase 1: Foundation and API Client    [4/4] Awaiting human checkpoint
-Phase 2: Bank Sync Pipeline           [1/5] In progress (02-01 complete)
+Phase 2: Bank Sync Pipeline           [4/5] In progress (02-01 through 02-04 complete)
 Phase 3: Automation and Consent       [ ] Not started
 Phase 4: PWA Completion               [ ] Not started
 Phase 5: Infrastructure and Production[ ] Not started
-```
 
-Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
+Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 
 ## Performance Metrics
 
@@ -34,9 +33,9 @@ Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
 |--------|-------|
 | Phases total | 5 |
 | Requirements mapped | 29/29 |
-| Plans complete | 5 |
+| Plans complete | 9 |
 | Phases complete | 0 |
-| Phase 02-bank-sync-pipeline P03 | 30 | 2 tasks | 2 files |
+| Phase 02-bank-sync-pipeline P04 | 45min | 3 tasks | 11 files |
 
 ## Key Decisions Recorded
 
@@ -67,6 +66,9 @@ Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
 | linkEnableBankingAccount aborts on /update-account-map failure | Partial link without actual_account_id causes silent sync log failures and broken /sync-status - better to abort and let user retry | 2026-02-19 |
 | findOrCreateBank receives institution object not string | link.ts reads institution.name - must pass { name: account.institution } not bare string | 2026-02-19 |
 | ACCOUNT_NOT_MAPPED uses status:ok wrapper | loot-core post() throws on status:error and only returns data field - wrapping in status:ok lets download function check res.error_code | 2026-02-19 |
+| authorizeEnableBank uses polling not callback | Polling matches GoCardless pattern, avoids needing a callback listener in the desktop client - works naturally with OAuth redirect flow | 2026-02-19 |
+| useEnableBankingSyncStatus accepts Actual UUIDs | UI always has account.id (Actual UUID), never the internal EB UID - IPC layer handles mapping | 2026-02-19 |
+| EU merchant rules look up category by name not UUID | Adapts to any budget's category setup without hardcoding UUIDs - missing categories skipped gracefully | 2026-02-19 |
 
 ## Critical Pitfalls (from research)
 
@@ -130,9 +132,9 @@ Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
 
 ## Session Continuity
 
-**Stopped at:** Completed 02-03-PLAN.md
+**Stopped at:** Completed 02-04-PLAN.md
 
-**Next action:** Phase 2 Plan 02-03 complete. Continue with 02-04 (scheduler and background sync).
+**Next action:** Phase 2 Plan 02-04 complete. Continue with 02-05 (scheduler and background sync).
 
 **Phase 1 verification results (automated):**
 - `GET /enablebanking/test-auth` returns `{"status":"ok","data":{"configured":true}}`
@@ -148,4 +150,4 @@ Overall: 0/5 phases complete (5 plans complete, 1 awaiting human checkpoint)
 
 ---
 *State initialized: 2026-02-18*
-*Last updated: 2026-02-19 - Plan 02-01 complete (data layer, migrations, normalizer)*
+*Last updated: 2026-02-19 - Plan 02-04 complete (Enable Banking desktop UI, OAuth flow, category rules)*
