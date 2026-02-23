@@ -125,7 +125,7 @@ Object.keys(schema).forEach(table => {
       generators.push(
         makeGen({
           table,
-          row: fc.asciiString().map(x => 'sheet!' + x),
+          row: fc.string().map(x => 'sheet!' + x),
           field: 'expr',
           value: fc.constant(JSON.stringify('fooooo')),
         }),
@@ -136,7 +136,7 @@ Object.keys(schema).forEach(table => {
     const type = schema[table][field];
     switch (type) {
       case 'text':
-        generators.push(makeGen({ table, field, value: fc.asciiString() }));
+        generators.push(makeGen({ table, field, value: fc.string() }));
         break;
 
       case 'integer':

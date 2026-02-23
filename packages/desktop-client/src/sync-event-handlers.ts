@@ -11,7 +11,7 @@ import type { AppStore } from './redux/store';
 import { signOut } from './users/usersSlice';
 
 export type SyncErrorContext = {
-  event: { type: string; subtype: string; meta?: Record<string, unknown> };
+  event: { type: string; subtype?: string; meta?: Record<string, unknown> };
   store: AppStore;
   learnMore: string;
   githubIssueLink: string;
