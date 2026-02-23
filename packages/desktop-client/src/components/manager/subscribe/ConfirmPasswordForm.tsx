@@ -55,19 +55,23 @@ export function ConfirmPasswordForm({
     >
       <BigInput
         autoFocus
+        aria-label={t('Password')}
         placeholder={t('Password')}
         type={showPassword ? 'text' : 'password'}
         value={password1}
         onChangeValue={setPassword1}
         onEnter={onSubmit}
+        required
       />
       <BigInput
+        aria-label={t('Confirm password')}
         placeholder={t('Confirm password')}
         type={showPassword ? 'text' : 'password'}
         value={password2}
         onChangeValue={setPassword2}
         style={{ marginTop: 10 }}
         onEnter={onSubmit}
+        required
       />
 
       <View
@@ -132,6 +136,7 @@ export function ConfirmOldPasswordForm({
     >
       <BigInput
         autoFocus
+        aria-label={t('Current password')}
         placeholder={t('Password')}
         type={showPassword ? 'text' : 'password'}
         value={password}
@@ -139,6 +144,7 @@ export function ConfirmOldPasswordForm({
           setPassword(e.target.value)
         }
         onEnter={onSubmit}
+        required
         className={css({
           borderColor: theme.buttonMenuBorder,
           borderWidth: 1,

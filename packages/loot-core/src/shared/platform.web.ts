@@ -1,5 +1,3 @@
-import { UAParser } from 'ua-parser-js';
-
 const isWindows =
   navigator.platform && navigator.platform.toLowerCase() === 'win32';
 
@@ -16,5 +14,9 @@ export const OS: 'windows' | 'mac' | 'linux' | 'unknown' = isWindows
 export const env: 'web' | 'mobile' | 'unknown' = 'web';
 export const isBrowser = true;
 
-const agent = UAParser(navigator.userAgent);
-export const isIOSAgent = agent.browser.name === 'Mobile Safari';
+const ua = navigator.userAgent;
+export const isIOSAgent =
+  /AppleWebKit/.test(ua) &&
+  /Mobile/.test(ua) &&
+  /Safari/.test(ua) &&
+  !/CriOS|FxiOS|OPiOS|EdgiOS/.test(ua);

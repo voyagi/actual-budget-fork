@@ -77,7 +77,15 @@ export function ToBudgetAmount({
             }}
           >
             <Block
+              role="button"
+              tabIndex={0}
               onClick={onClick}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onClick();
+                }
+              }}
               onContextMenu={onContextMenu}
               data-cellname={sheetName}
               className={css([

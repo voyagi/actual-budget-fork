@@ -243,7 +243,7 @@ export function ScheduleEditForm({
         </SpaceBetween>
 
         <View style={{ marginTop: 20 }}>
-          <FormLabel title={t('Date')} />
+          <FormLabel title={t('Date')} htmlFor="schedule-date" />
         </View>
 
         <SpaceBetween
@@ -263,6 +263,7 @@ export function ScheduleEditForm({
               />
             ) : (
               <DateSelect
+                id="schedule-date"
                 // @ts-expect-error fix me
                 value={fields.date}
                 onSelect={date =>

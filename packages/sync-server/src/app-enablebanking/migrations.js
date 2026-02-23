@@ -45,4 +45,12 @@ export function runMigrations() {
       error_code TEXT
     )
   `);
+
+  // Indexes for frequently queried columns.
+  db.mutate(
+    'CREATE INDEX IF NOT EXISTS idx_eb_account_map_actual ON eb_account_map (actual_account_id)',
+  );
+  db.mutate(
+    'CREATE INDEX IF NOT EXISTS idx_eb_sync_log_actual ON eb_sync_log (actual_account_id)',
+  );
 }

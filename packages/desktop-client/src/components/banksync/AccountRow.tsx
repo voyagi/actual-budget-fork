@@ -60,6 +60,8 @@ export const AccountRow = memo(
         collapsed
         onMouseEnter={() => onHover && onHover(account.id)}
         onMouseLeave={() => onHover && onHover(null)}
+        onFocus={() => onHover && onHover(account.id)}
+        onBlur={() => onHover && onHover(null)}
       >
         <Cell
           name="accountName"

@@ -3,12 +3,16 @@ import type { CSSProperties, ReactNode } from 'react';
 import { View } from './View';
 
 type FormErrorProps = {
+  id?: string;
+  role?: string;
   style?: CSSProperties;
   children?: ReactNode;
 };
 
-export function FormError({ style, children }: FormErrorProps) {
+export function FormError({ id, role, style, children }: FormErrorProps) {
   return (
-    <View style={{ color: 'red', fontSize: 13, ...style }}>{children}</View>
+    <View id={id} role={role} style={{ color: 'red', fontSize: 13, ...style }}>
+      {children}
+    </View>
   );
 }

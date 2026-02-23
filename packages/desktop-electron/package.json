@@ -15,20 +15,20 @@
   },
   "dependencies": {
     "@actual-app/sync-server": "workspace:*",
-    "better-sqlite3": "^12.5.0",
+    "better-sqlite3": "^12.6.2",
     "fs-extra": "^11.3.3",
     "promise-retry": "^2.0.1"
   },
   "devDependencies": {
     "@electron/notarize": "3.1.1",
-    "@electron/rebuild": "4.0.2",
-    "@playwright/test": "1.57.0",
+    "@electron/rebuild": "4.0.3",
+    "@playwright/test": "1.58.2",
     "@types/copyfiles": "^2",
     "@types/fs-extra": "^11",
     "copyfiles": "^2.4.1",
     "cross-env": "^10.1.0",
     "electron": "39.2.7",
-    "electron-builder": "26.4.0",
+    "electron-builder": "26.8.1",
     "typescript": "^5.9.3"
   },
   "build": {

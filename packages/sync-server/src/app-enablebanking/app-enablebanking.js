@@ -1,6 +1,3 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 import express from 'express';
 
 import { getAccountDb } from '../account-db.js';
@@ -23,9 +20,6 @@ import { handleError } from './util/handle-error.js';
 
 // Run migrations at module load time so tables are ready before any route fires.
 runMigrations();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(requestLoggerMiddleware);
@@ -86,12 +80,12 @@ app.get(
     // actual_account_id is left NULL here - it is filled in at link time by
     // the enablebanking-accounts-link IPC handler via POST /update-account-map.
     //
-    // CRITICAL: eb_account_uid derivation MUST match normalizeAccount() in
-    // utils.js (which uses ebAccount.account_id ?? ebAccount.uid). Both use
-    // the same precedence so the UID stored here equals the account_id field
-    // that SelectLinkedAccountsModal receives from /get-accounts.
+    // CRITICAL: Uses account.uid (UUID string from Enable Banking), NOT
+    // account.account_id (which is an object like { iban: "..." }).
+    // This MUST match normalizeAccount() in utils.js so the UID stored here
+    // equals the account_id field that SelectLinkedAccountsModal receives.
     for (const account of accounts) {
-      const ebAccountUid = account.account_id || account.uid;
+      const ebAccountUid = account.uid;
       db.mutate(
         'INSERT OR IGNORE INTO eb_account_map (eb_account_uid, session_id) VALUES (?, ?)',
         [ebAccountUid, session_id],
@@ -104,8 +98,14 @@ app.get(
 );
 
 // Static page that auto-closes the OAuth popup after the callback completes.
+// Inlined to avoid path issues between src/ and build/ directories.
 app.get('/link', (req, res) => {
-  res.sendFile(path.join(__dirname, 'link.html'));
+  res.type('html').send(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Actual</title></head>
+<body><script>window.close();</script>
+<p>Please wait...</p>
+<p>The window should close automatically. If nothing happened you can close this window or tab.</p>
+</body></html>`);
 });
 
 export { app as handlers };
@@ -317,7 +317,7 @@ app.post(
 
     for (const accountId of accountIds || []) {
       const lastEntry = db.first(
-        'SELECT * FROM eb_sync_log WHERE actual_account_id = ? ORDER BY synced_at DESC LIMIT 1',
+        'SELECT * FROM eb_sync_log WHERE actual_account_id = ? ORDER BY id DESC LIMIT 1',
         [accountId],
       );
       statuses[accountId] = lastEntry;
@@ -336,7 +336,35 @@ app.post(
   '/update-account-map',
   handleError(async (req, res) => {
     const { ebAccountUid, actualAccountId } = req.body || {};
+
+    if (!ebAccountUid || !actualAccountId) {
+      return res.send({
+        status: 'ok',
+        data: {
+          error_code: 'INVALID_INPUT',
+          error_type: 'validation-error',
+        },
+      });
+    }
+
     const db = getAccountDb();
+
+    // Verify the EB account UID exists in the map before updating.
+    const existing = db.first(
+      'SELECT eb_account_uid FROM eb_account_map WHERE eb_account_uid = ?',
+      [ebAccountUid],
+    );
+
+    if (!existing) {
+      return res.send({
+        status: 'ok',
+        data: {
+          error_code: 'ACCOUNT_NOT_FOUND',
+          error_type: 'validation-error',
+        },
+      });
+    }
+
     db.mutate(
       'UPDATE eb_account_map SET actual_account_id = ? WHERE eb_account_uid = ?',
       [actualAccountId, ebAccountUid],

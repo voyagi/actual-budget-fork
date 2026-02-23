@@ -230,7 +230,15 @@ function ScheduleRow({
       ref={rowRef}
       height={ROW_HEIGHT}
       inset={15}
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(schedule.id)}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(schedule.id);
+        }
+      }}
       style={{
         cursor: 'pointer',
         backgroundColor: theme.tableBackground,
@@ -400,12 +408,20 @@ export function SchedulesTable({
         <Row
           height={ROW_HEIGHT}
           inset={15}
+          role="button"
+          tabIndex={0}
           style={{
             cursor: 'pointer',
             backgroundColor: 'transparent',
             ':hover': { backgroundColor: theme.tableRowBackgroundHover },
           }}
           onClick={() => setShowCompleted(true)}
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowCompleted(true);
+            }
+          }}
         >
           <Field
             width="flex"

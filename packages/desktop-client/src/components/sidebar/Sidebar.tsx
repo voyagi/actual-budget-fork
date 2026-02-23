@@ -112,24 +112,26 @@ export function Sidebar() {
           )}
         </BudgetName>
 
-        <View
-          style={{
-            flexGrow: 1,
-            '@media screen and (max-height: 480px)': {
-              overflowY: 'auto',
-            },
-          }}
-        >
-          <PrimaryButtons />
+        <nav aria-label={t('Main navigation')} style={{ flexGrow: 1 }}>
+          <View
+            style={{
+              flexGrow: 1,
+              '@media screen and (max-height: 480px)': {
+                overflowY: 'auto',
+              },
+            }}
+          >
+            <PrimaryButtons />
 
-          <Accounts />
+            <Accounts />
 
-          <SecondaryButtons
-            buttons={[
-              { title: t('Add account'), Icon: SvgAdd, onClick: onAddAccount },
-            ]}
-          />
-        </View>
+            <SecondaryButtons
+              buttons={[
+                { title: t('Add account'), Icon: SvgAdd, onClick: onAddAccount },
+              ]}
+            />
+          </View>
+        </nav>
       </View>
     </Resizable>
   );

@@ -29,6 +29,7 @@ export function UpdateNotification() {
 
     return (
       <View
+        role="status"
         style={{
           position: 'absolute',
           bottom: 0,

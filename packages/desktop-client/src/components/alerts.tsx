@@ -16,6 +16,8 @@ type AlertProps = {
   backgroundColor?: string;
   style?: CSSProperties;
   children?: ReactNode;
+  id?: string;
+  role?: string;
 };
 
 const Alert = ({
@@ -24,9 +26,13 @@ const Alert = ({
   backgroundColor,
   style,
   children,
+  id,
+  role,
 }: AlertProps) => {
   return (
     <View
+      id={id}
+      role={role}
       style={{
         color,
         fontSize: 13,
@@ -60,9 +66,11 @@ const Alert = ({
 type ScopedAlertProps = {
   style?: CSSProperties;
   children?: ReactNode;
+  id?: string;
+  role?: string;
 };
 
-export const Information = ({ style, children }: ScopedAlertProps) => {
+export const Information = ({ style, children, id, role }: ScopedAlertProps) => {
   return (
     <Alert
       icon={SvgInformationOutline}
@@ -73,32 +81,38 @@ export const Information = ({ style, children }: ScopedAlertProps) => {
         padding: 5,
         ...style,
       }}
+      id={id}
+      role={role}
     >
       {children}
     </Alert>
   );
 };
 
-export const Warning = ({ style, children }: ScopedAlertProps) => {
+export const Warning = ({ style, children, id, role }: ScopedAlertProps) => {
   return (
     <Alert
       icon={SvgExclamationOutline}
       color={theme.warningText}
       backgroundColor={theme.warningBackground}
       style={style}
+      id={id}
+      role={role}
     >
       {children}
     </Alert>
   );
 };
 
-export const Error = ({ style, children }: ScopedAlertProps) => {
+export const Error = ({ style, children, id, role }: ScopedAlertProps) => {
   return (
     <Alert
       icon={SvgExclamationOutline}
       color={theme.errorTextDarker}
       backgroundColor={theme.errorBackground}
       style={style}
+      id={id}
+      role={role}
     >
       {children}
     </Alert>

@@ -193,6 +193,7 @@ export function Balances({
   isFiltered,
   filteredAmount,
 }: BalancesProps) {
+  const { t } = useTranslation();
   const selectedItems = useSelectedItems();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const isButtonHovered = useHover(buttonRef as RefObject<HTMLButtonElement>);
@@ -213,6 +214,8 @@ export function Balances({
         data-testid="account-balance"
         variant="bare"
         onPress={onToggleExtraBalances}
+        aria-expanded={showExtraBalances}
+        aria-label={t('Toggle balance details')}
         style={{
           paddingTop: 1,
           paddingBottom: 1,

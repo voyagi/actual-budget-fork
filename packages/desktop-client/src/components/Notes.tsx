@@ -60,6 +60,10 @@ export function Notes({
         padding: 7,
         ...(!isNarrowWidth && { minWidth: 350, minHeight: 120 }),
         outline: 'none',
+        '&:focus-visible': {
+          borderColor: theme.pageTextPositive,
+          boxShadow: '0 0 0 1px ' + theme.pageTextPositive,
+        },
         backgroundColor: theme.tableBackground,
         color: theme.tableText,
         ...getStyle?.(editable),

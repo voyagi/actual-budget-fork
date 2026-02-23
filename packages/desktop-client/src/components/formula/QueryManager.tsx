@@ -12,6 +12,7 @@ import { Select } from '@actual-app/components/select';
 import { Text } from '@actual-app/components/text';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
+import { css } from '@emotion/css';
 import { parseISO } from 'date-fns';
 
 import { send } from 'loot-core/platform/client/connection';
@@ -572,6 +573,12 @@ function QueryItem({
                         null,
                         2,
                       )}
+                      className={css({
+                        '&:focus-visible': {
+                          borderColor: theme.pageTextPositive,
+                          boxShadow: '0 0 0 1px ' + theme.pageTextPositive,
+                        },
+                      })}
                       style={{
                         width: '100%',
                         height: 200,

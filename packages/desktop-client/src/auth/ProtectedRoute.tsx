@@ -62,9 +62,9 @@ export const ProtectedRoute = ({
         margin: '50px',
       }}
     >
-      <h3>
+      <h1>
         <Trans>You don't have permission to view this page</Trans>
-      </h3>
+      </h1>
     </View>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import type { ReactNode, UIEvent } from 'react';
 
+import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
 type InfiniteScrollWrapperProps = {
@@ -37,6 +38,9 @@ export function InfiniteScrollWrapper({
       style={{
         flex: 1,
         outline: 'none',
+        ':focus-visible': {
+          boxShadow: '0 0 0 2px ' + theme.pageTextPositive,
+        },
         '& .animated .animated-row': { transition: '.25s transform' },
 
         // Hide the last border of the item in the table

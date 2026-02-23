@@ -73,6 +73,8 @@ export const RuleRow = memo(
         collapsed
         onMouseEnter={() => onHover && onHover(rule.id)}
         onMouseLeave={() => onHover && onHover(null)}
+        onFocus={() => onHover && onHover(rule.id)}
+        onBlur={() => onHover && onHover(null)}
         onContextMenu={handleContextMenu}
       >
         <Popover

@@ -108,6 +108,7 @@ function EditableBudgetName() {
             fontSize: 16,
             fontWeight: 500,
           }}
+          aria-label={t('Budget name')}
           defaultValue={budgetName}
           onEnter={newBudgetName => {
             if (newBudgetName.trim() !== '') {

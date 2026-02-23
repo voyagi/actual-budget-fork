@@ -53,7 +53,6 @@ export const Modal = ({
   containerProps,
   ...props
 }: ModalProps) => {
-  const { t } = useTranslation();
   const { isNarrowWidth } = useResponsive();
   const { enableScope, disableScope } = useHotkeysContext();
 
@@ -107,11 +106,13 @@ export const Modal = ({
         <ReactAriaModal>
           {modalProps => (
             <Dialog
-              aria-label={t('Modal dialog')}
-              className={css(styles.lightScrollbar)}
-              style={{
+              aria-labelledby="modal-title"
+              className={css(styles.lightScrollbar, {
                 outline: 'none', // remove focus outline
-              }}
+                '&:focus-visible': {
+                  boxShadow: '0 0 0 2px ' + theme.pageTextPositive,
+                },
+              })}
             >
               <ModalContentContainer
                 noAnimation={noAnimation}
@@ -311,6 +312,7 @@ export function ModalHeader({
   const { t } = useTranslation();
   return (
     <h1
+      id="modal-title"
       style={{
         justifyContent: 'center',
         alignItems: 'center',

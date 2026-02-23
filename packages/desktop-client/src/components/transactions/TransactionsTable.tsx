@@ -356,6 +356,7 @@ function StatusCell({
   onEdit,
   onUpdate,
 }: StatusCellProps) {
+  const { t } = useTranslation();
   const isClearedField =
     status === 'cleared' || status === 'reconciled' || status == null;
   const statusProps = getStatusProps(status);
@@ -389,6 +390,7 @@ function StatusCell({
       plain
     >
       <CellButton
+        aria-label={status ?? t('uncleared')}
         style={{
           padding: 3,
           backgroundColor: 'transparent',

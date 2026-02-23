@@ -151,13 +151,13 @@ function StackedTooltip({
         <table style={{ borderSpacing: '15px 0', marginLeft: '-15px' }}>
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', paddingLeft: 15 }}>
+              <th scope="col" style={{ textAlign: 'left', paddingLeft: 15 }}>
                 <Trans>Account</Trans>
               </th>
-              <th style={{ textAlign: 'right' }}>
+              <th scope="col" style={{ textAlign: 'right' }}>
                 <Trans>Value</Trans>
               </th>
-              {showPercentage && <th style={{ textAlign: 'right' }}>%</th>}
+              {showPercentage && <th scope="col" style={{ textAlign: 'right' }}>%</th>}
             </tr>
           </thead>
           <tbody>
@@ -205,9 +205,9 @@ function StackedTooltip({
                 borderTop: '1px solid ' + theme.tableBorder,
               }}
             >
-              <td style={{ textAlign: 'left', paddingLeft: 15, paddingTop: 5 }}>
+              <th scope="row" style={{ textAlign: 'left', paddingLeft: 15, paddingTop: 5 }}>
                 <Trans>Total</Trans>
-              </td>
+              </th>
               <td style={{ textAlign: 'right', paddingTop: 5 }}>
                 <FinancialText>{format(total, 'financial')}</FinancialText>
               </td>

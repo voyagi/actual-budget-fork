@@ -90,6 +90,7 @@ export function SidebarCategory({
           variant="bare"
           className="hover-visible"
           style={{ color: 'currentColor', padding: 3 }}
+          aria-label={t('Category menu')}
           onPress={() => {
             resetPosition();
             setMenuOpen(true);

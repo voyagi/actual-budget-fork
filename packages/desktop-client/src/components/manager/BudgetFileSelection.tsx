@@ -507,13 +507,15 @@ function BudgetFileSelectionHeader({
         margin: 20,
       }}
     >
-      <Text
+      <h1
         style={{
           ...styles.veryLargeText,
+          margin: 0,
+          padding: 0,
         }}
       >
         <Trans>Files</Trans>
-      </Text>
+      </h1>
       {!quickSwitchMode && (
         <View
           style={{

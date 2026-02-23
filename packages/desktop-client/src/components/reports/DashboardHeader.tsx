@@ -62,74 +62,79 @@ export function DashboardHeader({ dashboard }: DashboardHeaderProps) {
         justifyContent: 'flex-start',
       }}
     >
-      <View
+      <h1
         style={{
           fontSize: 25,
           fontWeight: 500,
+          margin: 0,
+          padding: 0,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 3,
           flexGrow: 0,
-          flexShrink: 0,
+          flexShrink: 1,
           flexBasis: 'auto',
+          minWidth: 0,
         }}
       >
-        <Trans>Reports</Trans>:
-      </View>
-      {editingName ? (
-        <InitialFocus>
-          <Input
-            defaultValue={dashboard.name}
-            onEnter={handleSaveName}
-            onUpdate={handleSaveName}
-            onEscape={() => setEditingName(false)}
-            style={{
-              fontSize: 25,
-              fontWeight: 500,
-              marginTop: -3,
-              marginBottom: -4,
-              paddingTop: 2,
-              paddingBottom: 2,
-            }}
-          />
-        </InitialFocus>
-      ) : (
-        <>
-          <View
-            style={{
-              fontSize: 25,
-              fontWeight: 500,
-              marginRight: 5,
-              flexGrow: 0,
-              flexShrink: 1,
-              flexBasis: 'auto',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              minWidth: 0,
-            }}
-          >
-            {dashboard.name}
-          </View>
-          <Button
-            variant="bare"
-            aria-label={t('Rename dashboard')}
-            className="hover-visible"
-            style={{
-              marginRight: 5,
-            }}
-            onPress={() => setEditingName(true)}
-          >
-            <SvgPencil1
+        <span style={{ flexShrink: 0 }}>
+          <Trans>Reports</Trans>:
+        </span>
+        {editingName ? (
+          <InitialFocus>
+            <Input
+              defaultValue={dashboard.name}
+              onEnter={handleSaveName}
+              onUpdate={handleSaveName}
+              onEscape={() => setEditingName(false)}
               style={{
-                width: 11,
-                height: 11,
-                flexGrow: 0,
-                flexShrink: 0,
-                flexBasis: 'auto',
-                color: theme.pageTextSubdued,
+                fontSize: 25,
+                fontWeight: 500,
+                marginTop: -3,
+                marginBottom: -4,
+                paddingTop: 2,
+                paddingBottom: 2,
               }}
             />
-          </Button>
-        </>
-      )}
+          </InitialFocus>
+        ) : (
+          <>
+            <span
+              style={{
+                marginRight: 5,
+                flexShrink: 1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                minWidth: 0,
+              }}
+            >
+              {dashboard.name}
+            </span>
+            <Button
+              variant="bare"
+              aria-label={t('Rename dashboard')}
+              className="hover-visible"
+              style={{
+                marginRight: 5,
+              }}
+              onPress={() => setEditingName(true)}
+            >
+              <SvgPencil1
+                style={{
+                  width: 11,
+                  height: 11,
+                  flexGrow: 0,
+                  flexShrink: 0,
+                  flexBasis: 'auto',
+                  color: theme.pageTextSubdued,
+                }}
+              />
+            </Button>
+          </>
+        )}
+      </h1>
     </View>
   );
 }

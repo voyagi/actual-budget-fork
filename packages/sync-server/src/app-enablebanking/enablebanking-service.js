@@ -3,6 +3,8 @@ import { readFileSync } from 'fs';
 import axios from 'axios';
 import { SignJWT, importPKCS8 } from 'jose';
 
+import { SessionExpiredError, RateLimitError } from './errors.js';
+
 const baseUrl =
   process.env.ENABLE_BANKING_BASE_URL ?? 'https://api.enablebanking.com';
 const appId = process.env.ENABLE_BANKING_APP_ID;
@@ -41,16 +43,33 @@ export async function generateJWT() {
 export async function ebRequest(method, path, data) {
   const jwt = await generateJWT();
 
-  const response = await axios({
-    method,
-    url: `${baseUrl}${path}`,
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-    },
-    data,
-  });
+  try {
+    const response = await axios({
+      method,
+      url: `${baseUrl}${path}`,
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+      data,
+    });
 
-  return response;
+    return response;
+  } catch (err) {
+    if (err.response) {
+      const status = err.response.status;
+      if (status === 401 || status === 403) {
+        throw new SessionExpiredError(
+          `Enable Banking auth failed (${status}): ${err.response.data?.message ?? err.message}`,
+        );
+      }
+      if (status === 429) {
+        throw new RateLimitError(
+          `Enable Banking rate limit hit: ${err.response.data?.message ?? err.message}`,
+        );
+      }
+    }
+    throw err;
+  }
 }
 
 export async function testAuth() {

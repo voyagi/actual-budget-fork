@@ -187,6 +187,7 @@ export function EditFieldModal({
                 ref={noteInputRef}
                 autoFocus
                 placeholder={t('Find')}
+                aria-label={t('Find')}
                 value={noteFindReplace.find}
                 onChange={({ currentTarget: { value } }) =>
                   setNoteFindReplace(current => ({ ...current, find: value }))
@@ -199,6 +200,7 @@ export function EditFieldModal({
               <Input
                 ref={noteReplaceInputRef}
                 placeholder={t('Replace')}
+                aria-label={t('Replace')}
                 value={noteFindReplace.replace}
                 onChange={({ currentTarget: { value } }) =>
                   setNoteFindReplace(current => ({
@@ -229,6 +231,7 @@ export function EditFieldModal({
             <Input
               ref={noteInputRef}
               autoFocus
+              aria-label={t('Notes')}
               onEnter={value => {
                 onSelectNote(value, noteAmend);
                 close();
@@ -244,6 +247,7 @@ export function EditFieldModal({
       label = t('Amount');
       editor = ({ close }) => (
         <Input
+          aria-label={t('Amount')}
           onEnter={value => {
             onSelect(value);
             close();

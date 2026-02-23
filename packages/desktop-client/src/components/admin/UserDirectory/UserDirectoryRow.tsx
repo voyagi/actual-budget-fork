@@ -43,6 +43,8 @@ export const UserDirectoryRow = memo(
         collapsed
         onMouseEnter={() => onHover && onHover(user.id)}
         onMouseLeave={() => onHover && onHover(null)}
+        onFocus={() => onHover && onHover(user.id)}
+        onBlur={() => onHover && onHover(null)}
       >
         {!user.owner && (
           <SelectCell

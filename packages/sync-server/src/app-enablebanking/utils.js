@@ -63,18 +63,22 @@ export function normalizeTransaction(ebTransaction, isBooked) {
 }
 
 // [eb] Maps an Enable Banking account to the SyncServerEnableBankingAccount shape.
-// account_id derivation uses ebAccount.account_id || ebAccount.uid - the same
-// derivation MUST be used in the /callback route when inserting into eb_account_map
-// to guarantee consistency between the map and the normalizer output.
+// Uses ebAccount.uid (UUID string) as the primary identifier - this is the value
+// used in Enable Banking API paths like /accounts/{uid}/transactions.
+// CRITICAL: The same uid MUST be used in the /callback route when inserting into
+// eb_account_map to guarantee consistency between the map and the normalizer output.
+// NOTE: ebAccount.account_id is an OBJECT (e.g. { iban: "FI..." }), not a string.
+// The IBAN is extracted from account_id.iban for display purposes.
 export function normalizeAccount(ebAccount, sessionId) {
+  const iban = ebAccount.account_id?.iban ?? ebAccount.iban ?? null;
   return {
-    account_id: ebAccount.account_id ?? ebAccount.uid,
-    name: ebAccount.account_name ?? ebAccount.iban,
+    account_id: ebAccount.uid,
+    name: ebAccount.name ?? ebAccount.account_name ?? iban ?? 'Unknown Account',
     institution: ebAccount.aspsp_name ?? '',
-    mask: (ebAccount.iban ?? '').slice(-4),
+    mask: (iban ?? '').slice(-4),
     official_name: ebAccount.product ?? null,
     balance: null,
-    iban: ebAccount.iban ?? null,
+    iban,
     session_id: sessionId,
   };
 }

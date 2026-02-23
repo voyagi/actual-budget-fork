@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { InitialFocus } from '@actual-app/components/initial-focus';
 import { Input } from '@actual-app/components/input';
@@ -19,11 +20,13 @@ export const ReportCardName = ({
   onChange,
   onClose,
 }: ReportCardNameProps) => {
+  const { t } = useTranslation();
   if (isEditing) {
     return (
       <InitialFocus>
         <Input
           className={NON_DRAGGABLE_AREA_CLASS_NAME}
+          aria-label={t('Report name')}
           defaultValue={name}
           onEnter={onChange}
           onUpdate={onChange}

@@ -113,6 +113,8 @@ export const UserAccessRow = memo(
         collapsed
         onMouseEnter={() => onHover && onHover(access.userId)}
         onMouseLeave={() => onHover && onHover(null)}
+        onFocus={() => onHover && onHover(access.userId)}
+        onBlur={() => onHover && onHover(null)}
       >
         <Cell
           width={100}
@@ -122,7 +124,7 @@ export const UserAccessRow = memo(
           <Checkbox
             defaultChecked={marked}
             disabled={access.owner === 1}
-            onClick={handleAccessToggle}
+            onChange={handleAccessToggle}
           />
         </Cell>
         <Cell

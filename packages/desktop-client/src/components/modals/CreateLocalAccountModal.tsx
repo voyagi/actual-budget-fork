@@ -98,6 +98,7 @@ export function CreateLocalAccountModal() {
                   <Input
                     name="name"
                     value={name}
+                    aria-describedby={nameError ? 'name-error' : undefined}
                     onChangeValue={setName}
                     onUpdate={value => {
                       const name = value.trim();
@@ -108,7 +109,7 @@ export function CreateLocalAccountModal() {
                 </InitialFocus>
               </InlineField>
               {nameError && (
-                <FormError style={{ marginLeft: 75, color: theme.warningText }}>
+                <FormError id="name-error" role="alert" style={{ marginLeft: 75, color: theme.warningText }}>
                   {nameError}
                 </FormError>
               )}
@@ -173,6 +174,7 @@ export function CreateLocalAccountModal() {
                   name="balance"
                   inputMode="decimal"
                   value={balance}
+                  aria-describedby={balanceError ? 'balance-error' : undefined}
                   onChangeValue={setBalance}
                   onUpdate={value => {
                     const balance = value.trim();
@@ -185,7 +187,7 @@ export function CreateLocalAccountModal() {
                 />
               </InlineField>
               {balanceError && (
-                <FormError style={{ marginLeft: 75 }}>
+                <FormError id="balance-error" role="alert" style={{ marginLeft: 75 }}>
                   <Trans>Balance must be a number</Trans>
                 </FormError>
               )}

@@ -29,6 +29,7 @@ import { useDispatch } from '@desktop-client/redux';
 
 type GenericInputProps = {
   ref?: Ref<HTMLInputElement>;
+  id?: string;
   style?: CSSProperties;
   inputStyle?: CSSProperties;
 } & (
@@ -117,6 +118,7 @@ type GenericInputProps = {
 
 export const GenericInput = ({
   ref,
+  id,
   style,
   inputStyle,
   ...props
@@ -452,6 +454,7 @@ export const GenericInput = ({
           content = (
             <Input
               ref={ref}
+              id={id}
               value={props.value || ''}
               placeholder={t('nothing')}
               onChangeValue={newValue => props.onChange(Number(newValue))}

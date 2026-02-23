@@ -3,6 +3,7 @@ import type { RefObject, UIEventHandler } from 'react';
 
 import { Block } from '@actual-app/components/block';
 import type { CSSProperties } from '@actual-app/components/styles';
+import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
 import type {
@@ -150,6 +151,9 @@ export function ReportTable({
           flex: 1,
           flexDirection: 'row',
           outline: 'none',
+          ':focus-visible': {
+            boxShadow: '0 0 0 2px ' + theme.pageTextPositive,
+          },
           '& .animated .animated-row': { transition: '.25s transform' },
         }}
         tabIndex={0}
@@ -164,6 +168,9 @@ export function ReportTable({
             '::-webkit-scrollbar': { display: 'none' },
             flex: 1,
             outline: 'none',
+            ':focus-visible': {
+              boxShadow: '0 0 0 2px ' + theme.pageTextPositive,
+            },
             '& .animated .animated-row': { transition: '.25s transform' },
           }}
         >

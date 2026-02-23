@@ -10,14 +10,25 @@ import { useBudgetMonthCount } from './BudgetMonthCountContext';
 type CalendarProps = {
   color: string;
   onClick: () => void;
+  ariaLabel: string;
 };
 
-function Calendar({ color, onClick }: CalendarProps) {
+function Calendar({ color, onClick, ariaLabel }: CalendarProps) {
   return (
-    <SvgCalendar
-      style={{ width: 13, height: 13, color, marginRight: 5 }}
+    <button
+      type="button"
       onClick={onClick}
-    />
+      aria-label={ariaLabel}
+      style={{
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        display: 'inline-flex',
+      }}
+    >
+      <SvgCalendar style={{ width: 13, height: 13, color, marginRight: 5 }} />
+    </button>
   );
 }
 
@@ -47,6 +58,7 @@ export function MonthCountSelector({
         key={i}
         color={maxMonths >= i ? theme.pageTextLight : theme.pageTextSubdued}
         onClick={() => onChange(i)}
+        ariaLabel={t('Show {{count}} months', { count: i })}
       />,
     );
   }

@@ -6,6 +6,7 @@ import { Navigate, Route, Routes, useHref, useLocation } from 'react-router';
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
+import { css } from '@emotion/css';
 import { useQuery } from '@tanstack/react-query';
 
 import * as undo from 'loot-core/platform/client/undo';
@@ -195,6 +196,31 @@ export function FinancesApp() {
 
   return (
     <View style={{ height: '100%' }}>
+      <a
+        href="#main-content"
+        className={css({
+          position: 'absolute',
+          left: -9999,
+          top: 'auto',
+          width: 1,
+          height: 1,
+          overflow: 'hidden',
+          '&:focus': {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: 'auto',
+            height: 'auto',
+            padding: '10px 15px',
+            backgroundColor: theme.pageBackground,
+            color: theme.pageText,
+            zIndex: 9999,
+            outline: `2px solid ${theme.pageTextPositive}`,
+          },
+        })}
+      >
+        {t('Skip to main content')}
+      </a>
       <RouterBehaviors />
       <GlobalKeys />
       <CommandBar />

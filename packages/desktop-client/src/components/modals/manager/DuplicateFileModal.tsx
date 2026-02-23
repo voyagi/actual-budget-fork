@@ -150,6 +150,7 @@ export function DuplicateFileModal({
                   value={newName}
                   aria-label={t('New Budget Name')}
                   aria-invalid={nameError ? 'true' : 'false'}
+                  aria-describedby={nameError ? 'name-error' : undefined}
                   onChangeValue={setNewName}
                   onUpdate={validateAndSetName}
                   style={{ flex: 1 }}
@@ -157,7 +158,7 @@ export function DuplicateFileModal({
               </InitialFocus>
             </InlineField>
             {nameError && (
-              <FormError style={{ marginLeft: 150, color: theme.warningText }}>
+              <FormError id="name-error" role="alert" style={{ marginLeft: 150, color: theme.warningText }}>
                 {nameError}
               </FormError>
             )}

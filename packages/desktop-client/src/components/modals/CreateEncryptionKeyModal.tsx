@@ -184,6 +184,8 @@ export function CreateEncryptionKeyModal({
 
               {error && (
                 <View
+                  id="encryption-error"
+                  role="alert"
                   style={{
                     color: theme.errorText,
                     textAlign: 'center',
@@ -198,11 +200,14 @@ export function CreateEncryptionKeyModal({
               <InitialFocus>
                 <Input
                   type={showPassword ? 'text' : 'password'}
+                  aria-label={t('Password')}
+                  aria-describedby={error ? 'encryption-error' : undefined}
                   style={{
                     width: isNarrowWidth ? '100%' : '50%',
                     height: isNarrowWidth ? styles.mobileMinHeight : undefined,
                   }}
                   onChangeValue={setPassword}
+                  required
                 />
               </InitialFocus>
               <Text style={{ marginTop: 5 }}>

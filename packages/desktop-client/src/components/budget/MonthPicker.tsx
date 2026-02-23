@@ -94,6 +94,7 @@ export const MonthPicker = ({
         <Link
           variant="button"
           buttonVariant="bare"
+          aria-label={t('Today')}
           onPress={() => onSelect(currentMonth)}
           style={{
             padding: '3px 3px',
@@ -112,6 +113,7 @@ export const MonthPicker = ({
         <Link
           variant="button"
           buttonVariant="bare"
+          aria-label={t('Previous month')}
           onPress={() => onSelect(monthUtils.prevMonth(startMonth))}
           style={{
             padding: '3px 3px',
@@ -210,9 +212,19 @@ export const MonthPicker = ({
                 }),
                 ...(current && { fontWeight: 'bold' }),
               }}
+              role="button"
+              tabIndex={0}
               onClick={() => onSelect(month)}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect(month);
+                }
+              }}
               onMouseEnter={() => setHoverId(idx)}
               onMouseLeave={() => setHoverId(null)}
+              onFocus={() => setHoverId(idx)}
+              onBlur={() => setHoverId(null)}
             >
               <View>
                 {size === 'small' ? monthName[0] : monthName}
@@ -239,6 +251,7 @@ export const MonthPicker = ({
         <Link
           variant="button"
           buttonVariant="bare"
+          aria-label={t('Next month')}
           onPress={() => onSelect(monthUtils.nextMonth(startMonth))}
           style={{
             padding: '3px 3px',

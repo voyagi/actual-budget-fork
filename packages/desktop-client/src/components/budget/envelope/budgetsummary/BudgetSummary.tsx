@@ -159,6 +159,8 @@ export const BudgetSummary = memo(({ month }: BudgetSummaryProps) => {
                 ref={triggerRef}
                 variant="bare"
                 aria-label={t('Menu')}
+                aria-expanded={menuOpen}
+                aria-haspopup="menu"
                 onPress={onMenuOpen}
               >
                 <SvgDotsHorizontalTriple
