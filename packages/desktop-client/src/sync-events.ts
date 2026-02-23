@@ -13,7 +13,9 @@ import type { AppStore } from './redux/store';
 import { handleUnknownError, syncErrorHandlers } from './sync-event-handlers';
 
 export function listenForSyncEvent(store: AppStore, queryClient: QueryClient) {
-  // TODO: Should this run on mobile too?
+  // TODO: This is only wired up in App.tsx (desktop). Verify whether
+  // mobile also needs these sync-event notifications, and if so wire
+  // up listenForSyncEvent in the mobile entry point.
   const unlistenUnauthorized = listen('sync-event', async ({ type }) => {
     if (type === 'unauthorized') {
       store.dispatch(

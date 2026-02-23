@@ -60,7 +60,8 @@ function dbMonth(month: string): number {
   return parseInt(month.replace('-', ''));
 }
 
-// TODO: complete list of fields.
+// TODO: complete list of fields - currently only the fields used by
+// getBudgetData callers are typed here; add is_hidden, group_id, etc.
 type BudgetData = {
   is_income: 1 | 0;
   hidden: 1 | 0;

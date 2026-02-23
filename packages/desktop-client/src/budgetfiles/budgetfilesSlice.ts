@@ -49,7 +49,9 @@ export const loadAllFiles = createAppAsyncThunk(
 
 type LoadBudgetPayload = {
   id: string;
-  // TODO: Is this still needed?
+  // TODO: No current caller passes `options`. Verify the `load-budget`
+  // server handler still uses it, then either document its purpose or
+  // remove this field.
   options?: Record<string, unknown>;
 };
 

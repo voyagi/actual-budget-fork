@@ -18,7 +18,8 @@ export const getBudgetDir = id => {
     throw new Error('getDocumentDir: id is falsy: ' + id);
   }
 
-  // TODO: This should be better
+  // TODO: Sanitize budget IDs at creation time rather than here, so
+  // invalid characters are rejected before any file references are made.
   //
   // A cheesy safe guard. The id is generated from the budget name,
   // so it provides an entry point for the user to accidentally (or

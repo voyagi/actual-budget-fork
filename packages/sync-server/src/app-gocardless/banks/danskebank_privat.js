@@ -4,8 +4,8 @@ import Fallback from './integration-bank';
 export default {
   ...Fallback,
 
-  // TODO: Add other Danske Bank BICs?
-  // https://danskeci.com/ci/transaction-banking/bank-identifier-code
+  // TODO: Add BICs for other Danske Bank regions (Sweden, Finland, etc.).
+  // Full list at https://danskeci.com/ci/transaction-banking/bank-identifier-code
   institutionIds: ['DANSKEBANK_DABADKKK', 'DANSKEBANK_DABANO22'],
 
   normalizeTransaction(transaction, booked) {

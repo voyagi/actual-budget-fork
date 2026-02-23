@@ -51,7 +51,9 @@ export async function createCategory(cat, sheetName, prevSheetName) {
       `sum-amount-${cat.id}`,
       `carryover-${cat.id}`,
     ],
-    // TODO: Why refresh??
+    // TODO: Investigate why `refresh: true` is needed here but not on
+    // the sibling `leftover` cell. Forcing a refresh may cause extra
+    // recomputation on every sync.
     refresh: true,
     run: (budgeted, sumAmount, carryover) => {
       return carryover
