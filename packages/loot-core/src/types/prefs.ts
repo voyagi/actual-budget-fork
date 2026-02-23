@@ -66,7 +66,7 @@ export type MetadataPrefs = Partial<{
   lastSyncedTimestamp: string;
   resetClock: boolean;
   lastScheduleRun: string;
-  userId: string; // TODO: delete this (unused)
+  userId: string;
 }>;
 
 /**

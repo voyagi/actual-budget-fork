@@ -88,6 +88,7 @@
     "typescript-strict-plugin": "^2.4.4"
   },
   "resolutions": {
+    "//rollup": "Pinned to deduplicate vite's nested rollup versions (see PR #2369, #4943)",
     "rollup": "4.40.1",
     "socks": ">=2.8.3",
     "@isaacs/brace-expansion": ">=5.0.1",
