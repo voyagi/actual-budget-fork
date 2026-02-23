@@ -1,12 +1,12 @@
 import { createInterface, cursorTo } from 'node:readline';
 
-export async function prompt(message) {
+export async function prompt(message: string): Promise<string> {
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
-  const promise = new Promise(resolve => {
+  const promise = new Promise<string>(resolve => {
     rl.question(message, answer => {
       resolve(answer);
       rl.close();
@@ -18,7 +18,7 @@ export async function prompt(message) {
   return answer;
 }
 
-export async function promptPassword() {
+export async function promptPassword(): Promise<string> {
   const password = await askForPassword('Enter a password, then press enter: ');
 
   if (password === '') {
@@ -38,15 +38,16 @@ export async function promptPassword() {
   return password;
 }
 
-async function askForPassword(prompt) {
-  let dataListener, endListener;
+async function askForPassword(promptText: string): Promise<string> {
+  let dataListener: (key: Buffer) => void;
+  let endListener: () => void;
 
-  const promise = new Promise(resolve => {
+  const promise = new Promise<string>(resolve => {
     let result = '';
-    process.stdout.write(prompt);
+    process.stdout.write(promptText);
     process.stdin.setRawMode(true);
     process.stdin.resume();
-    dataListener = key => {
+    dataListener = (key: Buffer) => {
       switch (key[0]) {
         case 0x03: // ^C
           process.exit();
@@ -60,9 +61,9 @@ async function askForPassword(prompt) {
         case 0x08: // Delete
           if (result) {
             result = result.slice(0, -1);
-            cursorTo(process.stdout, prompt.length + result.length);
+            cursorTo(process.stdout, promptText.length + result.length);
             process.stdout.write(' ');
-            cursorTo(process.stdout, prompt.length + result.length);
+            cursorTo(process.stdout, promptText.length + result.length);
           }
           break;
         default:
@@ -79,8 +80,8 @@ async function askForPassword(prompt) {
 
   const answer = await promise;
 
-  process.stdin.off('data', dataListener);
-  process.stdin.off('end', endListener);
+  process.stdin.off('data', dataListener!);
+  process.stdin.off('end', endListener!);
 
   process.stdout.write('\n');
 

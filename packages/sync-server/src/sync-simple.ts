@@ -3,11 +3,12 @@ import { join } from 'node:path';
 
 import { merkle, SyncProtoBuf, Timestamp } from '@actual-app/crdt';
 
+import type { WrappedDatabase } from './db';
 import { openDatabase } from './db';
 import { sqlDir } from './load-config';
 import { getPathForGroupFile } from './util/paths';
 
-function getGroupDb(groupId) {
+function getGroupDb(groupId: string): WrappedDatabase {
   const path = getPathForGroupFile(groupId);
   const needsInit = !existsSync(path);
 
@@ -21,8 +22,17 @@ function getGroupDb(groupId) {
   return db;
 }
 
-function addMessages(db, messages) {
-  let returnValue;
+interface MessageEnvelope {
+  getTimestamp(): string;
+  getIsencrypted(): boolean;
+  getContent(): Uint8Array;
+  setTimestamp(timestamp: string): void;
+  setIsencrypted(isEncrypted: boolean): void;
+  setContent(content: Buffer | Uint8Array): void;
+}
+
+function addMessages(db: WrappedDatabase, messages: MessageEnvelope[]): Record<string, unknown> | undefined {
+  let returnValue: Record<string, unknown> | undefined;
   db.transaction(() => {
     let trie = getMerkle(db);
 
@@ -57,11 +67,11 @@ function addMessages(db, messages) {
   return returnValue;
 }
 
-function getMerkle(db) {
+function getMerkle(db: WrappedDatabase): Record<string, unknown> {
   const rows = db.all('SELECT * FROM messages_merkles');
 
   if (rows.length > 0) {
-    return JSON.parse(rows[0].merkle);
+    return JSON.parse(rows[0].merkle as string);
   } else {
     // No merkle trie exists yet (first sync of the app), so create a
     // default one.
@@ -69,7 +79,16 @@ function getMerkle(db) {
   }
 }
 
-export function sync(messages, since, groupId) {
+interface SyncResult {
+  trie: Record<string, unknown> | undefined;
+  newMessages: MessageEnvelope[];
+}
+
+export function sync(
+  messages: MessageEnvelope[],
+  since: string,
+  groupId: string,
+): SyncResult {
   const db = getGroupDb(groupId);
   const newMessages = db.all(
     `SELECT * FROM messages_binary
@@ -86,10 +105,10 @@ export function sync(messages, since, groupId) {
     trie,
     newMessages: newMessages.map(msg => {
       const envelopePb = new SyncProtoBuf.MessageEnvelope();
-      envelopePb.setTimestamp(msg.timestamp);
-      envelopePb.setIsencrypted(msg.is_encrypted);
-      envelopePb.setContent(msg.content);
-      return envelopePb;
+      envelopePb.setTimestamp(msg.timestamp as string);
+      envelopePb.setIsencrypted(msg.is_encrypted as boolean);
+      envelopePb.setContent(msg.content as Buffer);
+      return envelopePb as unknown as MessageEnvelope;
     }),
   };
 }

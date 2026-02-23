@@ -209,7 +209,7 @@ app.post(
       return res.send({ status: 'ok', data: {} });
     }
 
-    const parsedAccounts = JSON.parse(sessionRow.accounts);
+    const parsedAccounts = JSON.parse(sessionRow.accounts as string);
     const accounts = parsedAccounts.map(account =>
       normalizeAccount(
         { ...account, aspsp_name: sessionRow.aspsp_name },

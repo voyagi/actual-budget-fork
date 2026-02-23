@@ -1,3 +1,4 @@
+import type { Request, Response } from 'express';
 import express from 'express';
 
 import { disableOpenID, enableOpenID, isAdmin } from './account-db';
@@ -16,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLoggerMiddleware);
 export { app as handlers };
 
-app.post('/enable', validateSessionMiddleware, async (req, res) => {
+app.post('/enable', validateSessionMiddleware, async (_req: Request, res: Response) => {
   if (!isAdmin(res.locals.user_id)) {
     res.status(403).send({
       status: 'error',
@@ -26,7 +27,7 @@ app.post('/enable', validateSessionMiddleware, async (req, res) => {
     return;
   }
 
-  const { error } = (await enableOpenID(req.body)) || {};
+  const { error } = (await enableOpenID(_req.body)) || {};
 
   if (error) {
     res.status(500).send({ status: 'error', reason: error });
@@ -35,7 +36,7 @@ app.post('/enable', validateSessionMiddleware, async (req, res) => {
   res.send({ status: 'ok' });
 });
 
-app.post('/disable', validateSessionMiddleware, async (req, res) => {
+app.post('/disable', validateSessionMiddleware, async (req: Request, res: Response) => {
   if (!isAdmin(res.locals.user_id)) {
     res.status(403).send({
       status: 'error',
@@ -54,8 +55,8 @@ app.post('/disable', validateSessionMiddleware, async (req, res) => {
   res.send({ status: 'ok' });
 });
 
-app.post('/config', async (req, res) => {
-  const { cnt: ownerCount } = UserService.getOwnerCount() || {};
+app.post('/config', async (req: Request, res: Response) => {
+  const ownerCount = UserService.getOwnerCount();
 
   if (ownerCount > 0) {
     res.status(400).send({ status: 'error', reason: 'already-bootstraped' });
@@ -77,7 +78,7 @@ app.post('/config', async (req, res) => {
   }
 
   try {
-    const openIdConfig = JSON.parse(auth.extra_data);
+    const openIdConfig = JSON.parse(auth.extra_data as string);
     res.send({ status: 'ok', data: { openId: openIdConfig } });
   } catch {
     res
@@ -86,7 +87,7 @@ app.post('/config', async (req, res) => {
   }
 });
 
-app.get('/callback', async (req, res) => {
+app.get('/callback', async (req: Request, res: Response) => {
   const { error, url } = await loginWithOpenIdFinalize(req.query);
 
   if (error) {
@@ -99,7 +100,7 @@ app.get('/callback', async (req, res) => {
     return;
   }
 
-  res.redirect(url);
+  res.redirect(url!);
 });
 
 app.use(errorMiddleware);

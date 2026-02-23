@@ -1,12 +1,8 @@
 import createDebug from 'debug';
 
+import type { WrappedDatabase, MutateResult } from '../db';
 import { getAccountDb } from '../account-db';
 
-/**
- * An enum of valid secret names.
- * @readonly
- * @enum {string}
- */
 export const SecretName = {
   gocardless_secretId: 'gocardless_secretId',
   gocardless_secretKey: 'gocardless_secretKey',
@@ -15,19 +11,24 @@ export const SecretName = {
   pluggyai_clientId: 'pluggyai_clientId',
   pluggyai_clientSecret: 'pluggyai_clientSecret',
   pluggyai_itemIds: 'pluggyai_itemIds',
-};
+} as const;
+
+export type SecretNameType = (typeof SecretName)[keyof typeof SecretName];
 
 class SecretsDb {
+  private debug: ReturnType<typeof createDebug>;
+  private db: WrappedDatabase | null;
+
   constructor() {
     this.debug = createDebug('actual:secrets-db');
     this.db = null;
   }
 
-  open() {
+  open(): WrappedDatabase {
     return getAccountDb();
   }
 
-  set(name, value) {
+  set(name: string, value: string): MutateResult {
     if (!this.db) {
       this.db = this.open();
     }
@@ -40,7 +41,7 @@ class SecretsDb {
     return result;
   }
 
-  get(name) {
+  get(name: string): { value: string } | null {
     if (!this.db) {
       this.db = this.open();
     }
@@ -49,32 +50,19 @@ class SecretsDb {
     const result = this.db.first(`SELECT value FROM secrets WHERE name =?`, [
       name,
     ]);
-    return result;
+    return result as { value: string } | null;
   }
 }
 
 const secretsDb = new SecretsDb();
-const _cachedSecrets = new Map();
-/**
- * A service for managing secrets stored in `secretsDb`.
- */
+const _cachedSecrets = new Map<string, string>();
+
 export const secretsService = {
-  /**
-   * Retrieves the value of a secret by name.
-   * @param {SecretName} name - The name of the secret to retrieve.
-   * @returns {string|null} The value of the secret, or null if the secret does not exist.
-   */
-  get: name => {
+  get: (name: string): string | null => {
     return _cachedSecrets.get(name) ?? secretsDb.get(name)?.value ?? null;
   },
 
-  /**
-   * Sets the value of a secret by name.
-   * @param {SecretName} name - The name of the secret to set.
-   * @param {string} value - The value to set for the secret.
-   * @returns {Object}
-   */
-  set: (name, value) => {
+  set: (name: string, value: string): MutateResult => {
     const result = secretsDb.set(name, value);
 
     if (result.changes === 1) {
@@ -83,12 +71,7 @@ export const secretsService = {
     return result;
   },
 
-  /**
-   * Determines whether a secret with the given name exists.
-   * @param {SecretName} name - The name of the secret to check for existence.
-   * @returns {boolean} True if a secret with the given name exists, false otherwise.
-   */
-  exists: name => {
+  exists: (name: string): boolean => {
     return Boolean(secretsService.get(name));
   },
 };

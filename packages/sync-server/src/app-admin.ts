@@ -1,3 +1,4 @@
+import type { Request, Response } from 'express';
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -17,7 +18,7 @@ app.use(requestLoggerMiddleware);
 
 export { app as handlers };
 
-app.get('/owner-created/', (req, res) => {
+app.get('/owner-created/', (_req: Request, res: Response) => {
   try {
     const ownerCount = UserService.getOwnerCount();
     res.json(ownerCount > 0);
@@ -26,7 +27,7 @@ app.get('/owner-created/', (req, res) => {
   }
 });
 
-app.get('/users/', validateSessionMiddleware, (req, res) => {
+app.get('/users/', validateSessionMiddleware, (_req: Request, res: Response) => {
   const users = UserService.getAllUsers();
   res.json(
     users.map(u => ({
@@ -37,7 +38,7 @@ app.get('/users/', validateSessionMiddleware, (req, res) => {
   );
 });
 
-app.post('/users', validateSessionMiddleware, async (req, res) => {
+app.post('/users', validateSessionMiddleware, async (req: Request, res: Response) => {
   if (!isAdmin(res.locals.user_id)) {
     res.status(403).send({
       status: 'error',
@@ -89,7 +90,7 @@ app.post('/users', validateSessionMiddleware, async (req, res) => {
   res.status(200).send({ status: 'ok', data: { id: userId } });
 });
 
-app.patch('/users', validateSessionMiddleware, async (req, res) => {
+app.patch('/users', validateSessionMiddleware, async (req: Request, res: Response) => {
   if (!isAdmin(res.locals.user_id)) {
     res.status(403).send({
       status: 'error',
@@ -141,7 +142,7 @@ app.patch('/users', validateSessionMiddleware, async (req, res) => {
   res.status(200).send({ status: 'ok', data: { id: userIdInDb } });
 });
 
-app.delete('/users', validateSessionMiddleware, async (req, res) => {
+app.delete('/users', validateSessionMiddleware, async (req: Request, res: Response) => {
   if (!isAdmin(res.locals.user_id)) {
     res.status(403).send({
       status: 'error',
@@ -153,13 +154,13 @@ app.delete('/users', validateSessionMiddleware, async (req, res) => {
 
   const { ids } = req.body || {};
   let totalDeleted = 0;
-  ids.forEach(item => {
+  ids.forEach((item: string) => {
     const ownerId = UserService.getOwnerId();
 
     if (item === ownerId) return;
 
     UserService.deleteUserAccess(item);
-    UserService.transferAllFilesFromUser(ownerId, item);
+    UserService.transferAllFilesFromUser(ownerId!, item);
     const usersDeleted = UserService.deleteUser(item);
     totalDeleted += usersDeleted;
   });
@@ -177,8 +178,8 @@ app.delete('/users', validateSessionMiddleware, async (req, res) => {
   }
 });
 
-app.get('/access', validateSessionMiddleware, (req, res) => {
-  const fileId = req.query.fileId;
+app.get('/access', validateSessionMiddleware, (req: Request, res: Response) => {
+  const fileId = req.query.fileId as string;
 
   const { granted } = UserService.checkFilePermission(
     fileId,
@@ -193,7 +194,7 @@ app.get('/access', validateSessionMiddleware, (req, res) => {
       reason: 'forbidden',
       details: 'permission-not-found',
     });
-    return false;
+    return;
   }
 
   const fileIdInDb = UserService.getFileById(fileId);
@@ -203,7 +204,7 @@ app.get('/access', validateSessionMiddleware, (req, res) => {
       reason: 'invalid-file-id',
       details: 'File not found at server',
     });
-    return false;
+    return;
   }
 
   const accesses = UserService.getUserAccess(
@@ -215,7 +216,7 @@ app.get('/access', validateSessionMiddleware, (req, res) => {
   res.json(accesses);
 });
 
-app.post('/access', (req, res) => {
+app.post('/access', (req: Request, res: Response) => {
   const userAccess = req.body || {};
   const session = validateSession(req, res);
 
@@ -270,8 +271,8 @@ app.post('/access', (req, res) => {
   res.status(200).send({ status: 'ok', data: {} });
 });
 
-app.delete('/access', (req, res) => {
-  const fileId = req.query.fileId;
+app.delete('/access', (req: Request, res: Response) => {
+  const fileId = req.query.fileId as string;
   const session = validateSession(req, res);
   if (!session) return;
 
@@ -317,8 +318,8 @@ app.delete('/access', (req, res) => {
   }
 });
 
-app.get('/access/users', validateSessionMiddleware, async (req, res) => {
-  const fileId = req.query.fileId;
+app.get('/access/users', validateSessionMiddleware, async (req: Request, res: Response) => {
+  const fileId = req.query.fileId as string;
 
   const { granted } = UserService.checkFilePermission(
     fileId,
@@ -353,7 +354,7 @@ app.get('/access/users', validateSessionMiddleware, async (req, res) => {
 app.post(
   '/access/transfer-ownership/',
   validateSessionMiddleware,
-  (req, res) => {
+  (req: Request, res: Response) => {
     const newUserOwner = req.body || {};
 
     const { granted } = UserService.checkFilePermission(
@@ -392,7 +393,7 @@ app.post(
     }
 
     const newUserIdFromDb = UserService.getUserById(newUserOwner.newUserId);
-    if (newUserIdFromDb === 0) {
+    if (!newUserIdFromDb) {
       res.status(400).send({
         status: 'error',
         reason: 'new-user-not-found',

@@ -1,17 +1,32 @@
 import { title } from 'loot-core/server/accounts/title/index';
 
-function formatPayeeIban(iban) {
+interface TransactionAccount {
+  iban?: string;
+}
+
+interface Transaction {
+  transactionAmount: { amount: number | string };
+  debtorName?: string;
+  debtorAccount?: TransactionAccount;
+  creditorName?: string;
+  creditorAccount?: TransactionAccount;
+  remittanceInformationUnstructured?: string;
+  remittanceInformationUnstructuredArray?: string[];
+  additionalInformation?: string;
+}
+
+function formatPayeeIban(iban: string): string {
   return '(' + iban.slice(0, 4) + ' XXX ' + iban.slice(-4) + ')';
 }
 
-export const formatPayeeName = trans => {
+export const formatPayeeName = (trans: Transaction): string => {
   const amount = trans.transactionAmount.amount;
-  const nameParts = [];
+  const nameParts: string[] = [];
 
   // get the correct name and account fields for the transaction amount
-  let name;
-  let account;
-  if (amount > 0 || Object.is(Number(amount), 0)) {
+  let name: string | undefined;
+  let account: TransactionAccount | undefined;
+  if (Number(amount) > 0 || Object.is(Number(amount), 0)) {
     name = trans.debtorName;
     account = trans.debtorAccount;
   } else {

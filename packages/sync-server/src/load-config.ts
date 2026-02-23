@@ -21,7 +21,7 @@ const defaultDataDir = process.env.ACTUAL_DATA_DIR
 
 debug(`Project root: '${projectRoot}'`);
 
-export const sqlDir = path.join(__dirname, 'sql');
+export const sqlDir: string = path.join(__dirname, 'sql');
 
 const actualAppWebBuildPath = path.join(
   path.dirname(require.resolve('@actual-app/web/package.json')),
@@ -32,7 +32,7 @@ debug(`Actual web build path: '${actualAppWebBuildPath}'`);
 // Custom formats
 convict.addFormat({
   name: 'tokenExpiration',
-  validate(val) {
+  validate(val: unknown) {
     if (val === 'never' || val === 'openid-provider') return;
     if (typeof val === 'number' && Number.isFinite(val) && val >= 0) return;
 
@@ -46,7 +46,7 @@ convict.addFormat({
       `Invalid token_expiration value: ${val}: value was "${val}"`,
     );
   },
-  coerce(val) {
+  coerce(val: unknown): unknown {
     if (val === 'never' || val === 'openid-provider') return val;
     if (typeof val === 'number') return val;
 
@@ -300,7 +300,7 @@ const configSchema = convict({
   },
 });
 
-let configPath = null;
+let configPath: string | null = null;
 
 if (process.env.ACTUAL_CONFIG_PATH) {
   debug(

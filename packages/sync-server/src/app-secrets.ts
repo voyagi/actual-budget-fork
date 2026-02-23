@@ -1,3 +1,4 @@
+import type { Request, Response } from 'express';
 import express from 'express';
 
 import { getAccountDb, isAdmin } from './account-db';
@@ -14,13 +15,13 @@ app.use(express.json());
 app.use(requestLoggerMiddleware);
 app.use(validateSessionMiddleware);
 
-app.post('/', async (req, res) => {
-  let method;
+app.post('/', async (req: Request, res: Response) => {
+  let method: string | undefined;
   try {
     const result = getAccountDb().first(
       'SELECT method FROM auth WHERE active = 1',
     );
-    method = result?.method;
+    method = (result as { method?: string } | null)?.method;
   } catch (error) {
     console.error('Failed to fetch auth method:', error);
     return res.status(500).send({
@@ -50,7 +51,7 @@ app.post('/', async (req, res) => {
   res.status(200).send({ status: 'ok' });
 });
 
-app.get('/:name', async (req, res) => {
+app.get('/:name', async (req: Request, res: Response) => {
   const name = req.params.name;
   const keyExists = secretsService.exists(name);
   if (keyExists) {

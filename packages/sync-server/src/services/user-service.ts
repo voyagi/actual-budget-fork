@@ -1,79 +1,93 @@
 import { getAccountDb } from '../account-db';
 
-export function getUserByUsername(userName) {
+export function getUserByUsername(userName: string): string | null {
   if (!userName || typeof userName !== 'string') {
     return null;
   }
-  const { id } =
-    getAccountDb().first('SELECT id FROM users WHERE user_name = ?', [
-      userName,
-    ]) || {};
-  return id || null;
+  const row = getAccountDb().first('SELECT id FROM users WHERE user_name = ?', [
+    userName,
+  ]) as { id?: string } | null;
+  return row?.id || null;
 }
 
-export function getUserById(userId) {
+export function getUserById(userId: string): string | null {
   if (!userId) {
     return null;
   }
-  const { id } =
-    getAccountDb().first('SELECT * FROM users WHERE id = ?', [userId]) || {};
-  return id || null;
+  const row = getAccountDb().first('SELECT * FROM users WHERE id = ?', [userId]) as { id?: string } | null;
+  return row?.id || null;
 }
 
-export function getFileById(fileId) {
+export function getFileById(fileId: string): string | null {
   if (!fileId) {
     return null;
   }
-  const { id } =
-    getAccountDb().first('SELECT * FROM files WHERE files.id = ?', [fileId]) ||
-    {};
-  return id || null;
+  const row = getAccountDb().first('SELECT * FROM files WHERE files.id = ?', [fileId]) as { id?: string } | null;
+  return row?.id || null;
 }
 
-export function validateRole(roleId) {
+export function validateRole(roleId: string): boolean {
   const possibleRoles = ['BASIC', 'ADMIN'];
   return possibleRoles.some(a => a === roleId);
 }
 
-export function getOwnerCount() {
-  const { ownerCount } = getAccountDb().first(
+export function getOwnerCount(): number {
+  const row = getAccountDb().first(
     `SELECT count(*) as ownerCount FROM users WHERE users.user_name <> '' and users.owner = 1`,
-  ) || { ownerCount: 0 };
-  return ownerCount;
+  ) as { ownerCount?: number } | null;
+  return row?.ownerCount ?? 0;
 }
 
-export function getOwnerId() {
-  const { id } =
-    getAccountDb().first(
-      `SELECT users.id FROM users WHERE users.user_name <> '' and users.owner = 1`,
-    ) || {};
-  return id;
+export function getOwnerId(): string | undefined {
+  const row = getAccountDb().first(
+    `SELECT users.id FROM users WHERE users.user_name <> '' and users.owner = 1`,
+  ) as { id?: string } | null;
+  return row?.id;
 }
 
-export function getFileOwnerId(fileId) {
-  const { owner } =
-    getAccountDb().first(`SELECT files.owner FROM files WHERE files.id = ?`, [
-      fileId,
-    ]) || {};
-  return owner;
+export function getFileOwnerId(fileId: string): string | undefined {
+  const row = getAccountDb().first(`SELECT files.owner FROM files WHERE files.id = ?`, [
+    fileId,
+  ]) as { owner?: string } | null;
+  return row?.owner;
 }
 
-export function getAllUsers() {
+interface UserRow {
+  id: string;
+  userName: string;
+  displayName: string;
+  enabled: number;
+  owner: number;
+  role: string;
+}
+
+export function getAllUsers(): UserRow[] {
   return getAccountDb().all(
     `SELECT users.id, user_name as userName, display_name as displayName, enabled, ifnull(owner,0) as owner, role
      FROM users
      WHERE users.user_name <> ''`,
-  );
+  ) as unknown as UserRow[];
 }
 
-export function insertUser(userId, userName, displayName, enabled, role) {
+export function insertUser(
+  userId: string,
+  userName: string,
+  displayName: string | null,
+  enabled: number,
+  role?: string,
+): void {
   getAccountDb().mutate(
     'INSERT INTO users (id, user_name, display_name, enabled, owner, role) VALUES (?, ?, ?, ?, 0, ?)',
     [userId, userName, displayName, enabled, role],
   );
 }
 
-export function updateUser(userId, userName, displayName, enabled) {
+export function updateUser(
+  userId: string,
+  userName: string,
+  displayName: string | null,
+  enabled: number,
+): void {
   if (!userId || !userName) {
     throw new Error('Invalid user parameters');
   }
@@ -83,17 +97,17 @@ export function updateUser(userId, userName, displayName, enabled) {
       [userName, displayName, enabled, userId],
     );
   } catch (error) {
-    throw new Error(`Failed to update user: ${error.message}`);
+    throw new Error(`Failed to update user: ${(error as Error).message}`);
   }
 }
 
 export function updateUserWithRole(
-  userId,
-  userName,
-  displayName,
-  enabled,
-  roleId,
-) {
+  userId: string,
+  userName: string,
+  displayName: string | null,
+  enabled: number,
+  roleId: string,
+): void {
   getAccountDb().transaction(() => {
     getAccountDb().mutate(
       'UPDATE users SET user_name = ?, display_name = ?, enabled = ?, role = ? WHERE id = ?',
@@ -102,22 +116,23 @@ export function updateUserWithRole(
   });
 }
 
-export function deleteUser(userId) {
+export function deleteUser(userId: string): number {
   return getAccountDb().mutate('DELETE FROM users WHERE id = ? and owner = 0', [
     userId,
   ]).changes;
 }
-export function deleteUserAccess(userId) {
+
+export function deleteUserAccess(userId: string): number {
   try {
     return getAccountDb().mutate('DELETE FROM user_access WHERE user_id = ?', [
       userId,
     ]).changes;
   } catch (error) {
-    throw new Error(`Failed to delete user access: ${error.message}`);
+    throw new Error(`Failed to delete user access: ${(error as Error).message}`);
   }
 }
 
-export function transferAllFilesFromUser(ownerId, oldUserId) {
+export function transferAllFilesFromUser(ownerId: string, oldUserId: string): void {
   if (!ownerId || !oldUserId) {
     throw new Error('Invalid user IDs');
   }
@@ -133,11 +148,11 @@ export function transferAllFilesFromUser(ownerId, oldUserId) {
       ]);
     });
   } catch (error) {
-    throw new Error(`Failed to transfer files: ${error.message}`);
+    throw new Error(`Failed to transfer files: ${(error as Error).message}`);
   }
 }
 
-export function updateFileOwner(ownerId, fileId) {
+export function updateFileOwner(ownerId: string, fileId: string): void {
   if (!ownerId || !fileId) {
     throw new Error('Invalid parameters');
   }
@@ -150,11 +165,22 @@ export function updateFileOwner(ownerId, fileId) {
       throw new Error('File not found');
     }
   } catch (error) {
-    throw new Error(`Failed to update file owner: ${error.message}`);
+    throw new Error(`Failed to update file owner: ${(error as Error).message}`);
   }
 }
 
-export function getUserAccess(fileId, userId, isAdmin) {
+interface UserAccessRow {
+  userId: string;
+  userName: string;
+  owner: string;
+  displayName: string;
+}
+
+export function getUserAccess(
+  fileId: string,
+  userId: string,
+  isAdmin: boolean,
+): UserAccessRow[] {
   return getAccountDb().all(
     `SELECT users.id as userId, user_name as userName, files.owner, display_name as displayName
      FROM users
@@ -162,36 +188,38 @@ export function getUserAccess(fileId, userId, isAdmin) {
      JOIN files ON files.id = user_access.file_id
      WHERE files.id = ? and (files.owner = ? OR 1 = ?)`,
     [fileId, userId, isAdmin ? 1 : 0],
-  );
+  ) as unknown as UserAccessRow[];
 }
 
-export function countUserAccess(fileId, userId) {
-  const { accessCount } =
-    getAccountDb().first(
-      `SELECT COUNT(*) as accessCount
+export function countUserAccess(fileId: string, userId: string): number {
+  const row = getAccountDb().first(
+    `SELECT COUNT(*) as accessCount
        FROM files
        WHERE files.id = ? AND (files.owner = ? OR EXISTS (
          SELECT 1 FROM user_access
          WHERE user_access.user_id = ? AND user_access.file_id = ?)
        )`,
-      [fileId, userId, userId, fileId],
-    ) || {};
+    [fileId, userId, userId, fileId],
+  ) as { accessCount?: number } | null;
 
-  return accessCount || 0;
+  return row?.accessCount ?? 0;
 }
 
-export function checkFilePermission(fileId, userId) {
+export function checkFilePermission(
+  fileId: string,
+  userId: string,
+): { granted: number } {
   return (
     getAccountDb().first(
       `SELECT 1 as granted
        FROM files
        WHERE files.id = ? and (files.owner = ?)`,
       [fileId, userId],
-    ) || { granted: 0 }
+    ) as { granted: number } | null || { granted: 0 }
   );
 }
 
-export function addUserAccess(userId, fileId) {
+export function addUserAccess(userId: string, fileId: string): void {
   if (!userId || !fileId) {
     throw new Error('Invalid parameters');
   }
@@ -206,14 +234,14 @@ export function addUserAccess(userId, fileId) {
       [userId, fileId],
     );
   } catch (error) {
-    if (error.message.includes('UNIQUE constraint')) {
+    if ((error as Error).message.includes('UNIQUE constraint')) {
       throw new Error('Access already exists');
     }
-    throw new Error(`Failed to add user access: ${error.message}`);
+    throw new Error(`Failed to add user access: ${(error as Error).message}`);
   }
 }
 
-export function deleteUserAccessByFileId(userIds, fileId) {
+export function deleteUserAccessByFileId(userIds: string[], fileId: string): number {
   if (!Array.isArray(userIds) || userIds.length === 0) {
     throw new Error('The provided userIds must be a non-empty array.');
   }
@@ -234,13 +262,21 @@ export function deleteUserAccessByFileId(userIds, fileId) {
       }
     });
   } catch (error) {
-    throw new Error(`Failed to delete user access: ${error.message}`);
+    throw new Error(`Failed to delete user access: ${(error as Error).message}`);
   }
 
   return totalChanges;
 }
 
-export function getAllUserAccess(fileId) {
+interface AllUserAccessRow {
+  userId: string;
+  userName: string;
+  displayName: string;
+  haveAccess: number;
+  owner: number;
+}
+
+export function getAllUserAccess(fileId: string): AllUserAccessRow[] {
   //This can't be used here until we can create user invite links:
   //const isLoginMode = config.get('userCreationMode') === 'login';
   const isLoginMode = false;
@@ -261,10 +297,10 @@ export function getAllUserAccess(fileId) {
         AND users.user_name <> ''
     `,
     [fileId, fileId],
-  );
+  ) as unknown as AllUserAccessRow[];
 }
 
-export function getOpenIDConfig() {
+export function getOpenIDConfig(): Record<string, unknown> | null {
   return (
     getAccountDb().first(`SELECT * FROM auth WHERE method = ?`, ['openid']) ||
     null

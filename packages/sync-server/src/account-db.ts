@@ -4,12 +4,13 @@ import * as bcrypt from 'bcrypt';
 
 import { bootstrapOpenId } from './accounts/openid';
 import { bootstrapPassword, loginWithPassword } from './accounts/password';
+import type { WrappedDatabase } from './db';
 import { openDatabase } from './db';
 import { config } from './load-config';
 
-let _accountDb;
+let _accountDb: WrappedDatabase | undefined;
 
-export function getAccountDb() {
+export function getAccountDb(): WrappedDatabase {
   if (_accountDb === undefined) {
     const dbPath = join(resolve(config.get('serverFiles')), 'account.sqlite');
     _accountDb = openDatabase(dbPath);
@@ -18,15 +19,27 @@ export function getAccountDb() {
   return _accountDb;
 }
 
-export function needsBootstrap() {
+export function needsBootstrap(): boolean {
   const accountDb = getAccountDb();
   const rows = accountDb.all('SELECT * FROM auth');
   return rows.length === 0;
 }
 
-export function listLoginMethods() {
+interface LoginMethodRow {
+  method: string;
+  active: number;
+  display_name: string;
+}
+
+interface LoginMethodResult {
+  method: string;
+  active: number;
+  displayName: string;
+}
+
+export function listLoginMethods(): LoginMethodResult[] {
   const accountDb = getAccountDb();
-  const rows = accountDb.all('SELECT method, display_name, active FROM auth');
+  const rows = accountDb.all('SELECT method, display_name, active FROM auth') as unknown as LoginMethodRow[];
   return rows
     .filter(f =>
       rows.length > 1 && config.get('enforceOpenId')
@@ -40,11 +53,10 @@ export function listLoginMethods() {
     }));
 }
 
-export function getActiveLoginMethod() {
+export function getActiveLoginMethod(): string | undefined {
   const accountDb = getAccountDb();
-  const { method } =
-    accountDb.first('SELECT method FROM auth WHERE active = 1') || {};
-  return method;
+  const row = accountDb.first('SELECT method FROM auth WHERE active = 1');
+  return (row as { method?: string } | null)?.method;
 }
 
 /*
@@ -53,13 +65,13 @@ export function getActiveLoginMethod() {
  * config options
  * fall back to using password
  */
-export function getLoginMethod(req) {
+export function getLoginMethod(req?: { body?: { loginMethod?: string } }): string {
   if (
     typeof req !== 'undefined' &&
     (req.body || { loginMethod: null }).loginMethod &&
-    config.get('allowedLoginMethods').includes(req.body.loginMethod)
+    config.get('allowedLoginMethods').includes(req.body!.loginMethod!)
   ) {
-    return req.body.loginMethod;
+    return req.body!.loginMethod!;
   }
 
   //BY-PASS ANY OTHER CONFIGURATION TO ENSURE HEADER AUTH
@@ -74,7 +86,20 @@ export function getLoginMethod(req) {
   return activeMethod || config.get('loginMethod');
 }
 
-export async function bootstrap(loginSettings, forced = false) {
+interface LoginSettings {
+  password?: string;
+  openId?: Record<string, unknown>;
+}
+
+interface BootstrapResult {
+  error?: string;
+  token?: string;
+}
+
+export async function bootstrap(
+  loginSettings: LoginSettings | null,
+  forced: boolean = false,
+): Promise<BootstrapResult> {
   if (!loginSettings) {
     return { error: 'invalid-login-settings' };
   }
@@ -84,12 +109,12 @@ export async function bootstrap(loginSettings, forced = false) {
   const accountDb = getAccountDb();
   accountDb.mutate('BEGIN TRANSACTION');
   try {
-    const { countOfOwner } =
-      accountDb.first(
-        `SELECT count(*) as countOfOwner
+    const countRow = accountDb.first(
+      `SELECT count(*) as countOfOwner
    FROM users
    WHERE users.user_name <> '' and users.owner = 1`,
-      ) || {};
+    );
+    const countOfOwner = (countRow as { countOfOwner?: number } | null)?.countOfOwner ?? 0;
 
     if (!forced && (!openIdEnabled || countOfOwner > 0)) {
       if (!needsBootstrap()) {
@@ -109,7 +134,7 @@ export async function bootstrap(loginSettings, forced = false) {
     }
 
     if (passEnabled) {
-      const { error } = bootstrapPassword(loginSettings.password);
+      const { error } = bootstrapPassword(loginSettings.password!);
       if (error) {
         accountDb.mutate('ROLLBACK');
         return { error };
@@ -117,7 +142,7 @@ export async function bootstrap(loginSettings, forced = false) {
     }
 
     if (openIdEnabled && forced) {
-      const { error } = await bootstrapOpenId(loginSettings.openId);
+      const { error } = await bootstrapOpenId(loginSettings.openId!);
       if (error) {
         accountDb.mutate('ROLLBACK');
         return { error };
@@ -125,22 +150,24 @@ export async function bootstrap(loginSettings, forced = false) {
     }
 
     accountDb.mutate('COMMIT');
-    return passEnabled ? loginWithPassword(loginSettings.password) : {};
+    return passEnabled ? loginWithPassword(loginSettings.password!) : {};
   } catch (error) {
     accountDb.mutate('ROLLBACK');
     throw error;
   }
 }
 
-export function isAdmin(userId) {
+export function isAdmin(userId: string): boolean {
   return hasPermission(userId, 'ADMIN');
 }
 
-export function hasPermission(userId, permission) {
+export function hasPermission(userId: string, permission: string): boolean {
   return getUserPermission(userId) === permission;
 }
 
-export async function enableOpenID(loginSettings) {
+export async function enableOpenID(
+  loginSettings: LoginSettings | null,
+): Promise<{ error?: string } | undefined> {
   if (!loginSettings || !loginSettings.openId) {
     return { error: 'invalid-login-settings' };
   }
@@ -153,16 +180,18 @@ export async function enableOpenID(loginSettings) {
   getAccountDb().mutate('DELETE FROM sessions');
 }
 
-export async function disableOpenID(loginSettings) {
+export async function disableOpenID(
+  loginSettings: { password?: string } | null,
+): Promise<{ error?: string } | undefined> {
   if (!loginSettings || !loginSettings.password) {
     return { error: 'invalid-login-settings' };
   }
 
   const accountDb = getAccountDb();
-  const { extra_data: passwordHash } =
-    accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
-      'password',
-    ]) || {};
+  const authRow = accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
+    'password',
+  ]);
+  const passwordHash = (authRow as { extra_data?: string } | null)?.extra_data;
 
   if (!passwordHash) {
     return { error: 'invalid-password' };
@@ -206,38 +235,53 @@ export async function disableOpenID(loginSettings) {
   }
 }
 
-export function getSession(token) {
-  const accountDb = getAccountDb();
-  return accountDb.first('SELECT * FROM sessions WHERE token = ?', [token]);
+interface Session {
+  token: string;
+  expires_at: number;
+  user_id: string;
+  auth_method: string;
 }
 
-export function getUserInfo(userId) {
+export function getSession(token: string): Session | null {
   const accountDb = getAccountDb();
-  return accountDb.first('SELECT * FROM users WHERE id = ?', [userId]);
+  return accountDb.first('SELECT * FROM sessions WHERE token = ?', [token]) as unknown as Session | null;
 }
 
-export function getUserPermission(userId) {
+interface UserInfo {
+  id: string;
+  user_name: string;
+  display_name: string;
+  enabled: number;
+  owner: number;
+  role: string;
+}
+
+export function getUserInfo(userId: string): UserInfo | null {
   const accountDb = getAccountDb();
-  const { role } = accountDb.first(
+  return accountDb.first('SELECT * FROM users WHERE id = ?', [userId]) as unknown as UserInfo | null;
+}
+
+export function getUserPermission(userId: string): string {
+  const accountDb = getAccountDb();
+  const row = accountDb.first(
     `SELECT role FROM users
           WHERE users.id = ?`,
     [userId],
-  ) || { role: '' };
-
-  return role;
+  );
+  return (row as { role?: string } | null)?.role ?? '';
 }
 
-export function getServerPrefs() {
+export function getServerPrefs(): Record<string, string> {
   const accountDb = getAccountDb();
   const rows = accountDb.all('SELECT key, value FROM server_prefs') || [];
 
-  return rows.reduce((prefs, row) => {
-    prefs[row.key] = row.value;
+  return rows.reduce<Record<string, string>>((prefs, row) => {
+    prefs[row.key as string] = row.value as string;
     return prefs;
   }, {});
 }
 
-export function setServerPrefs(prefs) {
+export function setServerPrefs(prefs: Record<string, unknown> | null): void {
   const accountDb = getAccountDb();
 
   if (!prefs) {
@@ -254,7 +298,7 @@ export function setServerPrefs(prefs) {
   });
 }
 
-export function clearExpiredSessions() {
+export function clearExpiredSessions(): void {
   const clearThreshold = Math.floor(Date.now() / 1000) - 3600;
 
   const deletedSessions = getAccountDb().mutate(

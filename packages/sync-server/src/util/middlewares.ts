@@ -1,16 +1,16 @@
+import type { Request, Response, NextFunction } from 'express';
 import * as expressWinston from 'express-winston';
 import * as winston from 'winston';
 
 import logger from './logger';
 import { validateSession } from './validate-user';
 
-/**
- * @param {Error} err
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
- */
-async function errorMiddleware(err, req, res, next) {
+async function errorMiddleware(
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   if (res.headersSent) {
     // If you call next() with an error after you have started writing the response
     // (for example, if you encounter an error while streaming the response
@@ -31,12 +31,11 @@ async function errorMiddleware(err, req, res, next) {
   res.status(500).send({ status: 'error', reason: 'internal-error' });
 }
 
-/**
- * @param {import('express').Request} req
- * @param {import('express').Response} res
- * @param {import('express').NextFunction} next
- */
-const validateSessionMiddleware = async (req, res, next) => {
+const validateSessionMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   const session = await validateSession(req, res);
   if (!session) {
     return;
@@ -54,7 +53,11 @@ const requestLoggerMiddleware = expressWinston.logger({
       : [winston.format.colorize()]),
     winston.format.timestamp(),
     winston.format.printf(args => {
-      const { timestamp, level, meta } = args;
+      const { timestamp, level, meta } = args as unknown as {
+        timestamp: string;
+        level: string;
+        meta: { res: { statusCode: number }; req: { method: string; url: string } };
+      };
       const { res, req } = meta;
 
       return `${timestamp} ${level}: ${req.method} ${res.statusCode} ${req.url}`;

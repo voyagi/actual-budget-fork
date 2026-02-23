@@ -5,15 +5,20 @@ import { clearExpiredSessions, getAccountDb } from '../account-db';
 import { config } from '../load-config';
 import { TOKEN_EXPIRATION_NEVER } from '../util/validate-user';
 
-function isValidPassword(password) {
+function isValidPassword(password: unknown): password is string {
   return password != null && password !== '';
 }
 
-function hashPassword(password) {
+function hashPassword(password: string): string {
   return bcrypt.hashSync(password, 12);
 }
 
-export function bootstrapPassword(password) {
+interface PasswordResult {
+  error?: string;
+  token?: string;
+}
+
+export function bootstrapPassword(password: string): PasswordResult {
   if (!isValidPassword(password)) {
     return { error: 'invalid-password' };
   }
@@ -32,16 +37,16 @@ export function bootstrapPassword(password) {
   return {};
 }
 
-export function loginWithPassword(password) {
+export function loginWithPassword(password: string): PasswordResult {
   if (!isValidPassword(password)) {
     return { error: 'invalid-password' };
   }
 
   const accountDb = getAccountDb();
-  const { extra_data: passwordHash } =
-    accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
-      'password',
-    ]) || {};
+  const authRow = accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
+    'password',
+  ]);
+  const passwordHash = (authRow as { extra_data?: string } | null)?.extra_data;
 
   if (!passwordHash) {
     return { error: 'invalid-password' };
@@ -56,41 +61,41 @@ export function loginWithPassword(password) {
   const sessionRow = accountDb.first(
     'SELECT * FROM sessions WHERE auth_method = ?',
     ['password'],
-  );
+  ) as { token?: string } | null;
 
-  const token = sessionRow ? sessionRow.token : uuidv4();
+  const token = sessionRow ? sessionRow.token! : uuidv4();
 
-  const { totalOfUsers } = accountDb.first(
+  const countRow = accountDb.first(
     'SELECT count(*) as totalOfUsers FROM users',
-  );
-  let userId = null;
-  if (totalOfUsers === 0) {
+  ) as { totalOfUsers: number };
+  let userId: string | null = null;
+  if (countRow.totalOfUsers === 0) {
     userId = uuidv4();
     accountDb.mutate(
       'INSERT INTO users (id, user_name, display_name, enabled, owner, role) VALUES (?, ?, ?, 1, 1, ?)',
       [userId, '', '', 'ADMIN'],
     );
   } else {
-    const { id: userIdFromDb } = accountDb.first(
+    const userRow = accountDb.first(
       'SELECT id FROM users WHERE user_name = ?',
       [''],
-    );
+    ) as { id?: string } | null;
 
-    userId = userIdFromDb;
+    userId = userRow?.id ?? null;
 
     if (!userId) {
       return { error: 'user-not-found' };
     }
   }
 
-  let expiration = TOKEN_EXPIRATION_NEVER;
+  let expiration: number = TOKEN_EXPIRATION_NEVER;
+  const tokenExp = config.get('token_expiration');
   if (
-    config.get('token_expiration') !== 'never' &&
-    config.get('token_expiration') !== 'openid-provider' &&
-    typeof config.get('token_expiration') === 'number'
+    tokenExp !== 'never' &&
+    tokenExp !== 'openid-provider' &&
+    typeof tokenExp === 'number'
   ) {
-    expiration =
-      Math.floor(Date.now() / 1000) + config.get('token_expiration') * 60;
+    expiration = Math.floor(Date.now() / 1000) + tokenExp * 60;
   }
 
   if (!sessionRow) {
@@ -110,7 +115,7 @@ export function loginWithPassword(password) {
   return { token };
 }
 
-export function changePassword(newPassword) {
+export function changePassword(newPassword: string): { error?: string } {
   const accountDb = getAccountDb();
 
   if (!isValidPassword(newPassword)) {
@@ -124,16 +129,16 @@ export function changePassword(newPassword) {
   return {};
 }
 
-export function checkPassword(password) {
+export function checkPassword(password: string): boolean {
   if (!isValidPassword(password)) {
     return false;
   }
 
   const accountDb = getAccountDb();
-  const { extra_data: passwordHash } =
-    accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
-      'password',
-    ]) || {};
+  const authRow = accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
+    'password',
+  ]);
+  const passwordHash = (authRow as { extra_data?: string } | null)?.extra_data;
 
   if (!passwordHash) {
     return false;

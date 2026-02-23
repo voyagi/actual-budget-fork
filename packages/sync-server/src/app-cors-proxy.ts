@@ -1,3 +1,4 @@
+import type { Request, Response } from 'express';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import ipaddr from 'ipaddr.js';
@@ -20,17 +21,17 @@ app.use(
 );
 
 // Cache for the allowlist to avoid fetching it on every request
-let allowlistedRepos = [];
+let allowlistedRepos: string[] = [];
 let lastAllowlistFetch = 0;
 const ALLOWLIST_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Export cache clearing function for testing
-export const clearAllowlistCache = () => {
+export const clearAllowlistCache = (): void => {
   allowlistedRepos = [];
   lastAllowlistFetch = 0;
 };
 
-async function fetchAllowlist() {
+async function fetchAllowlist(): Promise<string[]> {
   const now = Date.now();
   if (
     now - lastAllowlistFetch < ALLOWLIST_CACHE_TTL &&
@@ -46,7 +47,7 @@ async function fetchAllowlist() {
     if (!response.ok) {
       throw new Error(`Failed to fetch allowlist: ${response.status}`);
     }
-    const plugins = await response.json();
+    const plugins = (await response.json()) as Array<{ url: string }>;
     allowlistedRepos = plugins.map(plugin => plugin.url);
     lastAllowlistFetch = now;
     console.log('Updated plugin allowlist:', allowlistedRepos);
@@ -62,7 +63,7 @@ async function fetchAllowlist() {
 /**
  * Return true only if the URL is on an allowlist and not a local/private address.
  */
-function isUrlAllowed(targetUrl) {
+function isUrlAllowed(targetUrl: string): boolean {
   try {
     const url = new URL(targetUrl);
     const hostname = url.hostname;
@@ -114,32 +115,34 @@ function isUrlAllowed(targetUrl) {
         console.warn(
           'Invalid repository URL in allowlist:',
           repoUrl,
-          e.message,
+          (e as Error).message,
         );
       }
     }
 
     return false;
   } catch (e) {
-    console.warn('Invalid target URL:', targetUrl, e.message);
+    console.warn('Invalid target URL:', targetUrl, (e as Error).message);
     return false;
   }
 }
 
-app.use('/', async (req, res) => {
+app.use('/', async (req: Request, res: Response) => {
   // CORS preflight
   if (req.method === 'OPTIONS') {
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS');
     res.set('Access-Control-Allow-Headers', 'Content-Type, X-Actual-Token');
     res.set('Access-Control-Max-Age', '600');
-    return res.status(204).end();
+    res.status(204).end();
+    return;
   }
 
-  const targetUrlString = req.query.url;
+  const targetUrlString = req.query.url as string | undefined;
 
   if (!targetUrlString) {
-    return res.status(400).json({ error: 'Missing url parameter' });
+    res.status(400).json({ error: 'Missing url parameter' });
+    return;
   }
 
   // Validate session/token
@@ -148,11 +151,12 @@ app.use('/', async (req, res) => {
     return; // validateSession already sent the response
   }
 
-  let url;
+  let url: URL;
   try {
     url = new URL(targetUrlString);
   } catch {
-    return res.status(400).json({ error: 'Invalid url parameter' });
+    res.status(400).json({ error: 'Invalid url parameter' });
+    return;
   }
 
   // Fetch the latest allowlist
@@ -160,20 +164,22 @@ app.use('/', async (req, res) => {
     await fetchAllowlist();
   } catch (error) {
     console.error('Failed to fetch allowlist:', error);
-    return res.status(403).json({
+    res.status(403).json({
       error: 'URL not allowed',
       message: 'Unable to verify allowlist',
     });
+    return;
   }
 
   // Check if the URL is allowed
   if (!isUrlAllowed(url.href)) {
     console.warn('Blocked request to unauthorized URL:', url.href);
-    return res.status(403).json({
+    res.status(403).json({
       error: 'URL not allowed',
       message:
         'Only allowlisted plugin repositories are allowed (localhost only in development)',
     });
+    return;
   }
 
   try {
@@ -187,14 +193,15 @@ app.use('/', async (req, res) => {
     const methodNormalized =
       typeof method === 'string' ? method.toUpperCase() : 'GET';
     if (!['GET', 'HEAD'].includes(methodNormalized)) {
-      return res.status(405).json({ error: 'Method not allowed' });
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
     }
 
-    const requestHeaders = {
+    const requestHeaders: Record<string, string> = {
       ...req.headers,
       ...customHeaders,
       host: url.host,
-    };
+    } as Record<string, string>;
 
     // Remove headers that shouldn't be forwarded
     delete requestHeaders['x-actual-token'];
@@ -272,7 +279,7 @@ app.use('/', async (req, res) => {
   } catch (err) {
     res
       .status(500)
-      .json({ error: 'Error proxying request', details: err.message });
+      .json({ error: 'Error proxying request', details: (err as Error).message });
   }
 });
 
