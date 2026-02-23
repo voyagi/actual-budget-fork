@@ -1,5 +1,3 @@
-import { amountToInteger } from '../utils';
-
 import Fallback from './integration-bank';
 
 /** @type {import('./bank.interface').IBank} */
@@ -30,12 +28,10 @@ export default {
   },
 
   calculateStartingBalance(sortedTransactions = [], balances = []) {
-    const currentBalance = balances.find(
-      balance => balance.balanceType === 'interimAvailable',
+    return Fallback.calculateStartingBalanceFromType(
+      sortedTransactions,
+      balances,
+      ['interimAvailable'],
     );
-
-    return sortedTransactions.reduce((total, trans) => {
-      return total - amountToInteger(trans.transactionAmount.amount);
-    }, amountToInteger(currentBalance.balanceAmount.amount));
   },
 };

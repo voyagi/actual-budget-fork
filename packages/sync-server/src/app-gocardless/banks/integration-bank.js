@@ -93,4 +93,19 @@ export default {
       amountToInteger(currentBalance?.balanceAmount?.amount || 0),
     );
   },
+
+  calculateStartingBalanceFromType(
+    sortedTransactions,
+    balances,
+    preferredBalanceTypes = ['interimAvailable', 'closingBooked', 'expected'],
+  ) {
+    const currentBalance =
+      balances.find(b => preferredBalanceTypes.includes(b.balanceType)) ??
+      balances[0];
+    return sortedTransactions.reduce(
+      (total, trans) =>
+        total - amountToInteger(trans.transactionAmount.amount),
+      amountToInteger(currentBalance?.balanceAmount?.amount || 0),
+    );
+  },
 };

@@ -1,3 +1,6 @@
+// NOTE: Parallel type definitions exist in loot-core at
+// src/types/models/gocardless.ts
+// Keep in sync when modifying. Consolidation tracked as tech debt.
 type RequisitionStatus =
   | 'CR'
   | 'ID'
