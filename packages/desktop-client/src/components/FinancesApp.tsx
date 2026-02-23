@@ -19,6 +19,7 @@ import { MobileBankSyncAccountEditPage } from './mobile/banksync/MobileBankSyncA
 import { MobileNavTabs } from './mobile/MobileNavTabs';
 import { TransactionEdit } from './mobile/transactions/TransactionEdit';
 import { Notifications } from './Notifications';
+import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { Reports } from './reports';
 import { LoadingIndicator } from './reports/LoadingIndicator';
 import { NarrowAlternate, WideComponent } from './responsive';
@@ -267,6 +268,7 @@ export function FinancesApp() {
               <Notifications />
               <BankSyncStatus />
 
+              <RouteErrorBoundary>
               <Routes>
                 <Route
                   path="/"
@@ -396,6 +398,7 @@ export function FinancesApp() {
                 {/* redirect all other traffic to the budget page */}
                 <Route path="/*" element={<Navigate to="/budget" replace />} />
               </Routes>
+              </RouteErrorBoundary>
             </View>
 
             <Routes>

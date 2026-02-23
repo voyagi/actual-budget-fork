@@ -3,7 +3,9 @@
 // checks and error.name remain reliable across module boundaries.
 
 export class EnableBankingError extends Error {
-  constructor(message, errorCode) {
+  errorCode?: string;
+
+  constructor(message: string, errorCode?: string) {
     super(message);
     this.name = 'EnableBankingError';
     this.errorCode = errorCode;
@@ -11,14 +13,14 @@ export class EnableBankingError extends Error {
 }
 
 export class SessionExpiredError extends Error {
-  constructor(message) {
+  constructor(message?: string) {
     super(message ?? 'Enable Banking session has expired');
     this.name = 'SessionExpiredError';
   }
 }
 
 export class RateLimitError extends Error {
-  constructor(message) {
+  constructor(message?: string) {
     super(message ?? 'Enable Banking rate limit exceeded');
     this.name = 'RateLimitError';
   }

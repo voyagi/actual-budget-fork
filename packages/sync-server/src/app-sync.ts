@@ -19,6 +19,7 @@ import {
   validateUploadedFile,
 } from './app-sync/validation';
 import { config } from './load-config';
+import logger from './util/logger';
 import * as simpleSync from './sync-simple';
 import {
   errorMiddleware,
@@ -66,7 +67,7 @@ app.post('/sync', async (req, res): Promise<void> => {
   try {
     requestPb = SyncProtoBuf.SyncRequest.deserializeBinary(req.body);
   } catch (e) {
-    console.log('Error parsing sync request', e);
+    logger.error('Error parsing sync request', e);
     res.status(500);
     res.send({ status: 'error', reason: 'internal-error' });
     return;
@@ -185,7 +186,7 @@ app.post('/reset-user-file', async (req, res) => {
     try {
       await fs.unlink(getPathForGroupFile(groupId));
     } catch {
-      console.log(`Unable to delete sync data for group "${groupId}"`);
+      logger.warn(`Unable to delete sync data for group "${groupId}"`);
     }
   }
 
@@ -238,7 +239,7 @@ app.post('/upload-user-file', async (req, res) => {
   try {
     await fs.writeFile(getPathForUserFile(fileId), req.body);
   } catch (err) {
-    console.log('Error writing file', err);
+    logger.error('Error writing file', err);
     res.status(500).send({ status: 'error' });
     return;
   }

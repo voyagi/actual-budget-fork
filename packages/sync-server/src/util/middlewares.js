@@ -1,6 +1,7 @@
 import * as expressWinston from 'express-winston';
 import * as winston from 'winston';
 
+import logger from './logger';
 import { validateSession } from './validate-user';
 
 /**
@@ -23,7 +24,7 @@ async function errorMiddleware(err, req, res, next) {
     return next(err);
   }
 
-  console.log(`Error on endpoint %s`, {
+  logger.error('Error on endpoint', {
     requestUrl: req.url,
     stacktrace: err.stack,
   });
