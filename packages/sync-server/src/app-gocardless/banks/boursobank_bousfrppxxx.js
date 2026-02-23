@@ -1,4 +1,4 @@
-import { title } from '../../util/title/index';
+import { title } from 'loot-core/server/accounts/title/index';
 
 import Fallback from './integration-bank';
 

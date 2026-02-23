@@ -114,7 +114,7 @@ __metadata:
     migrate: "npm:^2.1.0"
     nodemon: "npm:^3.1.14"
     nordigen-node: "npm:^1.4.1"
-    openid-client: "npm:^5.7.1"
+    openid-client: "npm:^6.1.0"
     pluggy-sdk: "npm:^0.83.0"
     supertest: "npm:^7.2.2"
     typescript: "npm:^5.9.3"
@@ -138,9 +138,11 @@ __metadata:
     "@emotion/css": "npm:^11.13.5"
     "@fontsource-variable/inter": "npm:^5.2.8"
     "@fontsource/redacted-script": "npm:^5.2.8"
+    "@internationalized/date": "npm:^3.11.0"
     "@juggle/resize-observer": "npm:^3.4.0"
     "@lezer/highlight": "npm:^1.2.3"
     "@playwright/test": "npm:1.58.2"
+    "@react-spring/web": "npm:~10.0.3"
     "@reduxjs/toolkit": "npm:^2.11.2"
     "@rollup/plugin-inject": "npm:^5.0.5"
     "@swc/core": "npm:^1.15.11"
@@ -151,7 +153,6 @@ __metadata:
     "@testing-library/react": "npm:16.3.2"
     "@testing-library/user-event": "npm:14.6.1"
     "@types/lodash": "npm:^4"
-    "@types/pikaday": "npm:^1.7.10"
     "@types/promise-retry": "npm:^1.1.6"
     "@types/react": "npm:^19.2.5"
     "@types/react-dom": "npm:^19.2.3"
@@ -175,7 +176,6 @@ __metadata:
     loot-core: "workspace:*"
     mdast-util-newline-to-break: "npm:^2.0.0"
     memoize-one: "npm:^6.0.0"
-    pikaday: "npm:1.8.2"
     promise-retry: "npm:^2.0.1"
     re-resizable: "npm:^6.11.2"
     react: "npm:19.2.4"
@@ -192,7 +192,6 @@ __metadata:
     react-redux: "npm:^9.2.0"
     react-router: "npm:7.13.0"
     react-simple-pull-to-refresh: "npm:^1.3.4"
-    react-spring: "npm:10.0.3"
     react-swipeable: "npm:^7.0.2"
     react-virtualized-auto-sizer: "npm:^2.0.3"
     recharts: "npm:^3.7.0"
@@ -6985,37 +6984,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-spring/konva@npm:~10.0.3":
-  version: 10.0.3
-  resolution: "@react-spring/konva@npm:10.0.3"
-  dependencies:
-    "@react-spring/animated": "npm:~10.0.3"
-    "@react-spring/core": "npm:~10.0.3"
-    "@react-spring/shared": "npm:~10.0.3"
-    "@react-spring/types": "npm:~10.0.3"
-  peerDependencies:
-    konva: ">=2.6"
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-konva: ^19
-  checksum: 10/538f6c5aa491658bc753f473fd3afc5b409618156f4342e88a05b74d481acbdb6bce89d04216ee84cec402ced4da0d8dc80d9ccd40eca866c27d9e34c7fccbdb
-  languageName: node
-  linkType: hard
-
-"@react-spring/native@npm:~10.0.3":
-  version: 10.0.3
-  resolution: "@react-spring/native@npm:10.0.3"
-  dependencies:
-    "@react-spring/animated": "npm:~10.0.3"
-    "@react-spring/core": "npm:~10.0.3"
-    "@react-spring/shared": "npm:~10.0.3"
-    "@react-spring/types": "npm:~10.0.3"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-native: ">=0.78"
-  checksum: 10/6c176ab19cfd898564d7b2dd2330fa56433238c70f8be7ef6daaf5b07f6b22c860619e846bd3a3d784ad75e2b361ee9ad79e8664ae015279998825502b3a1d61
-  languageName: node
-  linkType: hard
-
 "@react-spring/rafz@npm:~10.0.3":
   version: 10.0.3
   resolution: "@react-spring/rafz@npm:10.0.3"
@@ -7032,22 +7000,6 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10/6193944a30139b830ad188ac9322bb492d59405f2909346c23b2c08a4b15ed81977d2e919bdc33815bfff55e64d88d1e74072800fa99b4a6b762aef72a2ebfb2
-  languageName: node
-  linkType: hard
-
-"@react-spring/three@npm:~10.0.3":
-  version: 10.0.3
-  resolution: "@react-spring/three@npm:10.0.3"
-  dependencies:
-    "@react-spring/animated": "npm:~10.0.3"
-    "@react-spring/core": "npm:~10.0.3"
-    "@react-spring/shared": "npm:~10.0.3"
-    "@react-spring/types": "npm:~10.0.3"
-  peerDependencies:
-    "@react-three/fiber": ">=6.0"
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    three: ">=0.126"
-  checksum: 10/c1732cb01ab5b4f9bad2e1e3c4352ffe89069415a5c3209fb63f7201980913457e1fae61705abd2604533aba4e12f63d79b6cd9e9590e3d03440506f444910b8
   languageName: node
   linkType: hard
 
@@ -7070,23 +7022,6 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10/1d8af3f23b45ee7ab5efa5907530cb2b8ee3dab9b8ae2e3b80778d2df36455cd4815a285cf8b8a9572116ad13e7c9d561e356ec35db1eb0bc5d288a756845150
-  languageName: node
-  linkType: hard
-
-"@react-spring/zdog@npm:~10.0.3":
-  version: 10.0.3
-  resolution: "@react-spring/zdog@npm:10.0.3"
-  dependencies:
-    "@react-spring/animated": "npm:~10.0.3"
-    "@react-spring/core": "npm:~10.0.3"
-    "@react-spring/shared": "npm:~10.0.3"
-    "@react-spring/types": "npm:~10.0.3"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-zdog: ">=1.0"
-    zdog: ">=1.0"
-  checksum: 10/1765e31fa5dba06b7d9a115749950030406f8ee895b4518327c97502c774a688b9ffc9d188d744fe3dda4800cd73fbca07ab7d8989e000a726930d44f13a9ee3
   languageName: node
   linkType: hard
 
@@ -9656,15 +9591,6 @@ __metadata:
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
   checksum: 10/5bf62eec37c332ad10059252fc0dab7e7da730764869c980b0714777ad3d065e490627be9f40fc52f238ffa3ac4199b19de4127196910576c2fe34dd47c7a470
-  languageName: node
-  linkType: hard
-
-"@types/pikaday@npm:^1.7.10":
-  version: 1.7.10
-  resolution: "@types/pikaday@npm:1.7.10"
-  dependencies:
-    moment: "npm:>=2.29.2"
-  checksum: 10/638bc31725f4663c6266bb527d34d08740d8dc98c1c71efe53ef5bc63e177718e960f96f2719ee97f18ec7caf15e9f70d225e07f4d9ae1235384bb6da31a34a7
   languageName: node
   linkType: hard
 
@@ -18946,13 +18872,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:^4.15.9":
-  version: 4.15.9
-  resolution: "jose@npm:4.15.9"
-  checksum: 10/256234b6f85cdc080b1331f2d475bd58c8ccf459cb20f70ac5e4200b271bce10002b1c2f8e5b96dd975d83065ae5a586d52cdf89d28471d56de5d297992f9905
-  languageName: node
-  linkType: hard
-
 "jose@npm:^6.1.3":
   version: 6.1.3
   resolution: "jose@npm:6.1.3"
@@ -21170,13 +21089,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:>=2.29.2":
-  version: 2.30.1
-  resolution: "moment@npm:2.30.1"
-  checksum: 10/ae42d876d4ec831ef66110bdc302c0657c664991e45cf2afffc4b0f6cd6d251dde11375c982a5c0564ccc0fa593fc564576ddceb8c8845e87c15f58aa6baca69
-  languageName: node
-  linkType: hard
-
 "mrmime@npm:^2.0.0":
   version: 2.0.1
   resolution: "mrmime@npm:2.0.1"
@@ -21634,17 +21546,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"oauth4webapi@npm:^3.8.4":
+  version: 3.8.5
+  resolution: "oauth4webapi@npm:3.8.5"
+  checksum: 10/5c39d4dbd95b795438e79444a1d710631b3f8311e8b8913150b385b5815857b32f617a49d4869a4476b2318f614adfbc9d19510360df198719973f6f69a2e75b
+  languageName: node
+  linkType: hard
+
 "object-assign@npm:^4, object-assign@npm:^4.1.0, object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: 10/fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
-  languageName: node
-  linkType: hard
-
-"object-hash@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "object-hash@npm:2.2.0"
-  checksum: 10/dee06b6271bf5769ae5f1a7386fdd52c1f18aae9fcb0b8d4bb1232f2d743d06cb5b662be42378b60a1c11829f96f3f86834a16bbaa57a085763295fff8b93e27
   languageName: node
   linkType: hard
 
@@ -21697,13 +21609,6 @@ __metadata:
   version: 2.1.1
   resolution: "obug@npm:2.1.1"
   checksum: 10/bdcf9213361786688019345f3452b95a1dc73710e4b403c82a1994b98bad6abc31b26cb72a482128c5fd53ea9daf6fbb7d0e0e7b2b7e9c8be6d779deeccee07f
-  languageName: node
-  linkType: hard
-
-"oidc-token-hash@npm:^5.0.3":
-  version: 5.1.1
-  resolution: "oidc-token-hash@npm:5.1.1"
-  checksum: 10/168f6ac0af639bc7ac4c13e68344feaaab969d48ba687d4c052d2da40b7c26ee0eadbc8ce58964dfb6dbc764b1fb04b74ba263dd25168310c9ce8d593f8c2e74
   languageName: node
   linkType: hard
 
@@ -21791,15 +21696,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@npm:^5.7.1":
-  version: 5.7.1
-  resolution: "openid-client@npm:5.7.1"
+"openid-client@npm:^6.1.0":
+  version: 6.8.2
+  resolution: "openid-client@npm:6.8.2"
   dependencies:
-    jose: "npm:^4.15.9"
-    lru-cache: "npm:^6.0.0"
-    object-hash: "npm:^2.2.0"
-    oidc-token-hash: "npm:^5.0.3"
-  checksum: 10/188a875ab1824010bde85b6755f31401d4b0bcf6edffe5f149b1e67fc886c692658121c0c3cc04db84be33138c0e9e2e7d829e6997adf489f23a32ea7e745151
+    jose: "npm:^6.1.3"
+    oauth4webapi: "npm:^3.8.4"
+  checksum: 10/5d30ff2419c4847d0037c43cf136dd7189b16399aaee98faaad5bcea105c4e1e4e43d2dac1141ea77049b446b50d1b26f2bb882f717b3e38a5f996645abfc1d0
   languageName: node
   linkType: hard
 
@@ -22532,13 +22435,6 @@ __metadata:
   version: 3.0.0
   resolution: "pify@npm:3.0.0"
   checksum: 10/668c1dc8d9fc1b34b9ce3b16ba59deb39d4dc743527bf2ed908d2b914cb8ba40aa5ba6960b27c417c241531c5aafd0598feeac2d50cb15278cf9863fa6b02a77
-  languageName: node
-  linkType: hard
-
-"pikaday@npm:1.8.2":
-  version: 1.8.2
-  resolution: "pikaday@npm:1.8.2"
-  checksum: 10/88dbf7cd9ac61340910e845dc7310160b50ec86bc4cfb59a766820caad805de05584287ba6982ea047219f2a8a49ff8fa89934332dc559062c45d7c65782d2ef
   languageName: node
   linkType: hard
 
@@ -24415,23 +24311,6 @@ __metadata:
     react: ^16.10.2 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^16.10.2 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10/e89dffd516b20a2d4f794134e2b9c5af4f32557c0c760ed1f42b11c46f9a44f26abc6abe41f72fb3c8dc80ee8559116a9d3f7e996901019582ed99b71e8c7983
-  languageName: node
-  linkType: hard
-
-"react-spring@npm:10.0.3":
-  version: 10.0.3
-  resolution: "react-spring@npm:10.0.3"
-  dependencies:
-    "@react-spring/core": "npm:~10.0.3"
-    "@react-spring/konva": "npm:~10.0.3"
-    "@react-spring/native": "npm:~10.0.3"
-    "@react-spring/three": "npm:~10.0.3"
-    "@react-spring/web": "npm:~10.0.3"
-    "@react-spring/zdog": "npm:~10.0.3"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/db2f0811006dee8a1589081cee47046f5253b65cb3a4b35314e1c293b02ac4c2a585e9441a71266a709effedfb8e72d885bfcb560a4c85d43fa51ac0be955904
   languageName: node
   linkType: hard
 
