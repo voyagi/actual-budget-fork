@@ -1,5 +1,3 @@
-// @ts-strict-ignore
-
 import { logger } from '../../platform/server/log';
 import {
   addDays,

@@ -1,4 +1,3 @@
-// @ts-strict-ignore
 import mitt from 'mitt';
 
 import { logger } from '../../platform/server/log';
