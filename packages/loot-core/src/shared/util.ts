@@ -85,29 +85,18 @@ export function applyChanges<T extends { id: string }>(
   return items;
 }
 
+/**
+ * @deprecated Use `Map.groupBy(data, item => item[field])` directly instead.
+ */
 export function partitionByField<T, K extends keyof T>(data: T[], field: K) {
-  const res = new Map();
-  for (let i = 0; i < data.length; i++) {
-    const item = data[i];
-    const key = item[field];
-
-    const items = res.get(key) || [];
-    items.push(item);
-
-    res.set(key, items);
-  }
-  return res;
+  return Map.groupBy(data, item => item[field]);
 }
 
+/**
+ * @deprecated Use `Map.groupBy(data, item => item[field])` directly instead.
+ */
 export function groupBy<T, K extends keyof T>(data: T[], field: K) {
-  const res = new Map<T[K], T[]>();
-  for (let i = 0; i < data.length; i++) {
-    const item = data[i];
-    const key = item[field];
-    const existing = res.get(key) || [];
-    res.set(key, existing.concat([item]));
-  }
-  return res;
+  return Map.groupBy(data, item => item[field]);
 }
 
 // This should replace the existing `groupById` function, since a
