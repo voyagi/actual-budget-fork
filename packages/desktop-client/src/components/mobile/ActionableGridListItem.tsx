@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { GridListItem } from 'react-aria-components';
 import type { GridListItemProps } from 'react-aria-components';
-import { animated, config, useSpring } from 'react-spring';
+import { animated, config, useSpring } from '@react-spring/web';
 
 import { Button } from '@actual-app/components/button';
 import { styles } from '@actual-app/components/styles';
