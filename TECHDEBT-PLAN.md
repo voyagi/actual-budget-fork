@@ -823,19 +823,33 @@ possible API changes.
 
 ## Execution Summary
 
-| Wave | Findings | Risk | Effort | Commit count |
+| Wave | Findings | Risk | Effort | Status |
 |---|---|---|---|---|
-| 1 | #3, #4, #24, #31 | None | Trivial | 1 |
-| 2 | #5, #19, #22, #30 | Low | Small | 1 |
-| 3 | #12, #17, #20, #27 | Low | Small-Medium | 1 |
-| 4 | #1, #2, #8, #9, #10 | Medium | Medium | 1 |
-| 5 | #15, #16, #18 | Medium | Medium | 1 |
-| 6 | #7, #11, #13, #21 | High | Large | 4 |
+| 1 | #3, #4, #24, #31 | None | Trivial | DONE |
+| 2 | #5, #19, #22, #30 | Low | Small | DONE |
+| 3 | #12, #17, #20, #27 | Low | Small-Medium | DONE |
+| 4 | #1, #2, #8, #9, #10 | Medium | Medium | DONE |
+| 5 | #15, #16, #18 | Medium | Medium | DONE |
+| 6 | #7, #13, #21 | High | Large | DONE |
+| 6 (deferred) | #11 | High | Large | Deferred |
 | 7 | #6, #14, #23, #25, #26, #28, #29 | Varies | Ongoing | Tracked as issues |
 
-**Total: 24 findings fixed + 7 tracked as long-term issues**
+**Findings fixed: 23. Deferred: 1 (#11). Long-term: 7.**
 
-**Verification after each wave:**
-1. TypeScript compiles: `yarn typecheck`
-2. Tests pass: `yarn test`
-3. Lint clean: `yarn lint`
+### Wave 6 execution notes
+
+- **#7** (post.ts errors): Captured and logged original parse errors before
+  re-throwing PostError. Removed stale TODO comments.
+- **#13** (app.ts extraction): Split 1539-line file into 4 modules:
+  `app.ts` (CRUD + sync + registrations), `link-accounts.ts` (provider linking),
+  `provider-status.ts` (status/banks/polling), `sync-helpers.ts` (sync types and error handling).
+  External consumers unchanged via re-exports.
+- **#21** (queryClient): All 5 `markPayeesDirty()` calls already had TODO
+  comments documenting the react-query migration blocker. No changes needed.
+- **#11** (TransactionsTable split): **Deferred to separate PR.** 3061-line
+  file with tight coupling through focus management, keyboard navigation,
+  and context menus. Components like PayeeCell need 25+ imports when extracted.
+  Requires visual testing to verify no regressions. Risk outweighs benefit
+  in a techdebt batch.
+- Also fixed 2 TS errors from earlier waves: `SyncErrorContext.subtype`
+  made optional (wave 3), `fc.asciiString` replaced with `fc.string` (wave 3).
