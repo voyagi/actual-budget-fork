@@ -19160,18 +19160,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsverify@npm:^0.8.4":
-  version: 0.8.4
-  resolution: "jsverify@npm:0.8.4"
-  dependencies:
-    lazy-seq: "npm:^1.0.0"
-    rc4: "npm:~0.1.5"
-    trampa: "npm:^1.0.0"
-    typify-parser: "npm:^1.1.0"
-  checksum: 10/31d9e0b40bc7f0736b07bc42028c62b44ba38f0d33ae2a1b2b4d19d1c9549ea7305c2271413dd3364a5c344f1a4a0cad5171bec0bcea41712e8522b1e995976f
-  languageName: node
-  linkType: hard
-
 "jwa@npm:^1.4.1":
   version: 1.4.2
   resolution: "jwa@npm:1.4.2"
@@ -19337,13 +19325,6 @@ __metadata:
   version: 2.0.1
   resolution: "layout-base@npm:2.0.1"
   checksum: 10/b5cca04a2e327ea16374a0058f73544291aeb0026972677a128594aca3b627d26949140ab7d275798c7d39193a33b41c5a856d4509c1518f49c9a5f1dad39a20
-  languageName: node
-  linkType: hard
-
-"lazy-seq@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "lazy-seq@npm:1.0.0"
-  checksum: 10/5c41909fb55bb536eb67802df57b6fff8579ba07f3dfe84e6330e14f9cf7098fde1eec5730338097dd4886f671444f5a2a0b7967f8907c10a738aaaa0a3519dc
   languageName: node
   linkType: hard
 
@@ -19681,7 +19662,6 @@ __metadata:
     handlebars: "npm:^4.7.8"
     i18next: "npm:^25.8.13"
     jest-diff: "npm:^30.2.0"
-    jsverify: "npm:^0.8.4"
     lru-cache: "npm:^11.2.6"
     memoize-one: "npm:^6.0.0"
     mitt: "npm:^3.0.1"
@@ -23921,13 +23901,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc4@npm:~0.1.5":
-  version: 0.1.5
-  resolution: "rc4@npm:0.1.5"
-  checksum: 10/3f230ce4a1b3c30b3a22c3c6e23e7d62f9cda7b7bd64f6609cdb710826eaf646828bb84592a352de8b674d50968dae8b0cf3a8134015067986df1b6b3565aeeb
-  languageName: node
-  linkType: hard
-
 "rc@npm:1.2.8, rc@npm:^1.2.7":
   version: 1.2.8
   resolution: "rc@npm:1.2.8"
@@ -27351,13 +27324,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"trampa@npm:^1.0.0":
-  version: 1.0.1
-  resolution: "trampa@npm:1.0.1"
-  checksum: 10/50402fe753104af33ff1eb6445a08f408bef109895160ea497077f2d26b7fd9d502d5d2be69e2664627199fe3435a387ff7788d4a95d25f1964a0dc0ad28b7dd
-  languageName: node
-  linkType: hard
-
 "tree-dump@npm:^1.0.3, tree-dump@npm:^1.1.0":
   version: 1.1.0
   resolution: "tree-dump@npm:1.1.0"
@@ -27696,13 +27662,6 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10/696e1b017bc2635f4e0c94eb4435357701008e2f272f553d06e35b494b8ddc60aa221145e286c28ace0c89ee32827a28c2040e3a69bdc108b1a5dc8fb40b72e3
-  languageName: node
-  linkType: hard
-
-"typify-parser@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "typify-parser@npm:1.1.0"
-  checksum: 10/269ecd7919aa4612e4e7795a2bab224bdb9c1944774af13ac1565163a94e57cd1799616bf9daa3bccbc8a151a64093b2f9f4ca9b3b8981b8b794a823b6126c34
   languageName: node
   linkType: hard
 

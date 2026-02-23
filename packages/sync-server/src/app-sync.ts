@@ -49,19 +49,12 @@ export { app as handlers };
 
 const OK_RESPONSE = { status: 'ok' };
 
-function boolToInt(deleted) {
-  return deleted ? 1 : 0;
-}
-
 const verifyFileExists = (fileId, filesService, res, errorObject) => {
   try {
     return filesService.get(fileId);
   } catch (e) {
     if (e instanceof FileNotFound) {
-      //FIXME: error code should be 404. Need to make sure frontend is ok with it.
-      //TODO: put this into a middleware that checks if FileNotFound is thrown and returns 404 and same error message
-      // for every FileNotFound error
-      res.status(400).send(errorObject);
+      res.status(404).send(errorObject);
       return;
     }
     throw e;
@@ -201,8 +194,7 @@ app.post('/reset-user-file', async (req, res) => {
 
 app.post('/upload-user-file', async (req, res) => {
   if (typeof req.headers['x-actual-name'] !== 'string') {
-    // FIXME: Not sure how this cannot be a string when the header is
-    // set.
+    // Express headers can be string | string[] | undefined. Type guard required.
     res.status(400).send('single x-actual-name is required');
     return;
   }
@@ -296,8 +288,7 @@ app.post('/upload-user-file', async (req, res) => {
 app.get('/download-user-file', async (req, res) => {
   const fileId = req.headers['x-actual-file-id'];
   if (typeof fileId !== 'string') {
-    // FIXME: Not sure how this cannot be a string when the header is
-    // set.
+    // Express headers can be string | string[] | undefined. Type guard required.
     res.status(400).send('Single file ID is required');
     return;
   }
@@ -338,7 +329,7 @@ app.get('/list-user-files', (req, res) => {
   res.send({
     status: 'ok',
     data: rows.map(row => ({
-      deleted: boolToInt(row.deleted),
+      deleted: !!row.deleted,
       fileId: row.id,
       groupId: row.groupId,
       name: row.name,
@@ -355,14 +346,10 @@ app.get('/list-user-files', (req, res) => {
 app.get('/get-user-file-info', (req, res) => {
   const fileId = req.headers['x-actual-file-id'];
 
-  // TODO: Return 422 if fileId is not provided. Need to make sure frontend can handle it
-  // if (!fileId) {
-  //   return res.status(422).send({
-  //     details: 'fileId-required',
-  //     reason: 'unprocessable-entity',
-  //     status: 'error',
-  //   });
-  // }
+  if (!fileId) {
+    res.status(422).send({ status: 'error', reason: 'file-id-required' });
+    return;
+  }
 
   const fileService = new FilesService(getAccountDb());
 
@@ -378,7 +365,7 @@ app.get('/get-user-file-info', (req, res) => {
   res.send({
     status: 'ok',
     data: {
-      deleted: boolToInt(file.deleted), //   FIXME: convert to boolean, make sure it works in the frontend
+      deleted: !!file.deleted,
       fileId: file.id,
       groupId: file.groupId,
       name: file.name,
