@@ -831,10 +831,10 @@ possible API changes.
 | 4 | #1, #2, #8, #9, #10 | Medium | Medium | DONE |
 | 5 | #15, #16, #18 | Medium | Medium | DONE |
 | 6 | #7, #13, #21 | High | Large | DONE |
-| 6 (deferred) | #11 | High | Large | Deferred |
-| 7 | #6, #14, #23, #25, #26, #28, #29 | Varies | Ongoing | Tracked as issues |
+| 6 (deferred) | #11 | High | Large | DONE (wave 7) |
+| 7 | #6, #14, #23, #25, #26, #28, #29 | Varies | Large | DONE |
 
-**Findings fixed: 23. Deferred: 1 (#11). Long-term: 7.**
+**All 31 findings addressed. Fixed: 31. Remaining pre-existing TS errors: 11.**
 
 ### Wave 6 execution notes
 
@@ -853,3 +853,28 @@ possible API changes.
   in a techdebt batch.
 - Also fixed 2 TS errors from earlier waves: `SyncErrorContext.subtype`
   made optional (wave 3), `fc.asciiString` replaced with `fc.string` (wave 3).
+
+### Wave 7 execution notes (8 agents, 2 sub-waves)
+
+- **#26** (TODO/FIXME triage): Improved 12 vague TODOs with specific context,
+  removed 1 stale empty comment, left ~48 informational notes as-is.
+- **#29** (react-spring): Renamed imports from `react-spring` to
+  `@react-spring/web` in 7 files. Same underlying package (v10.0.3).
+- **#23** (groupBy): Upgraded tsconfig lib to ES2024. Rewrote `groupBy` and
+  `partitionByField` to use `Map.groupBy`. Left `groupById`/`_groupById` as-is
+  (index-by-id semantics, not grouping). Both marked `@deprecated`.
+- **#6** (openid-client): Full rewrite from v5 class API to v6 functional API.
+  Issuer/Client classes replaced with discovery()/Configuration. All error
+  returns and database operations preserved.
+- **#25** (ts-strict-ignore): Removed directive from 9 of 10 target files
+  (tracking.ts not found). All compiled cleanly under strict mode.
+- **#14** (sync-server JS->TS): Converted 18 core .js files to .ts. Added
+  interfaces, Express types, proper annotations. Fixed 2 pre-existing bugs
+  (string/number comparison, incorrect destructuring). Skipped GoCardless
+  adapters and openid.js (handled by #6).
+- **#11** (TransactionsTable split): Extracted 6 modules from the 3061-line
+  file. Reduced to 812 lines (73.5%). Public API (TransactionTable export)
+  unchanged. PayeeCell needed 18 imports, Transaction needed 30+.
+- **#28** (pikaday): Replaced pikaday with react-aria-components Calendar
+  (already installed). Added only @internationalized/date. Preserved all
+  keyboard nav, relative date parsing, and component API.
