@@ -40,7 +40,7 @@ export async function generateJWT() {
   return jwt;
 }
 
-export async function ebRequest(method, path, data) {
+export async function ebRequest(method, path, data?) {
   const jwt = await generateJWT();
 
   try {
@@ -116,7 +116,7 @@ export async function getSessionAccounts(sessionId) {
 // [eb] Fetches all transactions for an account from startDate onward.
 // Handles continuation_key pagination automatically.
 // SAFEGUARD: maxPages=100 prevents infinite loops if the API misbehaves.
-export async function getTransactions(accountUid, startDate, continuationKey) {
+export async function getTransactions(accountUid, startDate, continuationKey?) {
   const booked = [];
   const pending = [];
   const maxPages = 100;
