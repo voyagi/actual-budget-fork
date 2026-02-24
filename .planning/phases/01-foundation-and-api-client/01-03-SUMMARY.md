@@ -20,9 +20,9 @@ affects: [phase-02-bank-sync-pipeline, phase-03-automation-and-consent]
 tech-stack:
   added: [jose 6.1.3, axios 1.13.5]
   patterns:
-    - "Two-file adapter pattern: enablebanking-service.js (API client) + app-enablebanking.js (Express routes)"
-    - "Lazy key loading: importPKCS8 cached in module-level variable on first call"
-    - "Unauthenticated test route before export+session middleware for dev verification"
+    - 'Two-file adapter pattern: enablebanking-service.js (API client) + app-enablebanking.js (Express routes)'
+    - 'Lazy key loading: importPKCS8 cached in module-level variable on first call'
+    - 'Unauthenticated test route before export+session middleware for dev verification'
 
 key-files:
   created:
@@ -33,14 +33,14 @@ key-files:
     - packages/sync-server/src/app.ts
 
 key-decisions:
-  - "Lazy key loading on first request (not startup) avoids startup failures when EB not configured"
-  - "Unauthenticated GET /test-auth placed before session middleware for automated verification without Actual user login"
-  - "jose importPKCS8 handles PKCS#8 PEM natively - no openssl conversion needed (key confirmed PKCS#8)"
+  - 'Lazy key loading on first request (not startup) avoids startup failures when EB not configured'
+  - 'Unauthenticated GET /test-auth placed before session middleware for automated verification without Actual user login'
+  - 'jose importPKCS8 handles PKCS#8 PEM natively - no openssl conversion needed (key confirmed PKCS#8)'
 
 patterns-established:
-  - "enablebanking-service.js exports: loadPrivateKey, generateJWT, ebRequest, testAuth"
-  - "JWT header: alg RS256, typ JWT, kid = ENABLE_BANKING_APP_ID"
-  - "JWT payload: iss enablebanking.com, aud api.enablebanking.com, iat+exp (now+3600)"
+  - 'enablebanking-service.js exports: loadPrivateKey, generateJWT, ebRequest, testAuth'
+  - 'JWT header: alg RS256, typ JWT, kid = ENABLE_BANKING_APP_ID'
+  - 'JWT payload: iss enablebanking.com, aud api.enablebanking.com, iat+exp (now+3600)'
 
 requirements-completed: [FOUND-03]
 
@@ -70,7 +70,7 @@ completed: 2026-02-18
 
 ## Task Commits
 
-1. **Task 1: Create Enable Banking service, routes, and mount in app.ts** - `462e2568e` (feat) - *committed in plan 01-02 execution (scaffold was ahead-of-plan)*
+1. **Task 1: Create Enable Banking service, routes, and mount in app.ts** - `462e2568e` (feat) - _committed in plan 01-02 execution (scaffold was ahead-of-plan)_
 2. **Task 2: Rebuild Docker, test sandbox auth, verify RSA key persistence** - No code changes; Docker rebuilt and verification run. Results documented in SUMMARY.
 
 **Plan metadata:** committed after checkpoint resolves
@@ -93,6 +93,7 @@ completed: 2026-02-18
 ### Structural Note (Not a Deviation - Planned Ahead)
 
 **Task 1 code committed in plan 01-02 execution**
+
 - **Context:** Plan 01-02 executor created the three EB files plus app.ts mount as part of the `/test-auth` scaffold commit `462e2568e`. This was the final commit of plan 01-02.
 - **Effect on plan 01-03:** Task 1 verification passed immediately - all files existed and matched spec. No code changes needed. Task 2 proceeded directly to Docker rebuild.
 - **Impact:** No scope creep. The work was correct and complete. This just means the task boundary between plan 01-02 and 01-03 was slightly blurred at the scaffold level.
@@ -117,8 +118,9 @@ None - sandbox credentials are already in place from Plan 01-02. The RSA key at 
 - Phase 2 (Bank Sync Pipeline) can begin once user approves the Phase 1 checkpoint
 
 ---
-*Phase: 01-foundation-and-api-client*
-*Completed: 2026-02-18*
+
+_Phase: 01-foundation-and-api-client_
+_Completed: 2026-02-18_
 
 ## Self-Check: PASSED
 

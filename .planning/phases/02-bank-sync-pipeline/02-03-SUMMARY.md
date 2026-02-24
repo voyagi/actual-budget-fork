@@ -7,21 +7,21 @@ tags: [enablebanking, express, ipc, oauth, sqlite, sync-server, loot-core]
 # Dependency graph
 requires:
   - phase: 02-bank-sync-pipeline
-    provides: "02-01: runMigrations, normalizeTransaction, normalizeAccount, extractBalance, getAspsps, createAuth, exchangeCode, getTransactions, getBalances, eb_sessions/eb_account_map/eb_sync_log tables"
+    provides: '02-01: runMigrations, normalizeTransaction, normalizeAccount, extractBalance, getAspsps, createAuth, exchangeCode, getTransactions, getBalances, eb_sessions/eb_account_map/eb_sync_log tables'
   - phase: 02-bank-sync-pipeline
-    provides: "02-02: ENABLEBANKING_SERVER in getServer(), downloadEnableBankingTransactions, SyncServerEnableBankingAccount type, enableBanking in AccountSyncSource"
+    provides: '02-02: ENABLEBANKING_SERVER in getServer(), downloadEnableBankingTransactions, SyncServerEnableBankingAccount type, enableBanking in AccountSyncSource'
 
 provides:
-  - "11 HTTP routes in app-enablebanking.js: test-auth, callback, link (unauthenticated) + status, get-banks, create-auth, get-accounts, transactions, remove-session, sync-status, update-account-map (authenticated)"
-  - "OAuth CSRF protection via UUID state stored in eb_sessions and validated in /callback"
-  - "/callback derives eb_account_uid as account.account_id || account.uid matching normalizeAccount() derivation"
-  - "/get-accounts enriches accounts with aspsp_name from session row before normalizeAccount() call"
-  - "/transactions null guard returns ACCOUNT_NOT_MAPPED in status:ok wrapper (loot-core post() unwrappable)"
-  - "/transactions logs actual_account_id from map row (not req.body) for /sync-status compatibility"
-  - "/update-account-map populates eb_account_map.actual_account_id at link time"
-  - "6 IPC handlers in loot-core app.ts: enablebanking-status, -get-banks, -create-auth, -poll-session, -accounts-link, -sync-status"
-  - "enablebanking-accounts-link creates Actual account, calls /update-account-map, throws on failure, triggers initial sync"
-  - "All 6 handlers registered in AccountHandlers type map for TypeScript type safety"
+  - '11 HTTP routes in app-enablebanking.js: test-auth, callback, link (unauthenticated) + status, get-banks, create-auth, get-accounts, transactions, remove-session, sync-status, update-account-map (authenticated)'
+  - 'OAuth CSRF protection via UUID state stored in eb_sessions and validated in /callback'
+  - '/callback derives eb_account_uid as account.account_id || account.uid matching normalizeAccount() derivation'
+  - '/get-accounts enriches accounts with aspsp_name from session row before normalizeAccount() call'
+  - '/transactions null guard returns ACCOUNT_NOT_MAPPED in status:ok wrapper (loot-core post() unwrappable)'
+  - '/transactions logs actual_account_id from map row (not req.body) for /sync-status compatibility'
+  - '/update-account-map populates eb_account_map.actual_account_id at link time'
+  - '6 IPC handlers in loot-core app.ts: enablebanking-status, -get-banks, -create-auth, -poll-session, -accounts-link, -sync-status'
+  - 'enablebanking-accounts-link creates Actual account, calls /update-account-map, throws on failure, triggers initial sync'
+  - 'All 6 handlers registered in AccountHandlers type map for TypeScript type safety'
 
 affects:
   - 02-04-PLAN (scheduler calls syncAccount() which calls downloadEnableBankingTransactions via the /transactions route built here)
@@ -31,11 +31,11 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "OAuth callback route is unauthenticated (before export { app as handlers }) - same as GoCardless GET /link pattern"
-    - "ACCOUNT_NOT_MAPPED error uses status:ok wrapper so loot-core post() unwraps it and download function sees error_code"
-    - "eb_account_uid in eb_account_map uses account.account_id || account.uid matching normalizeAccount() - consistency constraint"
-    - "linkEnableBankingAccount calls POST /update-account-map after account creation and throws if it fails - link aborts on mapping failure"
-    - "findOrCreateBank expects { name: institution_string } object, not bare string"
+    - 'OAuth callback route is unauthenticated (before export { app as handlers }) - same as GoCardless GET /link pattern'
+    - 'ACCOUNT_NOT_MAPPED error uses status:ok wrapper so loot-core post() unwraps it and download function sees error_code'
+    - 'eb_account_uid in eb_account_map uses account.account_id || account.uid matching normalizeAccount() - consistency constraint'
+    - 'linkEnableBankingAccount calls POST /update-account-map after account creation and throws if it fails - link aborts on mapping failure'
+    - 'findOrCreateBank expects { name: institution_string } object, not bare string'
 
 key-files:
   created: []
@@ -44,14 +44,14 @@ key-files:
     - packages/loot-core/src/server/accounts/app.ts
 
 key-decisions:
-  - "GET /callback placed before export { app as handlers } so bank redirect (unauthenticated browser request) reaches it without Actual session middleware"
-  - "Pending eb_sessions row uses state as temporary id placeholder until /callback sets id = real session_id - SQLite TEXT PRIMARY KEY allows this and state is already unique"
-  - "linkEnableBankingAccount aborts link on /update-account-map failure - partial link (account without mapping) would cause silent sync log failures and broken /sync-status"
-  - "findOrCreateBank receives { name: account.institution } object (not bare string) - matches SimpleFin/PluggyAi pattern, needed because link.ts reads institution.name"
+  - 'GET /callback placed before export { app as handlers } so bank redirect (unauthenticated browser request) reaches it without Actual session middleware'
+  - 'Pending eb_sessions row uses state as temporary id placeholder until /callback sets id = real session_id - SQLite TEXT PRIMARY KEY allows this and state is already unique'
+  - 'linkEnableBankingAccount aborts link on /update-account-map failure - partial link (account without mapping) would cause silent sync log failures and broken /sync-status'
+  - 'findOrCreateBank receives { name: account.institution } object (not bare string) - matches SimpleFin/PluggyAi pattern, needed because link.ts reads institution.name'
 
 patterns-established:
-  - "Enable Banking route ordering: unauthenticated (callback, link) before export, authenticated POST routes after validateSessionMiddleware"
-  - "Sync log uses mapRow.actual_account_id || accountId fallback - handles cases where sync call passes EB UID before mapping is complete"
+  - 'Enable Banking route ordering: unauthenticated (callback, link) before export, authenticated POST routes after validateSessionMiddleware'
+  - 'Sync log uses mapRow.actual_account_id || accountId fallback - handles cases where sync call passes EB UID before mapping is complete'
 
 requirements-completed: [SYNC-01, SYNC-06, SYNC-07, SYNC-08]
 
@@ -106,6 +106,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] findOrCreateBank institution argument wrapped in object**
+
 - **Found during:** Task 2 (linkEnableBankingAccount implementation)
 - **Issue:** Plan said pass `account.institution` (a string) to `findOrCreateBank`. Reading `link.ts` revealed it expects `institution.name` (an object). Passing a bare string would make `bank.name` undefined in the banks table.
 - **Fix:** Changed to `{ name: account.institution }` matching SimpleFin/PluggyAi pattern
@@ -135,14 +136,17 @@ None - no external service configuration required.
 ## Self-Check: PASSED
 
 Files verified:
+
 - `packages/sync-server/src/app-enablebanking/app-enablebanking.js` - FOUND (runMigrations at line 25, export at line 112, 11 routes confirmed)
-- `packages/loot-core/src/server/accounts/app.ts` - FOUND (all 6 enablebanking-* handlers in type map and app.method registrations confirmed)
+- `packages/loot-core/src/server/accounts/app.ts` - FOUND (all 6 enablebanking-\* handlers in type map and app.method registrations confirmed)
 - `.planning/phases/02-bank-sync-pipeline/02-03-SUMMARY.md` - FOUND
 
 Commits verified:
+
 - `7c393657c` - Task 1 feat commit (app-enablebanking.js routes) - FOUND
 - `51d6cc357` - Task 2 feat commit (app.ts IPC handlers) - FOUND
 
 ---
-*Phase: 02-bank-sync-pipeline*
-*Completed: 2026-02-19*
+
+_Phase: 02-bank-sync-pipeline_
+_Completed: 2026-02-19_

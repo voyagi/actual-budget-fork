@@ -19,8 +19,8 @@ import {
   validateUploadedFile,
 } from './app-sync/validation';
 import { config } from './load-config';
-import logger from './util/logger';
 import * as simpleSync from './sync-simple';
+import logger from './util/logger';
 import {
   errorMiddleware,
   requestLoggerMiddleware,

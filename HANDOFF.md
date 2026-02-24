@@ -23,6 +23,7 @@ Fix all 31 tech debt findings from TECHDEBT-PLAN.md across 7 waves.
 ### TypeScript (npx tsc --noEmit)
 
 11 pre-existing errors, zero new regressions:
+
 1. `App.tsx:165,243` - FallbackProps type mismatch (react-error-boundary)
 2. `RouteErrorBoundary.tsx:44` - Same FallbackProps issue
 3. `EnableBankingExternalMsgModal.tsx:157` - `.message` on `{}`
@@ -32,11 +33,11 @@ Fix all 31 tech debt findings from TECHDEBT-PLAN.md across 7 waves.
 
 ### Test Suite
 
-| Package | Files | Tests | Result |
-|---------|-------|-------|--------|
-| loot-core | 39 passed, 1 skipped | 501 passed, 2 skipped | Green |
-| desktop-client | 18 passed | 372 passed, 1 skipped | Green |
-| sync-server | 39 passed, 1 failed | 419 passed | 1 pre-existing failure |
+| Package        | Files                | Tests                 | Result                 |
+| -------------- | -------------------- | --------------------- | ---------------------- |
+| loot-core      | 39 passed, 1 skipped | 501 passed, 2 skipped | Green                  |
+| desktop-client | 18 passed            | 372 passed, 1 skipped | Green                  |
+| sync-server    | 39 passed, 1 failed  | 419 passed            | 1 pre-existing failure |
 
 The sync-server failure is `app-sync.test.ts` (SyncProtoBuf globalThis
 issue) - pre-existing, not modified in any wave 7 commit.
@@ -44,6 +45,7 @@ issue) - pre-existing, not modified in any wave 7 commit.
 ### openid-client v6 API Review
 
 All 8 API patterns verified against panva/openid-client v6 docs:
+
 - `discovery()` with timeout + customFetch: correct
 - `new Configuration()` manual setup: correct (string 3rd param = client_secret shorthand)
 - `buildAuthorizationUrl()` returns URL: correct
@@ -84,6 +86,7 @@ completing 10/10 targets.
 
 Wave 4 code deduplication deleted `sync-server/src/util/title/` but
 missed 3 GoCardless bank adapters that imported from it:
+
 - `boursobank_bousfrppxxx.js`
 - `easybank_bawaatww.js`
 - `raiffeisen_at_rzbaatww.js`
@@ -118,21 +121,21 @@ Executed as 2 sub-waves of 4 parallel agents each:
 
 **Sub-wave 7a (lower risk, no dependencies):**
 
-| Finding | Description | Key changes |
-|---------|-------------|-------------|
-| #26 | TODO/FIXME triage | 12 TODOs improved, 1 stale removed, 10 files |
-| #29 | react-spring upgrade | Renamed to `@react-spring/web`, 8 files |
-| #23 | groupBy -> Map.groupBy | tsconfig lib ES2024, 2 functions rewritten, `@deprecated` added |
-| #6 | openid-client v5->v6 | Full rewrite to functional API, 2 files |
+| Finding | Description            | Key changes                                                     |
+| ------- | ---------------------- | --------------------------------------------------------------- |
+| #26     | TODO/FIXME triage      | 12 TODOs improved, 1 stale removed, 10 files                    |
+| #29     | react-spring upgrade   | Renamed to `@react-spring/web`, 8 files                         |
+| #23     | groupBy -> Map.groupBy | tsconfig lib ES2024, 2 functions rewritten, `@deprecated` added |
+| #6      | openid-client v5->v6   | Full rewrite to functional API, 2 files                         |
 
 **Sub-wave 7b (higher risk, dependencies from 7a resolved):**
 
-| Finding | Description | Key changes |
-|---------|-------------|-------------|
-| #25 | @ts-strict-ignore removal | 10 of 10 critical files cleaned (report.ts = "tracking.ts") |
-| #14 | sync-server JS->TS | 18 core files converted, 2 bugs fixed |
-| #11 | TransactionsTable split | 3061->812 lines (73.5% reduction), 6 new modules |
-| #28 | pikaday -> react-aria | Used existing react-aria-components, added @internationalized/date |
+| Finding | Description               | Key changes                                                        |
+| ------- | ------------------------- | ------------------------------------------------------------------ |
+| #25     | @ts-strict-ignore removal | 10 of 10 critical files cleaned (report.ts = "tracking.ts")        |
+| #14     | sync-server JS->TS        | 18 core files converted, 2 bugs fixed                              |
+| #11     | TransactionsTable split   | 3061->812 lines (73.5% reduction), 6 new modules                   |
+| #28     | pikaday -> react-aria     | Used existing react-aria-components, added @internationalized/date |
 
 ## What Worked
 
@@ -150,7 +153,7 @@ Executed as 2 sub-waves of 4 parallel agents each:
 
 ## What Didn't Work / Risks
 
-- **groupById/_groupById were NOT migrated** to Object.groupBy because
+- **groupById/\_groupById were NOT migrated** to Object.groupBy because
   they have different semantics (index-by-id, not group-by). The
   handoff plan incorrectly assumed they could use Object.groupBy.
 - **openid-client v6 rewrite** is comprehensive but needs runtime
@@ -163,16 +166,16 @@ Executed as 2 sub-waves of 4 parallel agents each:
 
 ## Key Files Modified in Wave 7
 
-| Finding | Key files |
-|---------|-----------|
-| #26 | 10 scattered files (TODOs in loot-core, desktop-client, sync-server) |
-| #29 | `desktop-client/package.json` + 7 component files |
-| #23 | `tsconfig.json`, `loot-core/src/shared/util.ts` |
-| #6 | `sync-server/package.json`, `sync-server/src/accounts/openid.js` |
-| #25 | 10 files in `loot-core/src/` (util, rules, schedules, budget, aql, sync, report) |
-| #14 | 18 files renamed .js->.ts in `sync-server/src/` |
-| #11 | `TransactionsTable.tsx` + 6 new modules in `desktop-client/src/components/transactions/` |
-| #28 | `desktop-client/package.json`, `desktop-client/src/components/select/DateSelect.tsx` |
+| Finding | Key files                                                                                |
+| ------- | ---------------------------------------------------------------------------------------- |
+| #26     | 10 scattered files (TODOs in loot-core, desktop-client, sync-server)                     |
+| #29     | `desktop-client/package.json` + 7 component files                                        |
+| #23     | `tsconfig.json`, `loot-core/src/shared/util.ts`                                          |
+| #6      | `sync-server/package.json`, `sync-server/src/accounts/openid.js`                         |
+| #25     | 10 files in `loot-core/src/` (util, rules, schedules, budget, aql, sync, report)         |
+| #14     | 18 files renamed .js->.ts in `sync-server/src/`                                          |
+| #11     | `TransactionsTable.tsx` + 6 new modules in `desktop-client/src/components/transactions/` |
+| #28     | `desktop-client/package.json`, `desktop-client/src/components/select/DateSelect.tsx`     |
 
 ## Commit Log (Post-Verification)
 

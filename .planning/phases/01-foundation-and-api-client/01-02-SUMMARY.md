@@ -7,34 +7,34 @@ tags: [enable-banking, rsa, pem, secrets, sandbox]
 # Dependency graph
 requires: []
 provides:
-  - "RSA private key at secrets/eb_private.pem (PKCS#8 format, sandbox)"
-  - ".env with ENABLE_BANKING_APP_ID set to real sandbox application ID"
-  - "Enable Banking sandbox application registered at enablebanking.com/cp"
+  - 'RSA private key at secrets/eb_private.pem (PKCS#8 format, sandbox)'
+  - '.env with ENABLE_BANKING_APP_ID set to real sandbox application ID'
+  - 'Enable Banking sandbox application registered at enablebanking.com/cp'
 affects:
-  - "01-03 (JWT signing and API client need the private key and app ID)"
-  - "all Enable Banking API calls through all phases"
+  - '01-03 (JWT signing and API client need the private key and app ID)'
+  - 'all Enable Banking API calls through all phases'
 
 # Tech tracking
 tech-stack:
   added: []
   patterns:
-    - "secrets/ directory for RSA keys mounted into Docker as read-only volume"
-    - ".env gitignored, .env.example committed for onboarding"
+    - 'secrets/ directory for RSA keys mounted into Docker as read-only volume'
+    - '.env gitignored, .env.example committed for onboarding'
 
 key-files:
   created:
-    - "secrets/eb_private.pem (gitignored, not committed)"
-    - ".env (gitignored, not committed)"
+    - 'secrets/eb_private.pem (gitignored, not committed)'
+    - '.env (gitignored, not committed)'
   modified: []
 
 key-decisions:
-  - "Application ID b619fe6c-ab92-4de5-a7c2-901c0e0ef580 is the sandbox app (not production)"
-  - "Redirect URL set to http://localhost:5006/enablebanking/callback to match planned Express route"
-  - "Key format is PKCS#8 (BEGIN PRIVATE KEY) not PKCS#1 (BEGIN RSA PRIVATE KEY) - jose handles both"
+  - 'Application ID b619fe6c-ab92-4de5-a7c2-901c0e0ef580 is the sandbox app (not production)'
+  - 'Redirect URL set to http://localhost:5006/enablebanking/callback to match planned Express route'
+  - 'Key format is PKCS#8 (BEGIN PRIVATE KEY) not PKCS#1 (BEGIN RSA PRIVATE KEY) - jose handles both'
 
 patterns-established:
-  - "Sandbox RSA key: PKCS#8 format from Enable Banking browser-generated key pair"
-  - "Secret storage: secrets/ directory gitignored, Docker mount as :ro file (not env var)"
+  - 'Sandbox RSA key: PKCS#8 format from Enable Banking browser-generated key pair'
+  - 'Secret storage: secrets/ directory gitignored, Docker mount as :ro file (not env var)'
 
 requirements-completed: [FOUND-03]
 
@@ -112,5 +112,6 @@ Plan 01-03 (JWT authentication and API client) is fully unblocked:
 No blockers.
 
 ---
-*Phase: 01-foundation-and-api-client*
-*Completed: 2026-02-18*
+
+_Phase: 01-foundation-and-api-client_
+_Completed: 2026-02-18_

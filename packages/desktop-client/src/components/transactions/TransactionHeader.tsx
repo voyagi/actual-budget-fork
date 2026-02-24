@@ -38,10 +38,7 @@ type HeaderCellProps = {
   id: string;
   icon?: 'asc' | 'desc' | 'clickable';
   onClick?: () => void;
-} & Pick<
-  CSSProperties,
-  'width' | 'alignItems' | 'marginLeft' | 'marginRight'
->;
+} & Pick<CSSProperties, 'width' | 'alignItems' | 'marginLeft' | 'marginRight'>;
 
 function HeaderCell({
   value,
@@ -178,10 +175,7 @@ const TransactionHeader = memo(
             id="account"
             icon={field === 'account' ? ascDesc : 'clickable'}
             onClick={() =>
-              onSort(
-                'account',
-                selectAscDesc(field, ascDesc, 'account', 'asc'),
-              )
+              onSort('account', selectAscDesc(field, ascDesc, 'account', 'asc'))
             }
           />
         )}

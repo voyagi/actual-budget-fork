@@ -109,7 +109,11 @@ export function CreateLocalAccountModal() {
                 </InitialFocus>
               </InlineField>
               {nameError && (
-                <FormError id="name-error" role="alert" style={{ marginLeft: 75, color: theme.warningText }}>
+                <FormError
+                  id="name-error"
+                  role="alert"
+                  style={{ marginLeft: 75, color: theme.warningText }}
+                >
                   {nameError}
                 </FormError>
               )}
@@ -187,7 +191,11 @@ export function CreateLocalAccountModal() {
                 />
               </InlineField>
               {balanceError && (
-                <FormError id="balance-error" role="alert" style={{ marginLeft: 75 }}>
+                <FormError
+                  id="balance-error"
+                  role="alert"
+                  style={{ marginLeft: 75 }}
+                >
                   <Trans>Balance must be a number</Trans>
                 </FormError>
               )}

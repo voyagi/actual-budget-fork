@@ -26,7 +26,11 @@ vi.mock('jose', () => {
 
 // Mock fs.readFileSync for the private key.
 vi.mock('fs', () => ({
-  readFileSync: vi.fn().mockReturnValue('-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----'),
+  readFileSync: vi
+    .fn()
+    .mockReturnValue(
+      '-----BEGIN PRIVATE KEY-----\nfake\n-----END PRIVATE KEY-----',
+    ),
 }));
 
 // Now import the module under test (after mocks are set up).

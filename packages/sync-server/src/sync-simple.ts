@@ -31,7 +31,10 @@ interface MessageEnvelope {
   setContent(content: Buffer | Uint8Array): void;
 }
 
-function addMessages(db: WrappedDatabase, messages: MessageEnvelope[]): Record<string, unknown> | undefined {
+function addMessages(
+  db: WrappedDatabase,
+  messages: MessageEnvelope[],
+): Record<string, unknown> | undefined {
   let returnValue: Record<string, unknown> | undefined;
   db.transaction(() => {
     let trie = getMerkle(db);

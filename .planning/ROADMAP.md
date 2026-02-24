@@ -15,13 +15,13 @@
 
 ## Progress
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Foundation and API Client | 4/4 | Awaiting human checkpoint | - |
-| 2. Bank Sync Pipeline | 3/5 | In Progress|  |
-| 3. Automation and Consent Lifecycle | 0/? | Not started | - |
-| 4. PWA Completion | 0/? | Not started | - |
-| 5. Infrastructure and Production | 0/? | Not started | - |
+| Phase                               | Plans Complete | Status                    | Completed |
+| ----------------------------------- | -------------- | ------------------------- | --------- |
+| 1. Foundation and API Client        | 4/4            | Awaiting human checkpoint | -         |
+| 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
+| 3. Automation and Consent Lifecycle | 0/?            | Not started               | -         |
+| 4. PWA Completion                   | 0/?            | Not started               | -         |
+| 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 
 ## Phase Details
 
@@ -34,6 +34,7 @@
 **Requirements:** FOUND-01, FOUND-02, FOUND-03, FOUND-04
 
 **Success Criteria** (what must be TRUE when this phase completes):
+
 1. Running `docker compose up` starts the sync-server and desktop-client with no build errors, and the user can open the app in Chrome and create a budget
 2. An Enable Banking sandbox API call authenticated with the RSA key pair returns a 200 response (not a 401 or JWT error)
 3. The RSA private key file survives a `docker compose down && docker compose up` cycle without being regenerated
@@ -59,6 +60,7 @@ Plans:
 **Requirements:** SYNC-01, SYNC-02, SYNC-03, SYNC-04, SYNC-05, SYNC-06, SYNC-07, SYNC-08, SYNC-09
 
 **Success Criteria** (what must be TRUE when this phase completes):
+
 1. User clicks "Add bank" in the UI, is redirected to their sandbox bank's login page, completes auth, and returns to the app with bank accounts visible and ready to link
 2. User maps a bank account to an Actual account and triggers a manual sync that imports transactions into the correct account ledger
 3. Running two syncs in a row does not create duplicate transactions (deduplication works across pending-to-booked transitions)
@@ -90,6 +92,7 @@ Plans:
 **Requirements:** AUTO-01, AUTO-02, AUTO-03, AUTO-04, AUTO-05, AUTO-06
 
 **Success Criteria** (what must be TRUE when this phase completes):
+
 1. Without any user action, new transactions appear in the app up to 4 times per day on the cron schedule (verified by checking sync timestamps across a day)
 2. Opening the app after 6+ hours of inactivity triggers an automatic sync within seconds, before the user takes any manual action
 3. Each linked account shows a "last synced" timestamp that updates after every sync run (automatic or manual)
@@ -108,6 +111,7 @@ Plans:
 **Requirements:** PWA-01, PWA-02, PWA-03, PWA-04, PWA-05, PWA-06
 
 **Success Criteria** (what must be TRUE when this phase completes):
+
 1. Chrome on Android shows the "Add to Home Screen" install prompt when visiting the app URL, and the installed app launches without browser chrome
 2. Safari on iOS shows the "Add to Home Screen" option, and the installed app launches without browser chrome as a standalone app
 3. With the phone in airplane mode, previously loaded budget data (accounts, transactions, budgets) is still readable in the installed PWA
@@ -127,6 +131,7 @@ Plans:
 **Requirements:** INFRA-01, INFRA-02, INFRA-03, INFRA-04
 
 **Success Criteria** (what must be TRUE when this phase completes):
+
 1. `docker compose up` starts sync-server, desktop-client, and Caddy in one command with no manual steps, and the app is accessible at an HTTPS URL
 2. The HTTPS certificate is trusted by both desktop Chrome and iOS Safari (PWA install requires trusted cert on iOS - self-signed Caddy local CA is not sufficient for iOS)
 3. A transaction entered on desktop is visible on the phone within seconds, and a transaction entered on the phone is visible on desktop (multi-device sync confirmed in both directions)
@@ -139,40 +144,41 @@ Plans:
 
 ## Coverage
 
-| Requirement | Phase | Category |
-|-------------|-------|----------|
-| FOUND-01 | Phase 1 | Foundation |
-| FOUND-02 | Phase 1 | Foundation |
-| FOUND-03 | Phase 1 | Foundation |
-| FOUND-04 | Phase 1 | Foundation |
-| SYNC-01 | Phase 2 | Bank Sync |
-| SYNC-02 | Phase 2 | Bank Sync |
-| SYNC-03 | Phase 2 | Bank Sync |
-| SYNC-04 | Phase 2 | Bank Sync |
-| SYNC-05 | Phase 2 | Bank Sync |
-| SYNC-06 | Phase 2 | Bank Sync |
-| SYNC-07 | Phase 2 | Bank Sync |
-| SYNC-08 | Phase 2 | Bank Sync |
-| SYNC-09 | Phase 2 | Bank Sync |
-| AUTO-01 | Phase 3 | Automation |
-| AUTO-02 | Phase 3 | Automation |
-| AUTO-03 | Phase 3 | Automation |
-| AUTO-04 | Phase 3 | Automation |
-| AUTO-05 | Phase 3 | Automation |
-| AUTO-06 | Phase 3 | Automation |
-| PWA-01 | Phase 4 | PWA |
-| PWA-02 | Phase 4 | PWA |
-| PWA-03 | Phase 4 | PWA |
-| PWA-04 | Phase 4 | PWA |
-| PWA-05 | Phase 4 | PWA |
-| PWA-06 | Phase 4 | PWA |
-| INFRA-01 | Phase 5 | Infrastructure |
-| INFRA-02 | Phase 5 | Infrastructure |
-| INFRA-03 | Phase 5 | Infrastructure |
-| INFRA-04 | Phase 5 | Infrastructure |
+| Requirement | Phase   | Category       |
+| ----------- | ------- | -------------- |
+| FOUND-01    | Phase 1 | Foundation     |
+| FOUND-02    | Phase 1 | Foundation     |
+| FOUND-03    | Phase 1 | Foundation     |
+| FOUND-04    | Phase 1 | Foundation     |
+| SYNC-01     | Phase 2 | Bank Sync      |
+| SYNC-02     | Phase 2 | Bank Sync      |
+| SYNC-03     | Phase 2 | Bank Sync      |
+| SYNC-04     | Phase 2 | Bank Sync      |
+| SYNC-05     | Phase 2 | Bank Sync      |
+| SYNC-06     | Phase 2 | Bank Sync      |
+| SYNC-07     | Phase 2 | Bank Sync      |
+| SYNC-08     | Phase 2 | Bank Sync      |
+| SYNC-09     | Phase 2 | Bank Sync      |
+| AUTO-01     | Phase 3 | Automation     |
+| AUTO-02     | Phase 3 | Automation     |
+| AUTO-03     | Phase 3 | Automation     |
+| AUTO-04     | Phase 3 | Automation     |
+| AUTO-05     | Phase 3 | Automation     |
+| AUTO-06     | Phase 3 | Automation     |
+| PWA-01      | Phase 4 | PWA            |
+| PWA-02      | Phase 4 | PWA            |
+| PWA-03      | Phase 4 | PWA            |
+| PWA-04      | Phase 4 | PWA            |
+| PWA-05      | Phase 4 | PWA            |
+| PWA-06      | Phase 4 | PWA            |
+| INFRA-01    | Phase 5 | Infrastructure |
+| INFRA-02    | Phase 5 | Infrastructure |
+| INFRA-03    | Phase 5 | Infrastructure |
+| INFRA-04    | Phase 5 | Infrastructure |
 
 **Total:** 29/29 v1 requirements mapped. No orphans.
 
 ---
-*Roadmap created: 2026-02-18*
-*Last updated: 2026-02-19 after Plan 02-01 complete (data layer, migrations, normalizer)*
+
+_Roadmap created: 2026-02-18_
+_Last updated: 2026-02-19 after Plan 02-01 complete (data layer, migrations, normalizer)_

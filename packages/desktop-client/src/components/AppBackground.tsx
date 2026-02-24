@@ -1,11 +1,11 @@
 import React from 'react';
-import { animated, useTransition } from '@react-spring/web';
 
 import { Block } from '@actual-app/components/block';
 import { AnimatedLoading } from '@actual-app/components/icons/AnimatedLoading';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 import { css } from '@emotion/css';
+import { animated, useTransition } from '@react-spring/web';
 
 import { Background } from './Background';
 

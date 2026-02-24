@@ -326,7 +326,11 @@ function EditUser({ defaultUser, onSave: originalOnSave }: EditUserProps) {
           justifyContent: 'flex-end',
         }}
       >
-        {error && <Text role="alert" style={{ color: theme.errorText }}>{error}</Text>}
+        {error && (
+          <Text role="alert" style={{ color: theme.errorText }}>
+            {error}
+          </Text>
+        )}
         <Button variant="bare" onPress={() => dispatch(popModal())}>
           <Trans>Cancel</Trans>
         </Button>

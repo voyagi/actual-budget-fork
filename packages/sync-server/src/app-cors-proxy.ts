@@ -279,7 +279,10 @@ app.use('/', async (req: Request, res: Response) => {
   } catch (err) {
     res
       .status(500)
-      .json({ error: 'Error proxying request', details: (err as Error).message });
+      .json({
+        error: 'Error proxying request',
+        details: (err as Error).message,
+      });
   }
 });
 

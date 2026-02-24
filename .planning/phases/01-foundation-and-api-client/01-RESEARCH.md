@@ -15,29 +15,30 @@ The Enable Banking API uses RS256 JWTs where the JWT header carries `kid: <appli
 The GoCardless adapter is structurally stable and well-suited to mirror. It lives at `packages/sync-server/src/app-gocardless/` and follows a clear two-file pattern: `app-gocardless.js` (Express routes, exports `{ app as handlers }`) and `services/gocardless-service.js` (API client). It uses a shared `handleError` wrapper from `./util/handle-error.js`. The Enable Banking adapter will follow this exact pattern but in a new directory `app-enablebanking/` with no modifications to existing files.
 
 <user_constraints>
+
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
 
 **Fork Visual Identity**
 
-| Decision | Choice |
-|----------|--------|
-| App title (browser tab, PWA manifest) | Keep stock "Actual" - no changes |
-| About/Settings page | Add fork info: version, Enable Banking status, link to repo |
-| Favicon and app icons | Keep stock icons (revisit in Phase 4 PWA) |
-| Runtime EB status indicator | Not in Phase 1 - UI indicators belong in Phase 2 |
+| Decision                              | Choice                                                      |
+| ------------------------------------- | ----------------------------------------------------------- |
+| App title (browser tab, PWA manifest) | Keep stock "Actual" - no changes                            |
+| About/Settings page                   | Add fork info: version, Enable Banking status, link to repo |
+| Favicon and app icons                 | Keep stock icons (revisit in Phase 4 PWA)                   |
+| Runtime EB status indicator           | Not in Phase 1 - UI indicators belong in Phase 2            |
 
 **Rationale:** Minimal fork surface area. The About page addition provides discoverability without disrupting the stock experience.
 
 **Development Workflow**
 
-| Decision | Choice |
-|----------|--------|
-| Dev mode | Hybrid: desktop-client runs locally (hot reload), sync-server in Docker |
-| Local toolchain | Node.js installed. Yarn availability needs verification at setup time |
-| Server reload | Auto-restart on save (nodemon or similar inside Docker) |
-| Docker Compose config | Single docker-compose.yml for both dev and prod, toggled via env vars |
+| Decision              | Choice                                                                  |
+| --------------------- | ----------------------------------------------------------------------- |
+| Dev mode              | Hybrid: desktop-client runs locally (hot reload), sync-server in Docker |
+| Local toolchain       | Node.js installed. Yarn availability needs verification at setup time   |
+| Server reload         | Auto-restart on save (nodemon or similar inside Docker)                 |
+| Docker Compose config | Single docker-compose.yml for both dev and prod, toggled via env vars   |
 
 **Rationale:** Hybrid approach gives fast UI iteration locally while keeping the sync-server (where EB code lives) in a Docker environment matching production. Auto-restart minimizes friction during API client development.
 
@@ -45,17 +46,18 @@ The GoCardless adapter is structurally stable and well-suited to mirror. It live
 
 **Configuration Layout**
 
-| Decision | Choice |
-|----------|--------|
-| RSA key location | `secrets/eb_private.pem` (gitignored `secrets/` directory) |
-| Other EB config | `.env` file at repo root (app_id, environment, API URLs) |
-| Sandbox vs production toggle | All in `.env` - swap values or use `.env.sandbox`/`.env.production` |
-| Template file | Both: `.env.example` committed to git AND documented in README |
-| Docker secret mounting | Simple bind mount (`./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro`) |
+| Decision                     | Choice                                                                        |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| RSA key location             | `secrets/eb_private.pem` (gitignored `secrets/` directory)                    |
+| Other EB config              | `.env` file at repo root (app_id, environment, API URLs)                      |
+| Sandbox vs production toggle | All in `.env` - swap values or use `.env.sandbox`/`.env.production`           |
+| Template file                | Both: `.env.example` committed to git AND documented in README                |
+| Docker secret mounting       | Simple bind mount (`./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro`) |
 
 **Rationale:** PEM files don't belong in .env (binary/multiline). The secrets/ directory handles the key, .env handles everything else. Simple bind mount avoids Docker secrets complexity for a single-user app.
 
 **Gitignore additions required:**
+
 - `secrets/`
 - `.env`
 - `.env.sandbox`
@@ -63,16 +65,17 @@ The GoCardless adapter is structurally stable and well-suited to mirror. It live
 
 **Upstream Merge Strategy**
 
-| Decision | Choice |
-|----------|--------|
-| Sync frequency | After each phase completion |
-| Conflict resolution | Case by case (no blanket rule) |
-| Branch model | Separate `upstream/main` branch mirrors Actual Budget. Merge from there into fork's main |
-| Branch naming | Standard naming (`feat/`, `fix/`, `chore/`). The `[eb]` commit prefix is sufficient |
+| Decision            | Choice                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| Sync frequency      | After each phase completion                                                              |
+| Conflict resolution | Case by case (no blanket rule)                                                           |
+| Branch model        | Separate `upstream/main` branch mirrors Actual Budget. Merge from there into fork's main |
+| Branch naming       | Standard naming (`feat/`, `fix/`, `chore/`). The `[eb]` commit prefix is sufficient      |
 
 **Rationale:** Phase boundaries are natural merge points since you're not mid-feature. Separate upstream branch keeps a clean reference of stock Actual Budget for comparison and cherry-picking.
 
 **Setup required in Phase 1:**
+
 - Add upstream remote: `git remote add upstream <actual-budget-repo-url>`
 - Create and push `upstream/main` branch tracking the upstream repo
 - Document the merge workflow in README or CONTRIBUTING.md
@@ -91,27 +94,29 @@ None raised during discussion.
 </user_constraints>
 
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|-----------------|
-| FOUND-01 | User can build and run the forked Actual Budget repo in Docker with no errors | Upstream Docker setup confirmed: `node:22-bookworm` base, `./bin/docker-start` entrypoint, port 3001. Yarn 4.10.3 workspace build sequence identified. |
-| FOUND-02 | User can open the app in Chrome on Windows and create a budget | App serves on port 3001 (or 5006 for sync-server only). Development docker-compose mounts full monorepo. Desktop-client served from sync-server's `ACTUAL_WEB_ROOT`. |
+| ID       | Description                                                                           | Research Support                                                                                                                                                                                            |
+| -------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FOUND-01 | User can build and run the forked Actual Budget repo in Docker with no errors         | Upstream Docker setup confirmed: `node:22-bookworm` base, `./bin/docker-start` entrypoint, port 3001. Yarn 4.10.3 workspace build sequence identified.                                                      |
+| FOUND-02 | User can open the app in Chrome on Windows and create a budget                        | App serves on port 3001 (or 5006 for sync-server only). Development docker-compose mounts full monorepo. Desktop-client served from sync-server's `ACTUAL_WEB_ROOT`.                                        |
 | FOUND-03 | RSA key pair is generated and file-mounted as a Docker secret for Enable Banking auth | Bind mount pattern `./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro` confirmed. `jose` `importPKCS8` loads the key at startup. Key persists because it is on host filesystem, not inside container. |
-| FOUND-04 | Fork commit convention established (all custom commits tagged with `[eb]` prefix) | Git remote setup, upstream branch creation, and `[eb]` prefix tagging all standard git operations. No library required. |
+| FOUND-04 | Fork commit convention established (all custom commits tagged with `[eb]` prefix)     | Git remote setup, upstream branch creation, and `[eb]` prefix tagging all standard git operations. No library required.                                                                                     |
+
 </phase_requirements>
 
 ## Standard Stack
 
 ### Core (for Phase 1 specifically)
 
-| Library | Version | Purpose | Why Standard |
-|---------|---------|---------|--------------|
-| `jose` | `6.1.3` | RS256 JWT signing for Enable Banking auth | Zero-dependency, ESM-native, TypeScript-first. `SignJWT` + `importPKCS8` covers Enable Banking's exact requirements. Confirmed current via `npm view jose version`. |
-| `axios` | `1.13.5` | HTTP client for Enable Banking API calls | Already used by the GoCardless adapter. Avoiding a second HTTP abstraction. No Enable Banking TypeScript SDK exists on npm - raw HTTP required. Confirmed via `npm view axios version`. |
-| Yarn | `4.10.3` | Package manager | Hardcoded in upstream `package.json` as `"packageManager": "yarn@4.10.3"`. Node 22 minimum. NOT npm or pnpm. |
-| `node:22-bookworm` | Docker base | Container runtime | Upstream Dockerfile confirmed. LTS Node 22. Debian bookworm for apt-get openssl. |
-| `nodemon` | `3.1.11` | Sync-server auto-restart in Docker dev mode | Already a devDependency in sync-server's package.json (confirmed from upstream). Use existing install. |
+| Library            | Version     | Purpose                                     | Why Standard                                                                                                                                                                            |
+| ------------------ | ----------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `jose`             | `6.1.3`     | RS256 JWT signing for Enable Banking auth   | Zero-dependency, ESM-native, TypeScript-first. `SignJWT` + `importPKCS8` covers Enable Banking's exact requirements. Confirmed current via `npm view jose version`.                     |
+| `axios`            | `1.13.5`    | HTTP client for Enable Banking API calls    | Already used by the GoCardless adapter. Avoiding a second HTTP abstraction. No Enable Banking TypeScript SDK exists on npm - raw HTTP required. Confirmed via `npm view axios version`. |
+| Yarn               | `4.10.3`    | Package manager                             | Hardcoded in upstream `package.json` as `"packageManager": "yarn@4.10.3"`. Node 22 minimum. NOT npm or pnpm.                                                                            |
+| `node:22-bookworm` | Docker base | Container runtime                           | Upstream Dockerfile confirmed. LTS Node 22. Debian bookworm for apt-get openssl.                                                                                                        |
+| `nodemon`          | `3.1.11`    | Sync-server auto-restart in Docker dev mode | Already a devDependency in sync-server's package.json (confirmed from upstream). Use existing install.                                                                                  |
 
 ### Note on Package Installation
 
@@ -126,11 +131,11 @@ yarn workspace @actual-app/sync-server add jose axios
 
 ### Alternatives Considered
 
-| Instead of | Could Use | Tradeoff |
-|------------|-----------|----------|
-| `jose` | `jsonwebtoken` | CommonJS-only, requires `@types/jsonwebtoken`. jose is the ESM successor and is actively maintained. |
-| `jose` | `node-jose` | Unmaintained since 2019. |
-| `axios` | Native `fetch` | Requires manual `response.ok` checking. Axios matches what GoCardless adapter already uses. |
+| Instead of | Could Use      | Tradeoff                                                                                             |
+| ---------- | -------------- | ---------------------------------------------------------------------------------------------------- |
+| `jose`     | `jsonwebtoken` | CommonJS-only, requires `@types/jsonwebtoken`. jose is the ESM successor and is actively maintained. |
+| `jose`     | `node-jose`    | Unmaintained since 2019.                                                                             |
+| `axios`    | Native `fetch` | Requires manual `response.ok` checking. Axios matches what GoCardless adapter already uses.          |
 
 ## Architecture Patterns
 
@@ -261,7 +266,7 @@ export const SecretName = {
   pluggyai_itemIds: 'pluggyai_itemIds',
   // ADD:
   enablebanking_appId: 'enablebanking_appId',
-  enablebanking_keyPath: 'enablebanking_keyPath',  // or read from env
+  enablebanking_keyPath: 'enablebanking_keyPath', // or read from env
 };
 ```
 
@@ -314,7 +319,8 @@ export async function generateJWT(applicationId) {
 export async function apiRequest(method, path, body = null) {
   const appId = process.env.ENABLE_BANKING_APP_ID;
   const jwt = await generateJWT(appId);
-  const baseUrl = process.env.ENABLE_BANKING_BASE_URL ?? 'https://api.enablebanking.com';
+  const baseUrl =
+    process.env.ENABLE_BANKING_BASE_URL ?? 'https://api.enablebanking.com';
   return axios({
     method,
     url: `${baseUrl}${path}`,
@@ -331,6 +337,7 @@ export async function apiRequest(method, path, body = null) {
 The upstream `docker-compose.yml` is a dev-only file with a single service (`actual-development`) that mounts the full monorepo and runs `./bin/docker-start`. Phase 1 replaces this with a production-usable setup that also supports the hybrid dev workflow.
 
 **Confirmed upstream Docker details:**
+
 - Base image: `node:22-bookworm`
 - Working directory: `/app`
 - Port: 3001 (sync-server listens on 3001 in the dev entrypoint, `ACTUAL_PORT` defaults to 5006 for production)
@@ -352,7 +359,7 @@ services:
       - ENABLE_BANKING_KEY_PATH=/run/secrets/eb_private.pem
       - ENABLE_BANKING_BASE_URL=${ENABLE_BANKING_BASE_URL:-https://api.enablebanking.com}
     ports:
-      - "${SYNC_PORT:-5006}:5006"
+      - '${SYNC_PORT:-5006}:5006'
     volumes:
       - actual_data:/data
       - ./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro
@@ -363,6 +370,7 @@ volumes:
 ```
 
 **Development toggle via env vars:**
+
 - `NODE_ENV=development` enables nodemon in the start script
 - Desktop-client runs locally with `yarn workspace @actual-app/desktop-client dev` pointing at sync-server
 - Production: `NODE_ENV=production`, desktop-client served from sync-server's `ACTUAL_WEB_ROOT`
@@ -387,6 +395,7 @@ git merge upstream/main --allow-unrelated-histories
 ```
 
 **Commit prefix convention:** All custom commits carry `[eb]` in the message body (not the type prefix), e.g.:
+
 ```
 feat(sync-server): [eb] add app-enablebanking scaffold
 chore: [eb] add secrets/ to .gitignore
@@ -403,12 +412,12 @@ chore: [eb] add secrets/ to .gitignore
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| JWT RS256 signing | Custom crypto implementation | `jose` SignJWT | Edge cases in JWT header encoding, key import, and algorithm validation. jose is audited and spec-compliant. |
-| File watching in Docker | Custom fs.watch loop | `nodemon` (already installed) | nodemon handles SIGTERM, debouncing, and process restart correctly. Already in sync-server devDependencies. |
-| Secrets storage | Custom env parser | `convict` (already used in load-config.js) | Actual Budget already uses convict for config schema validation. |
-| Docker named volumes | Bind mounts with Windows paths | Named volumes (`actual_data:/data`) | Windows paths in Docker Compose bind mounts have known WSL2 permission issues. Named volumes are path-agnostic. |
+| Problem                 | Don't Build                    | Use Instead                                | Why                                                                                                             |
+| ----------------------- | ------------------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| JWT RS256 signing       | Custom crypto implementation   | `jose` SignJWT                             | Edge cases in JWT header encoding, key import, and algorithm validation. jose is audited and spec-compliant.    |
+| File watching in Docker | Custom fs.watch loop           | `nodemon` (already installed)              | nodemon handles SIGTERM, debouncing, and process restart correctly. Already in sync-server devDependencies.     |
+| Secrets storage         | Custom env parser              | `convict` (already used in load-config.js) | Actual Budget already uses convict for config schema validation.                                                |
+| Docker named volumes    | Bind mounts with Windows paths | Named volumes (`actual_data:/data`)        | Windows paths in Docker Compose bind mounts have known WSL2 permission issues. Named volumes are path-agnostic. |
 
 ## Common Pitfalls
 
@@ -421,6 +430,7 @@ chore: [eb] add secrets/ to .gitignore
 **How to avoid:** Bind-mount the key as a read-only file: `./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro`. The file lives on the host, survives container recreation, and is never modified by the container.
 
 **Verification step (Phase 1 success criterion #3):** After initial setup, run:
+
 1. `docker compose up` - verify JWT auth returns 200 from sandbox
 2. `docker compose down`
 3. `docker compose up` - verify JWT auth still returns 200 (same key, same file)
@@ -430,6 +440,7 @@ chore: [eb] add secrets/ to .gitignore
 **What goes wrong:** Running `npm install` or `npm run build` instead of `yarn install` or `yarn build`. The monorepo's `package.json` specifies `packageManager: "yarn@4.10.3"`. Running npm creates a `package-lock.json` that conflicts with the Yarn 4 `yarn.lock` (Berry format).
 
 **How to avoid:** Install Yarn 4 globally or via Corepack:
+
 ```bash
 corepack enable
 corepack prepare yarn@4.10.3 --activate
@@ -479,9 +490,11 @@ import { importPKCS8, SignJWT } from 'jose';
 import { readFileSync } from 'fs';
 import axios from 'axios';
 
-const EB_BASE_URL = process.env.ENABLE_BANKING_BASE_URL ?? 'https://api.enablebanking.com';
+const EB_BASE_URL =
+  process.env.ENABLE_BANKING_BASE_URL ?? 'https://api.enablebanking.com';
 const EB_APP_ID = process.env.ENABLE_BANKING_APP_ID;
-const EB_KEY_PATH = process.env.ENABLE_BANKING_KEY_PATH ?? '/run/secrets/eb_private.pem';
+const EB_KEY_PATH =
+  process.env.ENABLE_BANKING_KEY_PATH ?? '/run/secrets/eb_private.pem';
 
 let _privateKey = null;
 
@@ -529,7 +542,10 @@ export async function testAuth() {
 // packages/sync-server/src/app-enablebanking/app-enablebanking.js
 
 import express from 'express';
-import { requestLoggerMiddleware, validateSessionMiddleware } from '../util/middlewares';
+import {
+  requestLoggerMiddleware,
+  validateSessionMiddleware,
+} from '../util/middlewares';
 import { handleError } from './util/handle-error';
 import { testAuth } from './enablebanking-service';
 
@@ -542,27 +558,33 @@ app.use(express.json());
 app.use(validateSessionMiddleware);
 
 // Phase 1: status endpoint only - full routes in Phase 2
-app.post('/status', handleError(async (req, res) => {
-  const appId = process.env.ENABLE_BANKING_APP_ID;
-  const keyPath = process.env.ENABLE_BANKING_KEY_PATH;
+app.post(
+  '/status',
+  handleError(async (req, res) => {
+    const appId = process.env.ENABLE_BANKING_APP_ID;
+    const keyPath = process.env.ENABLE_BANKING_KEY_PATH;
 
-  if (!appId || !keyPath) {
-    return res.send({
-      status: 'ok',
-      data: { configured: false, reason: 'Missing ENABLE_BANKING_APP_ID or ENABLE_BANKING_KEY_PATH' },
-    });
-  }
+    if (!appId || !keyPath) {
+      return res.send({
+        status: 'ok',
+        data: {
+          configured: false,
+          reason: 'Missing ENABLE_BANKING_APP_ID or ENABLE_BANKING_KEY_PATH',
+        },
+      });
+    }
 
-  try {
-    await testAuth();
-    res.send({ status: 'ok', data: { configured: true } });
-  } catch (err) {
-    res.send({
-      status: 'ok',
-      data: { configured: false, reason: err.message },
-    });
-  }
-}));
+    try {
+      await testAuth();
+      res.send({ status: 'ok', data: { configured: true } });
+    } catch (err) {
+      res.send({
+        status: 'ok',
+        data: { configured: false, reason: err.message },
+      });
+    }
+  }),
+);
 ```
 
 ### Mounting in app.ts
@@ -611,14 +633,15 @@ This locally generated key will NOT authenticate with Enable Banking (public key
 
 ## State of the Art
 
-| Old Approach | Current Approach | When Changed | Impact |
-|--------------|------------------|--------------|--------|
-| `actual-server` separate repo | All adapters in `packages/sync-server` monorepo | February 2025 | The fork starts from the monorepo directly - no separate server repo to manage |
-| Nordigen / GoCardless for EU | Enable Banking (free personal use) | July 2025 (GC stopped EU) | The fork's entire reason for existence |
-| Per-provider Dockerfile | Single monorepo root Dockerfile for dev | N/A | Phase 1 must create a dedicated sync-server production Dockerfile |
-| `jsonwebtoken` (CommonJS) | `jose` v6 (ESM-native) | jose v3+ | Matches the `"type": "module"` ES module requirement in sync-server's package.json |
+| Old Approach                  | Current Approach                                | When Changed              | Impact                                                                             |
+| ----------------------------- | ----------------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------- |
+| `actual-server` separate repo | All adapters in `packages/sync-server` monorepo | February 2025             | The fork starts from the monorepo directly - no separate server repo to manage     |
+| Nordigen / GoCardless for EU  | Enable Banking (free personal use)              | July 2025 (GC stopped EU) | The fork's entire reason for existence                                             |
+| Per-provider Dockerfile       | Single monorepo root Dockerfile for dev         | N/A                       | Phase 1 must create a dedicated sync-server production Dockerfile                  |
+| `jsonwebtoken` (CommonJS)     | `jose` v6 (ESM-native)                          | jose v3+                  | Matches the `"type": "module"` ES module requirement in sync-server's package.json |
 
 **Deprecated/outdated:**
+
 - The `actual-server` separate GitHub repo: archived February 2025. Do not reference it.
 - GoCardless for new EU accounts: stopped July 2025. The GoCardless adapter code remains in the repo for existing users but should not be used as a behavioral reference for Enable Banking flows (authentication is completely different).
 
@@ -679,6 +702,7 @@ This locally generated key will NOT authenticate with Enable Banking (public key
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - Yarn 4.10.3 confirmed from upstream package.json. Node 22 confirmed from Dockerfile. Package versions confirmed from npm registry.
 - Architecture: HIGH - GoCardless adapter structure inspected directly from upstream GitHub. Export pattern, middleware order, route structure all confirmed.
 - Pitfalls: HIGH for Docker and RSA key concerns (from prior research plus direct code inspection). MEDIUM for About page merge risk (requires reading the actual file to confirm).
@@ -688,6 +712,7 @@ This locally generated key will NOT authenticate with Enable Banking (public key
 **Valid until:** 2026-04-18 (stable - Yarn 4 and Node 22 are locked, GoCardless adapter pattern unlikely to change)
 
 **Prerequisites not yet resolved (must complete before Phase 1 begins):**
+
 1. Register a sandbox application at [enablebanking.com/cp](https://enablebanking.com/cp/applications) - required to get App ID and sandbox RSA key pair
 2. Verify Yarn is installed locally (`yarn --version` should be 4.x)
 3. Confirm Node 22 is installed locally (`node --version` should be >= 22)

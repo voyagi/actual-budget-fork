@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import type { ComponentProps, ComponentType, CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router';
-import { animated, config, useSpring } from '@react-spring/web';
 
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
 import {
@@ -19,6 +18,7 @@ import { SvgCalendar3 } from '@actual-app/components/icons/v2';
 import { styles } from '@actual-app/components/styles';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
+import { animated, config, useSpring } from '@react-spring/web';
 import { useDrag } from '@use-gesture/react';
 
 import { useIsTestEnv } from '@desktop-client/hooks/useIsTestEnv';

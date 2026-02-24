@@ -287,15 +287,11 @@ export async function loginWithOpenIdFinalize(body) {
       });
     } else {
       // Alternative grant type: use genericGrantRequest for non-standard flows
-      tokens = await genericGrantRequest(
-        oidcConfig,
-        'authorization_code',
-        {
-          code: body.code,
-          redirect_uri: redirectUri,
-          code_verifier,
-        },
-      );
+      tokens = await genericGrantRequest(oidcConfig, 'authorization_code', {
+        code: body.code,
+        redirect_uri: redirectUri,
+        code_verifier,
+      });
     }
 
     // In v6, fetchUserInfo requires an expectedSubject parameter.

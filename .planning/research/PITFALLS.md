@@ -17,6 +17,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Consequences:** Integration works end-to-end in sandbox, fails silently or throws on first real bank connection. Field names, date formats, or pagination may differ. Rate limiting may behave differently.
 
 **Prevention:**
+
 - Use sandbox only for testing JWT signing, request structure, and HTTP wiring
 - Create your own test fixtures that represent known-bad cases: null fields, missing optional fields, pending transactions that later become booked
 - Plan a separate "production smoke test" phase with a real bank account before considering the feature done
@@ -35,6 +36,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Consequences:** Duplicate transactions in Actual Budget corrupts the budget. Manual cleanup is tedious with no undo. Users lose trust in the app.
 
 **Prevention:**
+
 - Implement a deduplication layer keyed on `(transactionId OR bankTransactionId) + amount + date + accountId`
 - Store a `raw_pending_id` field alongside imported transactions so you can match and update-in-place when the booked version arrives
 - Never blindly insert — always upsert (insert or update)
@@ -53,6 +55,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Consequences:** Auth works once, breaks after container restart. Silent JWT signing failure with a 401 response. Worse: key works until the next `docker compose up` then suddenly stops, with no obvious cause.
 
 **Prevention:**
+
 - Store the RSA private key as a file on the host, bind-mounted into the container (e.g. `./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro`)
 - Never embed the key in environment variables — use Docker secrets or a mounted file
 - Add the secrets directory to `.gitignore` immediately during project setup
@@ -71,6 +74,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Consequences:** Budget data goes stale. User doesn't notice until they wonder why their balance is weeks out of date. There is no way to programmatically re-consent without user interaction.
 
 **Prevention:**
+
 - Track `session_expiry_at` for each bank connection in the database
 - Add a proactive check: 7 days before expiry, show a banner in the UI ("Bank connection expires in 7 days — click to renew")
 - On sync failure due to expired session, surface the error prominently in the UI rather than silently logging
@@ -89,6 +93,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Consequences:** Critical security patches are missed for months. New Actual Budget features (better mobile UI, budget improvements) are inaccessible. Eventually the fork is so stale that merging is a rewrite.
 
 **Prevention:**
+
 - Tag all custom commits with a consistent prefix (e.g. `[eb]` for Enable Banking) so they are identifiable in git log
 - Keep all custom code in clearly-bounded locations: a new `packages/enable-banking/` package, and a new adapter file following the exact GoCardless adapter pattern
 - Minimize modifications to existing Actual Budget files — the goal is to add files, not edit them
@@ -108,6 +113,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Why it happens:** Service workers are designed for resilience, which means they resist updates by default. The `vite-plugin-pwa` generates a precache manifest; if the update strategy is not configured explicitly, users may miss updates for days.
 
 **Prevention:**
+
 - Use `vite-plugin-pwa` with `registerType: 'autoUpdate'` for personal use (acceptable because there is only one user, you)
 - Add a `skipWaiting: true` to the service worker to force activation immediately on install
 - Test the update cycle explicitly: deploy a change, reload the PWA on phone, confirm new version loads
@@ -123,6 +129,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Why it happens:** Apple's WKWebView has a separate, more restricted service worker implementation from Chrome. iOS has historically shipped PWA features late and with more edge cases.
 
 **Prevention:**
+
 - Test all offline scenarios on an actual iOS device (not just Chrome DevTools offline mode, not just Android)
 - For the offline data requirement: Actual Budget's own sync client already stores data in IndexedDB. Confirm this works on iOS before building additional caching layers on top
 - Keep offline functionality as "read-only" — attempting to queue writes offline and sync later is significantly more complex and fragile on iOS
@@ -141,6 +148,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Consequences:** Budget database wiped on next `docker compose up --force-recreate` or after a Docker update.
 
 **Prevention:**
+
 - Use a named volume for Actual Budget data (`actual_data:/data`) rather than a bind mount — Docker manages the path
 - Verify persistence on day one: create a test budget entry, run `docker compose down`, run `docker compose up`, confirm the entry still exists
 - Keep manual backups of the `/data` volume to a Windows path on a weekly schedule
@@ -156,6 +164,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Why it happens:** PWA install prompt gating is stricter than just serving over HTTPS. The certificate must be trusted by the phone's certificate store. Self-signed certs require manual per-device trust installation, which is cumbersome on iOS.
 
 **Prevention:**
+
 - Use a real domain with a real Let's Encrypt certificate (via Cloudflare Tunnel or a public DNS record pointing to Tailscale IP or similar)
 - Caddy + Cloudflare Tunnel is the lowest-friction path: Cloudflare terminates TLS with a trusted cert, tunnels to local Caddy, no port forwarding needed
 - Avoid self-signed certificates for anything that needs to work on iOS PWA
@@ -171,6 +180,7 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 **Why it happens:** Enable Banking acts as an aggregator. Their platform rate limits and the underlying ASPSP PSD2 limits are separate. The 429 response body may not clearly indicate which limit was hit.
 
 **Prevention:**
+
 - Implement separate retry logic: PSD2 daily-limit 429s should not retry until the next sync window; platform throttle 429s should use exponential backoff
 - Log the response body of every 429 to determine which limit was hit
 - Design the 4x/day sync schedule to spread calls evenly (e.g. 06:00, 12:00, 18:00, 23:00) rather than allowing manual ad-hoc sync that could exhaust the daily limit early
@@ -217,19 +227,19 @@ Mistakes that cause rewrites, data loss, or complete blockers.
 
 ## Phase-Specific Warnings
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| Fork setup | Merge debt accumulation | Establish prefix tagging and monthly sync ritual before writing any code |
-| Enable Banking sandbox | Sandbox diverges from production | Use sandbox for HTTP wiring only, build separate real-data test plan |
-| Enable Banking auth | RSA key not persisting across restarts | Mount key as a file, test restart persistence on day one |
-| Enable Banking data model | Duplicate pending/booked transactions | Design upsert with deduplication before first sync |
-| Consent lifecycle | Silent sync failure on expiry | Implement expiry tracking and UI notification before going live |
-| PWA implementation | Service worker update cycle | Use `autoUpdate` for personal use, test on production build not dev server |
-| PWA on iOS | Service worker instability | Explicit iOS device testing, not emulator |
-| Docker deployment | Volume data loss | Use named volumes, verify persistence before entering real data |
-| HTTPS setup | Certificate not trusted on iOS | Use Cloudflare Tunnel or real domain, not self-signed cert |
-| Rate limiting | PSD2 vs platform 429 confusion | Log 429 response bodies, implement two separate retry strategies |
-| Upstream merges | Yarn lockfile conflicts | Always run `yarn install` after merge, never resolve lockfile manually |
+| Phase Topic               | Likely Pitfall                         | Mitigation                                                                 |
+| ------------------------- | -------------------------------------- | -------------------------------------------------------------------------- |
+| Fork setup                | Merge debt accumulation                | Establish prefix tagging and monthly sync ritual before writing any code   |
+| Enable Banking sandbox    | Sandbox diverges from production       | Use sandbox for HTTP wiring only, build separate real-data test plan       |
+| Enable Banking auth       | RSA key not persisting across restarts | Mount key as a file, test restart persistence on day one                   |
+| Enable Banking data model | Duplicate pending/booked transactions  | Design upsert with deduplication before first sync                         |
+| Consent lifecycle         | Silent sync failure on expiry          | Implement expiry tracking and UI notification before going live            |
+| PWA implementation        | Service worker update cycle            | Use `autoUpdate` for personal use, test on production build not dev server |
+| PWA on iOS                | Service worker instability             | Explicit iOS device testing, not emulator                                  |
+| Docker deployment         | Volume data loss                       | Use named volumes, verify persistence before entering real data            |
+| HTTPS setup               | Certificate not trusted on iOS         | Use Cloudflare Tunnel or real domain, not self-signed cert                 |
+| Rate limiting             | PSD2 vs platform 429 confusion         | Log 429 response bodies, implement two separate retry strategies           |
+| Upstream merges           | Yarn lockfile conflicts                | Always run `yarn install` after merge, never resolve lockfile manually     |
 
 ## Sources
 

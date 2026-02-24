@@ -7,29 +7,29 @@ tags: [git, history-rewrite, rebase, commit-convention]
 # Dependency graph
 requires:
   - phase: 01-foundation-and-api-client
-    provides: "Custom commits that needed the [eb] tag convention applied"
+    provides: 'Custom commits that needed the [eb] tag convention applied'
 provides:
-  - "Clean git history where all 11 custom commits carry the [eb] tag"
-  - "FOUND-04 requirement fully satisfied (10/10 -> 11/11 custom commits tagged)"
+  - 'Clean git history where all 11 custom commits carry the [eb] tag'
+  - 'FOUND-04 requirement fully satisfied (10/10 -> 11/11 custom commits tagged)'
 affects: []
 
 # Tech tracking
 tech-stack:
   added: []
   patterns:
-    - "All custom commits in this fork carry [eb] prefix after the scope label"
+    - 'All custom commits in this fork carry [eb] prefix after the scope label'
 
 key-files:
   created: []
   modified: []
 
 key-decisions:
-  - "Used PowerShell GIT_SEQUENCE_EDITOR script instead of sed-based approach because MSYS cannot find shell scripts via the GIT_SEQUENCE_EDITOR path"
-  - "git rebase --continue after amend correctly re-applied the downstream commit (462e2568e -> 8c32555a0)"
-  - "Feature branch rebase skipped already-applied master commits (expected cherry-pick detection behavior)"
+  - 'Used PowerShell GIT_SEQUENCE_EDITOR script instead of sed-based approach because MSYS cannot find shell scripts via the GIT_SEQUENCE_EDITOR path'
+  - 'git rebase --continue after amend correctly re-applied the downstream commit (462e2568e -> 8c32555a0)'
+  - 'Feature branch rebase skipped already-applied master commits (expected cherry-pick detection behavior)'
 
 patterns-established:
-  - "MSYS GIT_SEQUENCE_EDITOR pattern: write temp script to workspace dir (not /tmp/), use PowerShell for content replacement, pass full Windows path with forward slashes"
+  - 'MSYS GIT_SEQUENCE_EDITOR pattern: write temp script to workspace dir (not /tmp/), use PowerShell for content replacement, pass full Windows path with forward slashes'
 
 requirements-completed:
   - FOUND-04
@@ -111,5 +111,6 @@ None - no external service configuration required.
 - Phase 2 (Bank Sync Pipeline) can proceed
 
 ---
-*Phase: 01-foundation-and-api-client*
-*Completed: 2026-02-18*
+
+_Phase: 01-foundation-and-api-client_
+_Completed: 2026-02-18_

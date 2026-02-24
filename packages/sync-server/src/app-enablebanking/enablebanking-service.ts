@@ -86,9 +86,15 @@ export async function getAspsps(country) {
 // [eb] Initiates an OAuth authorization flow for the given bank.
 // Returns { url, state } where url is the bank's redirect URL and state is an
 // opaque token stored in eb_sessions for CSRF protection.
-export async function createAuth({ aspspName, aspspCountry, redirectUrl, state }) {
-  const validUntil = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-    .toISOString();
+export async function createAuth({
+  aspspName,
+  aspspCountry,
+  redirectUrl,
+  state,
+}) {
+  const validUntil = new Date(
+    Date.now() + 90 * 24 * 60 * 60 * 1000,
+  ).toISOString();
 
   const response = await ebRequest('POST', '/auth', {
     aspsp: { name: aspspName, country: aspspCountry },
@@ -159,6 +165,9 @@ export async function getTransactions(accountUid, startDate, continuationKey?) {
 
 // [eb] Returns balance information for an account.
 export async function getBalances(accountUid) {
-  const response = await ebRequest('GET', '/accounts/' + accountUid + '/balances');
+  const response = await ebRequest(
+    'GET',
+    '/accounts/' + accountUid + '/balances',
+  );
   return response.data;
 }

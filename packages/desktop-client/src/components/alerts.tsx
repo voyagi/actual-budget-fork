@@ -70,7 +70,12 @@ type ScopedAlertProps = {
   role?: string;
 };
 
-export const Information = ({ style, children, id, role }: ScopedAlertProps) => {
+export const Information = ({
+  style,
+  children,
+  id,
+  role,
+}: ScopedAlertProps) => {
   return (
     <Alert
       icon={SvgInformationOutline}

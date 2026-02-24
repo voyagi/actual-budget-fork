@@ -1,6 +1,6 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@actual-app/components/button';
 import { theme } from '@actual-app/components/theme';
@@ -29,7 +29,9 @@ function RouteErrorFallback({
       <View style={{ fontSize: 18, fontWeight: 600, marginBottom: 10 }}>
         {t('Something went wrong loading this page.')}
       </View>
-      <View style={{ fontSize: 14, marginBottom: 20, color: theme.pageTextLight }}>
+      <View
+        style={{ fontSize: 14, marginBottom: 20, color: theme.pageTextLight }}
+      >
         {error.message}
       </View>
       <Button variant="primary" onPress={resetErrorBoundary}>
@@ -39,7 +41,11 @@ function RouteErrorFallback({
   );
 }
 
-export function RouteErrorBoundary({ children }: { children: React.ReactNode }) {
+export function RouteErrorBoundary({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <ErrorBoundary FallbackComponent={RouteErrorFallback}>
       {children}

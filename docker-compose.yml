@@ -23,7 +23,7 @@ services:
       - ENABLE_BANKING_KEY_PATH=/run/secrets/eb_private.pem
       - ENABLE_BANKING_BASE_URL=${ENABLE_BANKING_BASE_URL:-https://api.enablebanking.com}
     ports:
-      - "${SYNC_PORT:-5006}:5006"
+      - '${SYNC_PORT:-5006}:5006'
     volumes:
       - actual_data:/data
       - ./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro

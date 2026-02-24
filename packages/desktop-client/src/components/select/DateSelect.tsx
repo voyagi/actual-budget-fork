@@ -14,6 +14,16 @@ import type {
   KeyboardEvent,
   Ref,
 } from 'react';
+import {
+  Button as AriaButton,
+  Calendar,
+  CalendarCell,
+  CalendarGrid,
+  CalendarGridBody,
+  CalendarGridHeader,
+  CalendarHeaderCell,
+  Heading,
+} from 'react-aria-components';
 
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
 import { Input } from '@actual-app/components/input';
@@ -25,16 +35,6 @@ import { View } from '@actual-app/components/view';
 import { css } from '@emotion/css';
 import { CalendarDate } from '@internationalized/date';
 import { addDays, format, isValid, parse, parseISO, subDays } from 'date-fns';
-import {
-  Button as AriaButton,
-  Calendar,
-  CalendarCell,
-  CalendarGrid,
-  CalendarGridBody,
-  CalendarGridHeader,
-  CalendarHeaderCell,
-  Heading,
-} from 'react-aria-components';
 
 import {
   currentDate,
@@ -48,7 +48,10 @@ import { InputField } from '@desktop-client/components/mobile/MobileForms';
 import { useMergedRefs } from '@desktop-client/hooks/useMergedRefs';
 import { useSyncedPref } from '@desktop-client/hooks/useSyncedPref';
 
-const FIRST_DAY_MAP: Record<string, 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'> = {
+const FIRST_DAY_MAP: Record<
+  string,
+  'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat'
+> = {
   '0': 'sun',
   '1': 'mon',
   '2': 'tue',

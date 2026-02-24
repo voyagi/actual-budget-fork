@@ -23,10 +23,10 @@ affects: [02-03-routes, 02-04-loot-core-integration, 03-automation-and-consent]
 tech-stack:
   added: []
   patterns:
-    - "getAccountDb() from account-db.js is the database access pattern for all eb_ tables"
-    - "normalizeTransaction isBooked parameter set from transaction status field (BOOK=true, PDNG=false)"
-    - "account_id derivation: ebAccount.account_id ?? ebAccount.uid - must be consistent between normalizeAccount and /callback route"
-    - "Pagination via continuation_key loop with maxPages=100 safeguard"
+    - 'getAccountDb() from account-db.js is the database access pattern for all eb_ tables'
+    - 'normalizeTransaction isBooked parameter set from transaction status field (BOOK=true, PDNG=false)'
+    - 'account_id derivation: ebAccount.account_id ?? ebAccount.uid - must be consistent between normalizeAccount and /callback route'
+    - 'Pagination via continuation_key loop with maxPages=100 safeguard'
 
 key-files:
   created:
@@ -39,14 +39,14 @@ key-files:
     - packages/sync-server/src/app-enablebanking/enablebanking-service.js
 
 key-decisions:
-  - "eb_sync_log uses actual_account_id (Actual Budget UUID) as primary identifier, not eb_account_uid, because the UI naturally has Actual UUIDs when querying sync status"
-  - "normalizeTransaction returns top-level date and notes fields required by loot-core defaultMappings - without date every transaction throws an error"
-  - "getTransactions maxPages=100 safeguard: logs warning and returns collected results rather than looping indefinitely if Enable Banking API returns unexpected continuation_key chains"
-  - "normalizeAccount account_id derivation (account_id ?? uid) must be replicated exactly in /callback route to maintain eb_account_map consistency"
+  - 'eb_sync_log uses actual_account_id (Actual Budget UUID) as primary identifier, not eb_account_uid, because the UI naturally has Actual UUIDs when querying sync status'
+  - 'normalizeTransaction returns top-level date and notes fields required by loot-core defaultMappings - without date every transaction throws an error'
+  - 'getTransactions maxPages=100 safeguard: logs warning and returns collected results rather than looping indefinitely if Enable Banking API returns unexpected continuation_key chains'
+  - 'normalizeAccount account_id derivation (account_id ?? uid) must be replicated exactly in /callback route to maintain eb_account_map consistency'
 
 patterns-established:
-  - "Balance extraction: CLAV > ITAV > ITBD > CLBD priority picks the most current available balance"
-  - "CRDT/DBIT sign convention: CRDT credit = positive amount, DBIT debit = negative amount"
+  - 'Balance extraction: CLAV > ITAV > ITBD > CLBD priority picks the most current available balance'
+  - 'CRDT/DBIT sign convention: CRDT credit = positive amount, DBIT debit = negative amount'
 
 requirements-completed: [SYNC-03, SYNC-04, SYNC-05, SYNC-08]
 
@@ -118,5 +118,6 @@ None - no external service configuration required.
 - Constraint documented: `/callback` route must use `ebAccount.account_id ?? ebAccount.uid` when inserting into `eb_account_map.eb_account_uid`
 
 ---
-*Phase: 02-bank-sync-pipeline*
-*Completed: 2026-02-19*
+
+_Phase: 02-bank-sync-pipeline_
+_Completed: 2026-02-19_

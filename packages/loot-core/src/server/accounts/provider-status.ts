@@ -344,11 +344,7 @@ export async function enableBankingStatus() {
   );
 }
 
-export async function enableBankingGetBanks({
-  country,
-}: {
-  country: string;
-}) {
+export async function enableBankingGetBanks({ country }: { country: string }) {
   const userToken = await asyncStorage.getItem('user-token');
 
   if (!userToken) {
@@ -396,11 +392,7 @@ export async function enableBankingCreateAuth({
   );
 }
 
-export async function enableBankingPollSession({
-  state,
-}: {
-  state: string;
-}) {
+export async function enableBankingPollSession({ state }: { state: string }) {
   const userToken = await asyncStorage.getItem('user-token');
 
   if (!userToken) {

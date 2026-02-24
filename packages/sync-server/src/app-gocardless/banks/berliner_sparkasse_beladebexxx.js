@@ -15,9 +15,12 @@ export default {
       transaction.remittanceInformationStructured ??
       transaction.remittanceInformationStructuredArray?.join(' ');
 
-    editedTrans.remittanceInformationUnstructured = transaction.additionalInformation
-      ? remittanceInformationUnstructured + ' ' + transaction.additionalInformation
-      : remittanceInformationUnstructured;
+    editedTrans.remittanceInformationUnstructured =
+      transaction.additionalInformation
+        ? remittanceInformationUnstructured +
+          ' ' +
+          transaction.additionalInformation
+        : remittanceInformationUnstructured;
 
     editedTrans.creditorName =
       transaction.ultimateCreditor ||

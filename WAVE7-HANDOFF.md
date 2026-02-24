@@ -36,14 +36,14 @@ errors but should not block on these:
 Split `packages/desktop-client/src/components/transactions/TransactionsTable.tsx`
 (3061 lines) into focused modules. Component boundaries at:
 
-| Component | Lines | Extract to |
-|---|---|---|
-| TransactionHeader + HeaderCell | 144-484 | TransactionHeader.tsx |
-| StatusCell + PayeeCell + PayeeIcons | 338-832 | TransactionCells.tsx |
-| Transaction (memo) | 833-1713 | TransactionRow.tsx |
-| TransactionError | 1714-1778 | TransactionError.tsx |
-| NewTransaction | 1779-1961 | NewTransaction.tsx |
-| TransactionTableInner | 1962-2318 | TransactionTableInner.tsx |
+| Component                           | Lines     | Extract to                |
+| ----------------------------------- | --------- | ------------------------- |
+| TransactionHeader + HeaderCell      | 144-484   | TransactionHeader.tsx     |
+| StatusCell + PayeeCell + PayeeIcons | 338-832   | TransactionCells.tsx      |
+| Transaction (memo)                  | 833-1713  | TransactionRow.tsx        |
+| TransactionError                    | 1714-1778 | TransactionError.tsx      |
+| NewTransaction                      | 1779-1961 | NewTransaction.tsx        |
+| TransactionTableInner               | 1962-2318 | TransactionTableInner.tsx |
 
 Keep in TransactionsTable.tsx: TransactionTable (line 2378, the ONLY
 public export), getCategoriesById (line 3050), imports + re-exports.
@@ -62,6 +62,7 @@ intricate focus/edit closures. Test with `npx tsc --noEmit`.
 **Scope:** ~80 .js files in `packages/sync-server/src/`
 
 Strategy:
+
 1. Enable `checkJs: true` in `packages/sync-server/tsconfig.json`
 2. Convert core infrastructure first: config.js, middleware files, database
 3. Convert GoCardless bank adapters last (lowest priority, most files)
@@ -98,10 +99,12 @@ document why. Aim for at least 5 of the 10.
 ### Agent 4: Finding #23 - Migrate groupBy to native Object.groupBy
 
 **Prerequisites to check first:**
+
 - Root `tsconfig.json` lib setting must include ES2024
 - If not, add it (or upgrade from ES2023)
 
 **Files:**
+
 - `packages/loot-core/src/shared/util.ts`:
   - `groupBy` (line ~102) -> `Map.groupBy()`
   - `groupById` (line ~154) -> `Object.groupBy()`
@@ -116,6 +119,7 @@ document why. Aim for at least 5 of the 10.
 **Scope:** Breaking API rewrite in `packages/sync-server/src/`
 
 Key API changes (v5 -> v6):
+
 - `new Issuer()` -> `discovery()` function
 - `client.authorizationUrl()` -> `buildAuthorizationUrl()`
 - `client.callback()` -> `authorizationCodeGrant()`
@@ -123,6 +127,7 @@ Key API changes (v5 -> v6):
 - v6 uses functional API, not class-based
 
 Steps:
+
 1. Find all openid-client imports: `grep -r "openid-client" packages/sync-server/`
 2. Read the v6 migration guide (web search for "openid-client v6 migration")
 3. Update package.json dependency
@@ -136,6 +141,7 @@ Steps:
 **Scope:** ~55 TODO/FIXME comments across source files.
 
 Steps:
+
 1. `grep -rn "TODO\|FIXME\|HACK\|XXX" packages/*/src/ --include="*.ts" --include="*.tsx" --include="*.js"`
 2. Categorize each into:
    - (a) Actionable now - fix it inline
@@ -153,12 +159,14 @@ Steps:
 **Scope:** `packages/desktop-client/src/components/select/DateSelect.tsx`
 
 This file has:
+
 - Custom keyboard navigation
 - Relative date parsing ("today", "+3d", "next month")
 - Integration with budget transaction UI
 - pikaday dependency for calendar rendering
 
 Steps:
+
 1. Read DateSelect.tsx fully to understand the interface
 2. Install `@react-aria/datepicker` and `@react-stately/datepicker`
 3. Replace pikaday calendar with react-aria DatePicker
@@ -176,6 +184,7 @@ preserved exactly. The budget UI depends on these behaviors.
 **Scope:** 7 files use react-spring for animations.
 
 Steps:
+
 1. Find all react-spring imports: `grep -rn "react-spring" packages/desktop-client/src/`
 2. Check current version: `react-spring@10.0.3` in package.json
 3. The upgrade path: `react-spring` -> `@react-spring/web`
@@ -201,16 +210,16 @@ Steps:
 
 ## File Conflict Matrix
 
-| Agent | Package | Key files | Conflicts with |
-|---|---|---|---|
-| 1 (#11) | desktop-client | TransactionsTable.tsx | None |
-| 2 (#14) | sync-server | *.js -> *.ts | None |
-| 3 (#25) | loot-core | 10 .ts files | Agent 4 (util.ts) |
-| 4 (#23) | loot-core | shared/util.ts + callers | Agent 3 (util.ts) |
-| 5 (#6) | sync-server | openid-client usage | Agent 2 (if same files) |
-| 6 (#26) | all packages | scattered TODOs | Low risk |
-| 7 (#28) | desktop-client | DateSelect.tsx | None |
-| 8 (#29) | desktop-client | 7 animation files | None |
+| Agent   | Package        | Key files                | Conflicts with          |
+| ------- | -------------- | ------------------------ | ----------------------- |
+| 1 (#11) | desktop-client | TransactionsTable.tsx    | None                    |
+| 2 (#14) | sync-server    | _.js -> _.ts             | None                    |
+| 3 (#25) | loot-core      | 10 .ts files             | Agent 4 (util.ts)       |
+| 4 (#23) | loot-core      | shared/util.ts + callers | Agent 3 (util.ts)       |
+| 5 (#6)  | sync-server    | openid-client usage      | Agent 2 (if same files) |
+| 6 (#26) | all packages   | scattered TODOs          | Low risk                |
+| 7 (#28) | desktop-client | DateSelect.tsx           | None                    |
+| 8 (#29) | desktop-client | 7 animation files        | None                    |
 
 **Sequencing constraint:** Agent 4 before Agent 3 on util.ts.
 Agent 2 and Agent 5 may touch overlapping sync-server files; coordinate
@@ -220,6 +229,7 @@ openid-client migration).
 ## Verification
 
 After all agents complete:
+
 1. `npx tsc --noEmit` - should show same 10 pre-existing errors (or fewer)
 2. `yarn test` - full test suite
 3. `yarn lint` - lint clean

@@ -1,7 +1,7 @@
 import createDebug from 'debug';
 
-import type { WrappedDatabase, MutateResult } from '../db';
 import { getAccountDb } from '../account-db';
+import type { WrappedDatabase, MutateResult } from '../db';
 
 export const SecretName = {
   gocardless_secretId: 'gocardless_secretId',

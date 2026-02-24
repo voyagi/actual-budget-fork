@@ -309,14 +309,10 @@ export function handleCategoryChange(months, oldValue, newValue) {
       if (newValue.is_income) {
         sheet
           .get()
-          .addDependencies(
-            sheetName,
-            'buffered-auto',
-            [
-              `${sheetName}!sum-amount-${id}`,
-              `${sheetName}!carryover-${id}`,
-            ],
-          );
+          .addDependencies(sheetName, 'buffered-auto', [
+            `${sheetName}!sum-amount-${id}`,
+            `${sheetName}!carryover-${id}`,
+          ]);
       }
     });
   } else if (oldValue && oldValue.cat_group !== newValue.cat_group) {

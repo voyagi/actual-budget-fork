@@ -158,7 +158,11 @@ export function DuplicateFileModal({
               </InitialFocus>
             </InlineField>
             {nameError && (
-              <FormError id="name-error" role="alert" style={{ marginLeft: 150, color: theme.warningText }}>
+              <FormError
+                id="name-error"
+                role="alert"
+                style={{ marginLeft: 150, color: theme.warningText }}
+              >
                 {nameError}
               </FormError>
             )}

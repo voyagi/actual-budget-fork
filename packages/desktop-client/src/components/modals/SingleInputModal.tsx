@@ -64,7 +64,9 @@ export function SingleInputModal({
                 <InputField
                   placeholder={inputPlaceholder}
                   aria-label={inputPlaceholder}
-                  aria-describedby={errorMessage ? 'single-input-error' : undefined}
+                  aria-describedby={
+                    errorMessage ? 'single-input-error' : undefined
+                  }
                   defaultValue={value}
                   onChangeValue={setValue}
                 />

@@ -1,9 +1,4 @@
-import {
-  memo,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, ReactNode, RefObject } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
@@ -19,10 +14,7 @@ import { format as formatDate, parseISO } from 'date-fns';
 
 import * as monthUtils from 'loot-core/shared/months';
 import { getStatusLabel } from 'loot-core/shared/schedules';
-import {
-  isPreviewId,
-  isTemporaryId,
-} from 'loot-core/shared/transactions';
+import { isPreviewId, isTemporaryId } from 'loot-core/shared/transactions';
 import {
   amountToCurrency,
   currencyToAmount,
@@ -37,16 +29,16 @@ import type {
   TransactionEntity,
 } from 'loot-core/types/models';
 
-import { PayeeCell, StatusCell } from './TransactionCells';
-import { TransactionMenu } from './TransactionMenu';
-import {
-  deserializeTransaction,
-  serializeTransaction,
-} from './table/utils';
+import { deserializeTransaction, serializeTransaction } from './table/utils';
 import type {
   TransactionEditFunction,
   TransactionUpdateFunction,
 } from './table/utils';
+import { PayeeCell, StatusCell } from './TransactionCells';
+import { TransactionMenu } from './TransactionMenu';
+// This helper is kept in TransactionsTable.tsx but we need it here too.
+// We import it from there via re-export.
+import { getCategoriesById } from './TransactionsTable';
 
 import { getAccountsById } from '@desktop-client/accounts/accountsSlice';
 import { AccountAutocomplete } from '@desktop-client/components/autocomplete/AccountAutocomplete';
@@ -66,18 +58,12 @@ import {
 import { useCachedSchedules } from '@desktop-client/hooks/useCachedSchedules';
 import { useContextMenu } from '@desktop-client/hooks/useContextMenu';
 import { useDisplayPayee } from '@desktop-client/hooks/useDisplayPayee';
-import {
-  useSelectedDispatch,
-} from '@desktop-client/hooks/useSelected';
+import { useSelectedDispatch } from '@desktop-client/hooks/useSelected';
 import { SheetNameProvider } from '@desktop-client/hooks/useSheetName';
 import { pushModal } from '@desktop-client/modals/modalsSlice';
 import { NotesTagFormatter } from '@desktop-client/notes/NotesTagFormatter';
 import { getPayeesById } from '@desktop-client/payees/payeesSlice';
 import { useDispatch } from '@desktop-client/redux';
-
-// This helper is kept in TransactionsTable.tsx but we need it here too.
-// We import it from there via re-export.
-import { getCategoriesById } from './TransactionsTable';
 
 type TransactionProps = {
   allTransactions?: TransactionEntity[];

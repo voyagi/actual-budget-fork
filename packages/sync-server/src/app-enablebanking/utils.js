@@ -33,9 +33,7 @@ export function normalizeTransaction(ebTransaction, isBooked) {
   // Payee: for debits the creditor is who we paid; for credits the debtor is
   // who paid us. Fall back to remittance info then 'Unknown'.
   const payeeName =
-    (credit_debit_indicator === 'DBIT'
-      ? creditor?.name
-      : debtor?.name) ??
+    (credit_debit_indicator === 'DBIT' ? creditor?.name : debtor?.name) ??
     remittance_information?.[0] ??
     'Unknown';
 
@@ -97,8 +95,7 @@ export function extractBalance(balances) {
     if (bal) {
       const raw = parseFloat(bal.balance_amount.amount);
       // Apply CRDT/DBIT sign if present on the balance object; default positive.
-      const sign =
-        bal.credit_debit_indicator === 'DBIT' ? -1 : 1;
+      const sign = bal.credit_debit_indicator === 'DBIT' ? -1 : 1;
       return Math.round(sign * raw * 100);
     }
   }

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractBalance, normalizeAccount, normalizeTransaction } from './utils';
+import {
+  extractBalance,
+  normalizeAccount,
+  normalizeTransaction,
+} from './utils';
 
 describe('normalizeTransaction', () => {
   const baseTransaction = {

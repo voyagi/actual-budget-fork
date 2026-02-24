@@ -66,7 +66,9 @@ describe('runMigrations', () => {
     );
     expect(row.actual_account_id).toBeNull();
 
-    db.mutate("DELETE FROM eb_account_map WHERE eb_account_uid = 'uid-nullable'");
+    db.mutate(
+      "DELETE FROM eb_account_map WHERE eb_account_uid = 'uid-nullable'",
+    );
     db.mutate("DELETE FROM eb_sessions WHERE id = 'test-sess'");
   });
 

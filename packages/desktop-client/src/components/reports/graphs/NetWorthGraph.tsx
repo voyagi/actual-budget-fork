@@ -157,7 +157,11 @@ function StackedTooltip({
               <th scope="col" style={{ textAlign: 'right' }}>
                 <Trans>Value</Trans>
               </th>
-              {showPercentage && <th scope="col" style={{ textAlign: 'right' }}>%</th>}
+              {showPercentage && (
+                <th scope="col" style={{ textAlign: 'right' }}>
+                  %
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -205,7 +209,10 @@ function StackedTooltip({
                 borderTop: '1px solid ' + theme.tableBorder,
               }}
             >
-              <th scope="row" style={{ textAlign: 'left', paddingLeft: 15, paddingTop: 5 }}>
+              <th
+                scope="row"
+                style={{ textAlign: 'left', paddingLeft: 15, paddingTop: 5 }}
+              >
                 <Trans>Total</Trans>
               </th>
               <td style={{ textAlign: 'right', paddingTop: 5 }}>

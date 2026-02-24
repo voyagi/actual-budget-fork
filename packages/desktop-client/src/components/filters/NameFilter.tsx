@@ -71,7 +71,9 @@ export function NameFilter({
       )}
       {err && (
         <SpaceBetween style={{ padding: 10, alignItems: 'center' }}>
-          <Text role="alert" style={{ color: theme.errorText }}>{err}</Text>
+          <Text role="alert" style={{ color: theme.errorText }}>
+            {err}
+          </Text>
         </SpaceBetween>
       )}
     </>

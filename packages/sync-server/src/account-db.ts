@@ -39,7 +39,9 @@ interface LoginMethodResult {
 
 export function listLoginMethods(): LoginMethodResult[] {
   const accountDb = getAccountDb();
-  const rows = accountDb.all('SELECT method, display_name, active FROM auth') as unknown as LoginMethodRow[];
+  const rows = accountDb.all(
+    'SELECT method, display_name, active FROM auth',
+  ) as unknown as LoginMethodRow[];
   return rows
     .filter(f =>
       rows.length > 1 && config.get('enforceOpenId')
@@ -65,7 +67,9 @@ export function getActiveLoginMethod(): string | undefined {
  * config options
  * fall back to using password
  */
-export function getLoginMethod(req?: { body?: { loginMethod?: string } }): string {
+export function getLoginMethod(req?: {
+  body?: { loginMethod?: string };
+}): string {
   if (
     typeof req !== 'undefined' &&
     (req.body || { loginMethod: null }).loginMethod &&
@@ -114,7 +118,8 @@ export async function bootstrap(
    FROM users
    WHERE users.user_name <> '' and users.owner = 1`,
     );
-    const countOfOwner = (countRow as { countOfOwner?: number } | null)?.countOfOwner ?? 0;
+    const countOfOwner =
+      (countRow as { countOfOwner?: number } | null)?.countOfOwner ?? 0;
 
     if (!forced && (!openIdEnabled || countOfOwner > 0)) {
       if (!needsBootstrap()) {
@@ -188,9 +193,10 @@ export async function disableOpenID(
   }
 
   const accountDb = getAccountDb();
-  const authRow = accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
-    'password',
-  ]);
+  const authRow = accountDb.first(
+    'SELECT extra_data FROM auth WHERE method = ?',
+    ['password'],
+  );
   const passwordHash = (authRow as { extra_data?: string } | null)?.extra_data;
 
   if (!passwordHash) {
@@ -244,7 +250,9 @@ interface Session {
 
 export function getSession(token: string): Session | null {
   const accountDb = getAccountDb();
-  return accountDb.first('SELECT * FROM sessions WHERE token = ?', [token]) as unknown as Session | null;
+  return accountDb.first('SELECT * FROM sessions WHERE token = ?', [
+    token,
+  ]) as unknown as Session | null;
 }
 
 interface UserInfo {
@@ -258,7 +266,9 @@ interface UserInfo {
 
 export function getUserInfo(userId: string): UserInfo | null {
   const accountDb = getAccountDb();
-  return accountDb.first('SELECT * FROM users WHERE id = ?', [userId]) as unknown as UserInfo | null;
+  return accountDb.first('SELECT * FROM users WHERE id = ?', [
+    userId,
+  ]) as unknown as UserInfo | null;
 }
 
 export function getUserPermission(userId: string): string {

@@ -51,6 +51,7 @@ remove the `export`.
 **File 2:** `packages/loot-core/src/server/db/mappings.ts` lines 57-59
 
 Delete the entire `getMapping` function:
+
 ```diff
 - export function getMapping(id) {
 -   return allMappings.get(id) || null;
@@ -87,6 +88,7 @@ Can all be done in parallel.
 **File 1:** `packages/api/index.ts`
 
 Remove the type import (lines 1-4):
+
 ```diff
 - import type {
 -   RequestInfo as FetchInfo,
@@ -95,6 +97,7 @@ Remove the type import (lines 1-4):
 ```
 
 Remove the conditional polyfill block (lines 28-34):
+
 ```diff
 - if (!globalThis.fetch) {
 -   globalThis.fetch = (url: URL | RequestInfo, init?: RequestInit) => {
@@ -106,6 +109,7 @@ Remove the conditional polyfill block (lines 28-34):
 ```
 
 **File 2:** `packages/api/package.json` - Remove `node-fetch` from dependencies:
+
 ```diff
   "dependencies": {
     "@actual-app/crdt": "workspace:^",
@@ -121,6 +125,7 @@ Remove the conditional polyfill block (lines 28-34):
 ### Finding #22: Replace flatten2 with .flat()
 
 **File 1:** `packages/loot-core/src/server/budget/util.ts` - Delete flatten2:
+
 ```diff
 - export function flatten2(arr) {
 -   return Array.prototype.concat.apply([], arr);
@@ -128,12 +133,14 @@ Remove the conditional polyfill block (lines 28-34):
 ```
 
 **File 2:** `packages/loot-core/src/server/budget/envelope.ts` line 9 - Update import:
+
 ```diff
 - import { flatten2, number, sumAmounts, unflatten2 } from './util';
 + import { number, sumAmounts, unflatten2 } from './util';
 ```
 
 Same file, line 131 - Replace call:
+
 ```diff
 -   dependencies: flatten2(
 -     expenseCategories.map(cat => [
@@ -150,6 +157,7 @@ Same file, line 131 - Replace call:
 ```
 
 Same file, line 164 - Same pattern:
+
 ```diff
 -   dependencies: flatten2(
 -     incomeCategories.map(c => [
@@ -166,6 +174,7 @@ Same file, line 164 - Same pattern:
 ```
 
 Same file, line 316 - Remove no-op flatten2 (input is already flat):
+
 ```diff
 -           flatten2([
 -             `${sheetName}!sum-amount-${id}`,
@@ -179,6 +188,7 @@ Same file, line 316 - Remove no-op flatten2 (input is already flat):
 
 **File 3:** `packages/loot-core/src/server/transactions/transaction-rules.test.ts`
 line 844:
+
 ```diff
 -     return Array.prototype.concat.apply([], arr);
 +     return arr.flat();
@@ -194,12 +204,14 @@ line 844:
 ```
 
 Line 23:
+
 ```diff
 - const currentHash = md5(views);
 + const currentHash = createHash('sha256').update(views).digest('hex');
 ```
 
 **File 2:** `packages/loot-core/package.json` - Remove md5 dependency:
+
 ```diff
 -   "md5": "^2.3.0",
 ```
@@ -212,11 +224,13 @@ next startup (harmless, the new hash gets stored in `__meta__`).
 ### Finding #19: Move html-to-image to correct package
 
 **File 1:** `package.json` (root) - Remove from root devDependencies:
+
 ```diff
 -   "html-to-image": "^1.11.13",
 ```
 
 **File 2:** `packages/desktop-client/package.json` - Add to devDependencies:
+
 ```diff
   "devDependencies": {
 +   "html-to-image": "^1.11.13",
@@ -239,20 +253,24 @@ Slightly larger scope but still low risk. Can be done in parallel.
 **Fix 1 (line 61):** Change 400 to 404 for FileNotFound.
 Search `packages/loot-core/src/server/` for `status === 400` in sync callers
 first. If safe:
+
 ```diff
 - res.status(400).send({ status: 'error', reason: 'file-not-found' });
 + res.status(404).send({ status: 'error', reason: 'file-not-found' });
 ```
+
 Remove the FIXME comment.
 
 **Fix 2 (lines 204, 299):** These header type guards are actually correct
 (Express headers CAN be arrays). Replace FIXME with explanatory comment:
+
 ```diff
 - // FIXME: Not sure how this cannot be a string when the header is set.
 + // Express headers can be string | string[] | undefined. Type guard required.
 ```
 
 **Fix 3 (line 358):** Uncomment the 422 validation for missing fileId:
+
 ```diff
 - // TODO: Return 422 if fileId is not provided.
 + if (!fileId) {
@@ -260,13 +278,16 @@ Remove the FIXME comment.
 +   return;
 + }
 ```
+
 Verify frontend callers of `get-user-file-info` handle 422.
 
 **Fix 4 (line 381):** Convert deleted to boolean:
+
 ```diff
 - deleted: boolToInt(file.deleted),
 + deleted: !!file.deleted,
 ```
+
 Search frontend for `deleted === 1` or `=== 0` and update to truthy/falsy.
 
 ### Finding #12: Extract sync-events.ts switch cases
@@ -274,6 +295,7 @@ Search frontend for `deleted === 1` or `=== 0` and update to truthy/falsy.
 **New file:** `packages/desktop-client/src/sync-event-handlers.ts`
 
 Create a handler type and lookup table:
+
 ```ts
 type SyncErrorContext = {
   event: SyncErrorEvent;
@@ -316,6 +338,7 @@ export const syncErrorHandlers: Record<string, SyncErrorHandler> = {
 **Modified file:** `packages/desktop-client/src/sync-events.ts`
 
 Replace the 300-line switch block with:
+
 ```ts
 import { syncErrorHandlers, handleUnknownError } from './sync-event-handlers';
 
@@ -323,14 +346,19 @@ const handler = syncErrorHandlers[event.subtype] ?? handleUnknownError;
 const result = handler(ctx);
 if (result.sideEffect) result.sideEffect();
 if (result.notification) {
-  store.dispatch(addNotification({ notification: { type: 'error', ...result.notification } }));
+  store.dispatch(
+    addNotification({
+      notification: { type: 'error', ...result.notification },
+    }),
+  );
 }
 ```
 
 ### Finding #20: Remove ~257 unused v1 icon components
 
 **Step 1:** Write a temporary script to find used icons:
-- Grep all `import.*from.*icons/v1` across packages/*/src/
+
+- Grep all `import.*from.*icons/v1` across packages/\*/src/
 - Extract icon names from imports
 - Compare against exports in `packages/component-library/src/icons/v1/index.ts`
 - Output list of unused icon names
@@ -363,6 +391,7 @@ package.json). The test uses `jsc.forall`, `jsc.nat`, `jsc.bool` - these map to
 `fc.assert(fc.property(...))`, `fc.nat()`, `fc.boolean()`.
 
 **File 2:** `packages/loot-core/package.json` - Remove jsverify:
+
 ```diff
 -   "jsverify": "^0.8.4",
 ```
@@ -403,6 +432,7 @@ unchanged since the re-export preserves the same API.
 in #2 above).
 
 **Step 2:** In `packages/sync-server/src/util/payee-name.js`, update import:
+
 ```diff
 - import title from './title/index.js';
 + import { title } from 'loot-core/src/server/accounts/title/index';
@@ -422,6 +452,7 @@ overriding the entire method.
 **File:** `packages/sync-server/src/app-gocardless/banks/integration-bank.js`
 
 Add a new helper method:
+
 ```js
 calculateStartingBalanceFromType(
   sortedTransactions,
@@ -469,6 +500,7 @@ Adapters that used `balances[0]` call with no type preference (uses fallback).
 **New file:** `packages/sync-server/src/app-gocardless/banks/sparkasse-base.js`
 
 Extract the shared `normalizeTransaction` logic:
+
 ```js
 import Fallback from './integration-bank.js';
 
@@ -507,6 +539,7 @@ overrides what differs (institutionIds, specific balance type preferences).
 divergence with cross-reference comments.
 
 **File 1:** `packages/loot-core/src/types/models/gocardless.ts` - Add header:
+
 ```ts
 // NOTE: Parallel type definitions exist in sync-server at
 // src/app-gocardless/gocardless-node.types.ts
@@ -530,17 +563,20 @@ Medium-risk structural improvements. Can be done in parallel across packages.
 ### Finding #15: Convert Enable Banking to TypeScript
 
 **Files to convert** (all in `packages/sync-server/src/app-enablebanking/`):
+
 1. `app-enablebanking.js` -> `app-enablebanking.ts`
 2. `enablebanking-service.js` -> `enablebanking-service.ts`
 3. `errors.js` -> `errors.ts`
 
 **For each file:**
+
 1. Rename `.js` to `.ts`
 2. Add type annotations to function parameters and return types
 3. Create proper interfaces for API responses
 4. Type the error classes with `errorCode: string` properties
 
 **New types to define** (in `enablebanking-service.ts` or a separate types file):
+
 ```ts
 interface EnableBankingASPSP {
   name: string;
@@ -567,10 +603,12 @@ interface EnableBankingAccount {
 **File:** `packages/desktop-client/src/components/FinancesApp.tsx`
 
 **Step 1:** Check for existing ErrorBoundary component:
+
 - Search for `ErrorBoundary` in `packages/desktop-client/src/`
 - If none exists, check `packages/component-library/src/`
 
 **Step 2:** Create a route-level ErrorBoundary if needed:
+
 ```tsx
 // packages/desktop-client/src/components/ErrorBoundary.tsx
 function RouteErrorFallback({ error, resetErrorBoundary }) {
@@ -584,6 +622,7 @@ function RouteErrorFallback({ error, resetErrorBoundary }) {
 ```
 
 **Step 3:** Wrap major route groups in FinancesApp.tsx:
+
 ```diff
   <Routes>
 +   <ErrorBoundary FallbackComponent={RouteErrorFallback}>
@@ -604,10 +643,12 @@ so errors in one domain don't crash another.
 ### Finding #18: Migrate console.log to Winston in sync-server
 
 **Step 1:** Find the Winston logger setup:
+
 - Search for `winston` or `createLogger` in `packages/sync-server/src/`
 - Identify the logger export path
 
 **Step 2:** For each file with console.log/error/warn/debug:
+
 - Add import: `import logger from '../logger.js';`
 - Replace `console.log(...)` with `logger.info(...)`
 - Replace `console.error(...)` with `logger.error(...)`
@@ -615,6 +656,7 @@ so errors in one domain don't crash another.
 - Replace `console.debug(...)` with `logger.debug(...)`
 
 **Categorize by level:**
+
 - Authentication logs -> `logger.info`
 - "Something went wrong" -> `logger.error`
 - Debug headers -> `logger.debug`
@@ -636,6 +678,7 @@ Read the full file to understand each error site. At each of the 3 TODO
 locations (lines 71, 121, 169), the catch block swallows errors silently.
 
 For each site, add proper error propagation:
+
 ```ts
 } catch (err) {
   console.error('POST request failed:', err);
@@ -649,6 +692,7 @@ matching the existing API contract.
 ### Finding #13: Extract accounts/app.ts into focused modules
 
 **New files:**
+
 - `packages/loot-core/src/server/accounts/link-accounts.ts` (~300 lines)
   - `linkGoCardlessAccount`, `linkSimpleFinAccount`, `linkPluggyAiAccount`,
     `linkEnableBankingAccount`, `unlinkAccount`
@@ -663,6 +707,7 @@ matching the existing API contract.
   - Type definitions: `SyncError`, `SyncResponseWithErrors`
 
 **Modified:** `packages/loot-core/src/server/accounts/app.ts` (~600 lines)
+
 - Keep: CRUD operations, accountsBankSync, simpleFinBatchSync, importTransactions
 - Keep: app.method() registrations
 - Import from the new modules
@@ -671,20 +716,22 @@ matching the existing API contract.
 
 **New files (all in `packages/desktop-client/src/components/transactions/`):**
 
-| File | Components moved | Lines |
-|---|---|---|
-| `TransactionHeader.tsx` | TransactionHeader, HeaderCell | ~180 |
-| `TransactionCells.tsx` | StatusCell, PayeeCell, PayeeIcons | ~350 |
-| `TransactionRow.tsx` | Transaction (the 820-line memo component) | ~880 |
-| `TransactionError.tsx` | TransactionError | ~65 |
-| `NewTransaction.tsx` | NewTransaction | ~180 |
-| `TransactionTableInner.tsx` | TransactionTableInner | ~350 |
+| File                        | Components moved                          | Lines |
+| --------------------------- | ----------------------------------------- | ----- |
+| `TransactionHeader.tsx`     | TransactionHeader, HeaderCell             | ~180  |
+| `TransactionCells.tsx`      | StatusCell, PayeeCell, PayeeIcons         | ~350  |
+| `TransactionRow.tsx`        | Transaction (the 820-line memo component) | ~880  |
+| `TransactionError.tsx`      | TransactionError                          | ~65   |
+| `NewTransaction.tsx`        | NewTransaction                            | ~180  |
+| `TransactionTableInner.tsx` | TransactionTableInner                     | ~350  |
 
 **Modified:** `TransactionsTable.tsx` (~730 lines remaining)
+
 - Keep: TransactionTable (the public forwardRef export), getCategoriesById
 - Import from the new files
 
 **Key constraints:**
+
 - `TransactionTable` at line 2378 is the ONLY public export. External consumers
   are unaffected.
 - The `Transaction` component captures `onUpdate` closure with local state.
@@ -701,6 +748,7 @@ right-click context menu.
 **Prerequisite:** Payees must be migrated to react-query first.
 
 **New file:** `packages/desktop-client/src/payees/queries.ts`
+
 ```ts
 import { send } from 'loot-core/platform/client/connection';
 
@@ -716,15 +764,19 @@ export const payeeQueries = {
 
 **Modified:** `packages/desktop-client/src/accounts/mutations.ts`
 Replace all 5 instances of:
+
 ```ts
 dispatch(markPayeesDirty());
 ```
+
 with:
+
 ```ts
 queryClient.invalidateQueries({ queryKey: payeeQueries.lists() });
 ```
 
 **If payee migration is too large:** Document the blocker in each TODO instead:
+
 ```ts
 // TODO: Replace with queryClient.invalidateQueries({ queryKey: payeeQueries.lists() })
 // Blocked on: payee Redux-to-react-query migration (see payeesSlice.ts)
@@ -732,6 +784,7 @@ dispatch(markPayeesDirty());
 ```
 
 **Commit each individually:**
+
 - `chore(techdebt): wave 6a - fix swallowed errors in post.ts (#7)`
 - `refactor(techdebt): wave 6b - extract accounts/app.ts modules (#13)`
 - `refactor(techdebt): wave 6c - split TransactionsTable.tsx (#11)`
@@ -761,6 +814,7 @@ get type checking on JS files without renaming. Then migrate high-value files
 **Strategy:** Prioritize business logic files where type safety matters most:
 
 **Top 10 targets:**
+
 1. `packages/loot-core/src/shared/util.ts` (most imported utility)
 2. `packages/loot-core/src/server/budget/envelope.ts` (budget calculations)
 3. `packages/loot-core/src/server/budget/tracking.ts` (budget calculations)
@@ -781,6 +835,7 @@ and `Map.groupBy` are defined). Check root `tsconfig.json` lib setting and
 upgrade if needed.
 
 **File:** `packages/loot-core/src/shared/util.ts`
+
 - `groupBy` (line 102) -> `Map.groupBy()`
 - `groupById` (line 154) -> `Object.groupBy()`
 - `_groupById` (line 117) -> `Map.groupBy()` (then remove)
@@ -793,6 +848,7 @@ All callers must be updated. This is a large surface area change.
 **Files:** All openid-client usage in `packages/sync-server/src/`
 
 Key changes:
+
 - `new Issuer()` -> `discovery()` function
 - `client.authorizationUrl()` -> `buildAuthorizationUrl()`
 - `client.callback()` -> `authorizationCodeGrant()`
@@ -823,16 +879,16 @@ possible API changes.
 
 ## Execution Summary
 
-| Wave | Findings | Risk | Effort | Status |
-|---|---|---|---|---|
-| 1 | #3, #4, #24, #31 | None | Trivial | DONE |
-| 2 | #5, #19, #22, #30 | Low | Small | DONE |
-| 3 | #12, #17, #20, #27 | Low | Small-Medium | DONE |
-| 4 | #1, #2, #8, #9, #10 | Medium | Medium | DONE |
-| 5 | #15, #16, #18 | Medium | Medium | DONE |
-| 6 | #7, #13, #21 | High | Large | DONE |
-| 6 (deferred) | #11 | High | Large | DONE (wave 7) |
-| 7 | #6, #14, #23, #25, #26, #28, #29 | Varies | Large | DONE |
+| Wave         | Findings                         | Risk   | Effort       | Status        |
+| ------------ | -------------------------------- | ------ | ------------ | ------------- |
+| 1            | #3, #4, #24, #31                 | None   | Trivial      | DONE          |
+| 2            | #5, #19, #22, #30                | Low    | Small        | DONE          |
+| 3            | #12, #17, #20, #27               | Low    | Small-Medium | DONE          |
+| 4            | #1, #2, #8, #9, #10              | Medium | Medium       | DONE          |
+| 5            | #15, #16, #18                    | Medium | Medium       | DONE          |
+| 6            | #7, #13, #21                     | High   | Large        | DONE          |
+| 6 (deferred) | #11                              | High   | Large        | DONE (wave 7) |
+| 7            | #6, #14, #23, #25, #26, #28, #29 | Varies | Large        | DONE          |
 
 **All 31 findings addressed. Fixed: 31. Remaining pre-existing TS errors: 11.**
 

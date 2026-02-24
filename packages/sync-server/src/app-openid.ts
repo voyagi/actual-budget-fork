@@ -17,43 +17,51 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLoggerMiddleware);
 export { app as handlers };
 
-app.post('/enable', validateSessionMiddleware, async (_req: Request, res: Response) => {
-  if (!isAdmin(res.locals.user_id)) {
-    res.status(403).send({
-      status: 'error',
-      reason: 'forbidden',
-      details: 'permission-not-found',
-    });
-    return;
-  }
+app.post(
+  '/enable',
+  validateSessionMiddleware,
+  async (_req: Request, res: Response) => {
+    if (!isAdmin(res.locals.user_id)) {
+      res.status(403).send({
+        status: 'error',
+        reason: 'forbidden',
+        details: 'permission-not-found',
+      });
+      return;
+    }
 
-  const { error } = (await enableOpenID(_req.body)) || {};
+    const { error } = (await enableOpenID(_req.body)) || {};
 
-  if (error) {
-    res.status(500).send({ status: 'error', reason: error });
-    return;
-  }
-  res.send({ status: 'ok' });
-});
+    if (error) {
+      res.status(500).send({ status: 'error', reason: error });
+      return;
+    }
+    res.send({ status: 'ok' });
+  },
+);
 
-app.post('/disable', validateSessionMiddleware, async (req: Request, res: Response) => {
-  if (!isAdmin(res.locals.user_id)) {
-    res.status(403).send({
-      status: 'error',
-      reason: 'forbidden',
-      details: 'permission-not-found',
-    });
-    return;
-  }
+app.post(
+  '/disable',
+  validateSessionMiddleware,
+  async (req: Request, res: Response) => {
+    if (!isAdmin(res.locals.user_id)) {
+      res.status(403).send({
+        status: 'error',
+        reason: 'forbidden',
+        details: 'permission-not-found',
+      });
+      return;
+    }
 
-  const { error } = (await disableOpenID(req.body)) || {};
+    const { error } = (await disableOpenID(req.body)) || {};
 
-  if (error) {
-    res.status(401).send({ status: 'error', reason: error });
-    return;
-  }
-  res.send({ status: 'ok' });
-});
+    if (error) {
+      res.status(401).send({ status: 'error', reason: error });
+      return;
+    }
+    res.send({ status: 'ok' });
+  },
+);
 
 app.post('/config', async (req: Request, res: Response) => {
   const ownerCount = UserService.getOwnerCount();

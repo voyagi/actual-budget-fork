@@ -1,5 +1,6 @@
-import { formatPayeeName } from '../../util/payee-name';
 import { title } from 'loot-core/server/accounts/title/index';
+
+import { formatPayeeName } from '../../util/payee-name';
 
 import Fallback from './integration-bank';
 

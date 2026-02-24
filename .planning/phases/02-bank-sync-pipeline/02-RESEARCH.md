@@ -20,61 +20,60 @@ The deduplication requirement is already largely handled by `reconcileTransactio
 
 Phase 1 delivered the following already in the codebase (verified from direct file inspection):
 
-| File | Status | What It Contains |
-|------|--------|-----------------|
-| `packages/sync-server/src/app-enablebanking/app-enablebanking.js` | EXISTS | Express scaffold: `GET /test-auth` (unauthenticated), `POST /status` (session-auth). No other routes yet. |
-| `packages/sync-server/src/app-enablebanking/enablebanking-service.js` | EXISTS | `loadPrivateKey()`, `generateJWT()`, `ebRequest()`, `testAuth()`. The core JWT/RSA auth layer. |
-| `packages/sync-server/src/app-enablebanking/util/handle-error.js` | EXISTS | Copied from GoCardless pattern. |
-| `packages/sync-server/src/app.ts` | MODIFIED | Mounts `enableBankingApp.handlers` at `/enablebanking`. Already committed. |
-| `packages/loot-core/src/types/models/account.ts` | NOT MODIFIED | `AccountSyncSource = 'simpleFin' | 'goCardless' | 'pluggyai'` - `'enableBanking'` not yet added. |
-| `packages/loot-core/src/server/accounts/sync.ts` | NOT MODIFIED | `syncAccount()` has no `'enableBanking'` branch. |
-| `packages/loot-core/src/server/server-config.ts` | NOT MODIFIED | No `ENABLEBANKING_SERVER` key. |
-| `packages/desktop-client` | NOT MODIFIED | No Enable Banking UI components. |
+| File                                                                  | Status       | What It Contains                                                                                          |
+| --------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------------------- |
+| `packages/sync-server/src/app-enablebanking/app-enablebanking.js`     | EXISTS       | Express scaffold: `GET /test-auth` (unauthenticated), `POST /status` (session-auth). No other routes yet. |
+| `packages/sync-server/src/app-enablebanking/enablebanking-service.js` | EXISTS       | `loadPrivateKey()`, `generateJWT()`, `ebRequest()`, `testAuth()`. The core JWT/RSA auth layer.            |
+| `packages/sync-server/src/app-enablebanking/util/handle-error.js`     | EXISTS       | Copied from GoCardless pattern.                                                                           |
+| `packages/sync-server/src/app.ts`                                     | MODIFIED     | Mounts `enableBankingApp.handlers` at `/enablebanking`. Already committed.                                |
+| `packages/loot-core/src/types/models/account.ts`                      | NOT MODIFIED | `AccountSyncSource = 'simpleFin'                                                                          | 'goCardless' | 'pluggyai'`-`'enableBanking'` not yet added. |
+| `packages/loot-core/src/server/accounts/sync.ts`                      | NOT MODIFIED | `syncAccount()` has no `'enableBanking'` branch.                                                          |
+| `packages/loot-core/src/server/server-config.ts`                      | NOT MODIFIED | No `ENABLEBANKING_SERVER` key.                                                                            |
+| `packages/desktop-client`                                             | NOT MODIFIED | No Enable Banking UI components.                                                                          |
 
 Phase 2 fills everything that Phase 1 left as scaffold.
 
-
 <phase_requirements>
+
 ## Phase Requirements
 
-| ID | Description | Research Support |
-|----|-------------|-----------------|
-| SYNC-01 | User can initiate Enable Banking OAuth flow and authorize bank access via redirect to their bank's login page | POST /auth to Enable Banking API returns a `url` field. Open it with `window.Actual.openURLInBrowser(url)`. Sync-server handles the callback at `GET /enablebanking/callback`, exchanges the code via POST /sessions, stores session in account.sqlite. |
-| SYNC-02 | User can link bank accounts to Actual accounts after OAuth authorization completes | Mirrors GoCardless `select-linked-accounts` modal. Requires new `enablebanking-accounts-link` IPC handler in `app.ts`, new `SelectLinkedAccountsModalProps` union variant for `enableBanking`. |
-| SYNC-03 | User can trigger a manual sync that imports transactions from linked bank accounts with deduplication (handles pending-to-booked state transitions) | `syncAccount()` calls `downloadEnableBankingTransactions()` which POSTs to `/enablebanking/transactions`. Enable Banking normalizer maps `entry_reference` to `transactionId` (dedup key). `reconcileTransactions()` handles the rest. |
-| SYNC-04 | Account balances update automatically with each sync | `processBankSyncDownload()` calls `updateAccountBalance()` if `currentBalance != null`. The Enable Banking `/balances` response provides this. Normalizer must map `balance_amount.amount` to integer in minor units, applying CRDT/DBIT sign. |
-| SYNC-05 | User can see pending vs booked status on imported transactions (visual indicator for PDNG vs BOOK) | `normalizeBankSyncTransactions()` sets `cleared = Boolean(trans.booked)`. Actual Budget renders cleared transactions differently (checkmark). Pending transactions have `cleared: false`. No UI code change needed - the data layer handles this automatically. |
-| SYNC-06 | User can link multiple banks under separate Enable Banking sessions | Enable Banking supports multiple concurrent sessions. Each session has a `session_id` stored in `eb_sessions` table in `account.sqlite`. Each linked account stores its `session_id`. Sync uses the per-account `session_id`. |
-| SYNC-07 | User can see last sync status and error message per account in the UI | `account.sqlite` needs an `eb_sync_log` table. After each sync, write `account_id`, `synced_at`, `status`, `error_message`. UI reads this via new sync-server endpoint `POST /enablebanking/sync-status`. |
-| SYNC-08 | Sync runs are logged to an append-only history for debugging | Same `eb_sync_log` table as SYNC-07, treated as append-only (INSERT only, never UPDATE). Most recent row per account is the current status. |
-| SYNC-09 | App ships with pre-populated categorization rules for common EU merchants and payees that auto-assign categories on import | Actual Budget's transaction rules system (`transaction-rules.ts`) supports payee-name rules stored in the SQLite `rules` table, applied by `runRules()` inside `reconcileTransactions()`. A seed function inserts rules at first link time, gated by a `preferences` key. |
-</phase_requirements>
+| ID      | Description                                                                                                                                         | Research Support                                                                                                                                                                                                                                                          |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SYNC-01 | User can initiate Enable Banking OAuth flow and authorize bank access via redirect to their bank's login page                                       | POST /auth to Enable Banking API returns a `url` field. Open it with `window.Actual.openURLInBrowser(url)`. Sync-server handles the callback at `GET /enablebanking/callback`, exchanges the code via POST /sessions, stores session in account.sqlite.                   |
+| SYNC-02 | User can link bank accounts to Actual accounts after OAuth authorization completes                                                                  | Mirrors GoCardless `select-linked-accounts` modal. Requires new `enablebanking-accounts-link` IPC handler in `app.ts`, new `SelectLinkedAccountsModalProps` union variant for `enableBanking`.                                                                            |
+| SYNC-03 | User can trigger a manual sync that imports transactions from linked bank accounts with deduplication (handles pending-to-booked state transitions) | `syncAccount()` calls `downloadEnableBankingTransactions()` which POSTs to `/enablebanking/transactions`. Enable Banking normalizer maps `entry_reference` to `transactionId` (dedup key). `reconcileTransactions()` handles the rest.                                    |
+| SYNC-04 | Account balances update automatically with each sync                                                                                                | `processBankSyncDownload()` calls `updateAccountBalance()` if `currentBalance != null`. The Enable Banking `/balances` response provides this. Normalizer must map `balance_amount.amount` to integer in minor units, applying CRDT/DBIT sign.                            |
+| SYNC-05 | User can see pending vs booked status on imported transactions (visual indicator for PDNG vs BOOK)                                                  | `normalizeBankSyncTransactions()` sets `cleared = Boolean(trans.booked)`. Actual Budget renders cleared transactions differently (checkmark). Pending transactions have `cleared: false`. No UI code change needed - the data layer handles this automatically.           |
+| SYNC-06 | User can link multiple banks under separate Enable Banking sessions                                                                                 | Enable Banking supports multiple concurrent sessions. Each session has a `session_id` stored in `eb_sessions` table in `account.sqlite`. Each linked account stores its `session_id`. Sync uses the per-account `session_id`.                                             |
+| SYNC-07 | User can see last sync status and error message per account in the UI                                                                               | `account.sqlite` needs an `eb_sync_log` table. After each sync, write `account_id`, `synced_at`, `status`, `error_message`. UI reads this via new sync-server endpoint `POST /enablebanking/sync-status`.                                                                 |
+| SYNC-08 | Sync runs are logged to an append-only history for debugging                                                                                        | Same `eb_sync_log` table as SYNC-07, treated as append-only (INSERT only, never UPDATE). Most recent row per account is the current status.                                                                                                                               |
+| SYNC-09 | App ships with pre-populated categorization rules for common EU merchants and payees that auto-assign categories on import                          | Actual Budget's transaction rules system (`transaction-rules.ts`) supports payee-name rules stored in the SQLite `rules` table, applied by `runRules()` inside `reconcileTransactions()`. A seed function inserts rules at first link time, gated by a `preferences` key. |
 
+</phase_requirements>
 
 ## Standard Stack
 
 ### Core (already installed - verified from Phase 1)
 
-| Library | Version | Package Location | Purpose |
-|---------|---------|-----------------|---------|
-| `jose` | `6.1.3` | `packages/sync-server` | JWT RS256 signing for Enable Banking API auth |
-| `axios` | `1.13.5` | `packages/sync-server` | HTTP client for Enable Banking API |
-| `node-cron` | `4.2.1` | `packages/sync-server` | 4x/day scheduled sync |
+| Library          | Version  | Package Location       | Purpose                                                    |
+| ---------------- | -------- | ---------------------- | ---------------------------------------------------------- |
+| `jose`           | `6.1.3`  | `packages/sync-server` | JWT RS256 signing for Enable Banking API auth              |
+| `axios`          | `1.13.5` | `packages/sync-server` | HTTP client for Enable Banking API                         |
+| `node-cron`      | `4.2.1`  | `packages/sync-server` | 4x/day scheduled sync                                      |
 | `better-sqlite3` | `12.5.0` | `packages/sync-server` | SQLite for `account.sqlite` DB (session storage, sync log) |
-| `express` | `5.2.1` | `packages/sync-server` | Route framework (already mounted) |
+| `express`        | `5.2.1`  | `packages/sync-server` | Route framework (already mounted)                          |
 
 **No new npm packages are needed for Phase 2.** All required libraries were installed in Phase 1.
 
 ### Supporting (already in codebase - no install needed)
 
-| Library | Location | Purpose |
-|---------|---------|---------|
-| `useMutation` from `@tanstack/react-query` | desktop-client | UI mutations for link/unlink account |
-| `send`/`sendCatch` from `loot-core/platform/client/connection` | desktop-client | IPC from React to loot-core handlers |
-| `pushModal` from `modalsSlice` | desktop-client | Modal chain triggering |
-| `reconcileTransactions` | `loot-core/src/server/accounts/sync.ts` | Shared dedup + insert/update pipeline |
-| `processBankSyncDownload` | same file | Shared initial vs incremental sync + balance update |
-
+| Library                                                        | Location                                | Purpose                                             |
+| -------------------------------------------------------------- | --------------------------------------- | --------------------------------------------------- |
+| `useMutation` from `@tanstack/react-query`                     | desktop-client                          | UI mutations for link/unlink account                |
+| `send`/`sendCatch` from `loot-core/platform/client/connection` | desktop-client                          | IPC from React to loot-core handlers                |
+| `pushModal` from `modalsSlice`                                 | desktop-client                          | Modal chain triggering                              |
+| `reconcileTransactions`                                        | `loot-core/src/server/accounts/sync.ts` | Shared dedup + insert/update pipeline               |
+| `processBankSyncDownload`                                      | same file                               | Shared initial vs incremental sync + balance update |
 
 ## Architecture Patterns
 
@@ -181,7 +180,6 @@ packages/desktop-client/src/
     mutations.ts                MODIFY: add useLinkAccountEnableBankingMutation()
 ```
 
-
 ### Pattern 1: Enable Banking Transaction Normalization
 
 The critical translation layer. `normalizeBankSyncTransactions()` in loot-core expects this exact shape in the `all` array:
@@ -261,7 +259,6 @@ export function extractBalance(balances) {
   return null;
 }
 ```
-
 
 ### Pattern 2: downloadEnableBankingTransactions in sync.ts
 
@@ -368,9 +365,14 @@ CREATE TABLE IF NOT EXISTS eb_account_map (
 ```html
 <!doctype html>
 <html lang="en">
-  <head><meta charset="utf-8" /><title>Actual</title></head>
+  <head>
+    <meta charset="utf-8" />
+    <title>Actual</title>
+  </head>
   <body>
-    <script>window.close();</script>
+    <script>
+      window.close();
+    </script>
     <p>Please wait...</p>
     <p>The window should close automatically.</p>
   </body>
@@ -454,14 +456,14 @@ The existing `SelectLinkedAccountsModal` uses a discriminated union on `syncSour
 
 ```typescript
 export type SyncServerEnableBankingAccount = {
-  account_id: string;    // Enable Banking UID (used as Actual account_id)
+  account_id: string; // Enable Banking UID (used as Actual account_id)
   name: string;
   institution: string;
   mask: string;
   official_name: string | null;
   balance: number | null;
   iban: string | null;
-  session_id: string;    // Which EB session this account belongs to
+  session_id: string; // Which EB session this account belongs to
 };
 ```
 
@@ -513,7 +515,7 @@ export async function seedCategoryRules(db, aqlQuery, q) {
   for (const rule of EU_MERCHANT_PATTERNS) {
     // Look up category by name (NOT uuid - UUIDs are budget-specific)
     const category = await db.first(
-      "SELECT id FROM categories WHERE name = ? AND tombstone = 0",
+      'SELECT id FROM categories WHERE name = ? AND tombstone = 0',
       [rule.categoryName],
     );
     if (!category) continue; // Skip if this budget has no matching category
@@ -522,10 +524,10 @@ export async function seedCategoryRules(db, aqlQuery, q) {
       stage: null,
       conditionsOp: 'and',
       conditions: JSON.stringify([
-        { field: 'imported_payee', op: 'contains', value: rule.payeePattern }
+        { field: 'imported_payee', op: 'contains', value: rule.payeePattern },
       ]),
       actions: JSON.stringify([
-        { field: 'category', op: 'set', value: category.id }
+        { field: 'category', op: 'set', value: category.id },
       ]),
       tombstone: 0,
     });
@@ -533,52 +535,56 @@ export async function seedCategoryRules(db, aqlQuery, q) {
 
   // Mark as seeded so it does not run again for this budget
   await db.first(
-    "INSERT OR IGNORE INTO preferences (id, value) VALUES ('eb-rules-seeded', 'true')"
+    "INSERT OR IGNORE INTO preferences (id, value) VALUES ('eb-rules-seeded', 'true')",
   );
 }
 ```
 
 Call `seedCategoryRules()` from `linkEnableBankingAccount()` in `app.ts` before returning.
 
-
 ## Anti-Patterns to Avoid
 
 **Anti-Pattern 1: Amount sign from Enable Banking is always positive**
+
 - Wrong: `amount = parseFloat(transaction_amount.amount) * 100`
 - Right: `sign = indicator === 'CRDT' ? 1 : -1; amount = sign * parseFloat(transaction_amount.amount)`
 
 **Anti-Pattern 2: Using Enable Banking `status` field as boolean `booked`**
+
 - `status` is `'BOOK'` or `'PDNG'` (string), not `true/false`
 - `normalizeBankSyncTransactions` checks `Boolean(trans.booked)` - normalizer must set: `booked: transaction.status === 'BOOK'`
 
 **Anti-Pattern 3: Storing OAuth session in memory only**
+
 - The callback and the loot-core polling happen in different request cycles
 - Session MUST be stored in `account.sqlite`, not in a module-level Map
 
 **Anti-Pattern 4: Callback route placed after session middleware**
+
 - `GET /enablebanking/callback` must be placed BEFORE `export { app as handlers }` (unauthenticated)
 - The browser redirect from the bank has no Actual user session - placing it after middleware returns 401
 
 **Anti-Pattern 5: Passing Enable Banking raw snake_case data to normalizeBankSyncTransactions**
+
 - Always normalize in sync-server `utils.js` first
 - Never pass `transaction_amount`, `booking_date` etc. directly to loot-core
 
 **Anti-Pattern 6: Hardcoding category UUIDs in SYNC-09 rules**
+
 - Category UUIDs are budget-specific, generated at budget creation time
 - Always look up category by NAME from the `categories` table at seed time, skip if not found
 
 ## Don't Hand-Roll
 
-| Problem | Don't Build | Use Instead | Why |
-|---------|-------------|-------------|-----|
-| Transaction deduplication | Custom upsert logic | `reconcileTransactions()` | Handles `imported_id` exact match + 7-day fuzzy match by amount. Zero changes needed. |
-| Pending vs booked display | Custom UI state | Existing `cleared` field | `cleared: false` = pending. Actual Budget already renders pending transactions differently (no checkmark in the register). |
-| Payee creation | Manual INSERT | `resolvePayee()` inside `normalizeBankSyncTransactions` | Handles dedup of payees by name, creates only if new. |
-| Balance update | Custom SQL | `updateAccountBalance()` in `sync.ts` | Already called by `processBankSyncDownload()`. |
-| Rule application | Custom payee matching | `runRules()` in `transaction-rules.ts` | Applied automatically during `reconcileTransactions()`. |
-| IPC bridge | Custom bridge | `send()` from `loot-core/platform/client/connection` | Standard IPC pattern used by all existing providers. |
-| Modal state management | Custom state | `pushModal()` / `modalsSlice` | Redux modal stack already handles chained modals. |
-
+| Problem                   | Don't Build           | Use Instead                                             | Why                                                                                                                        |
+| ------------------------- | --------------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Transaction deduplication | Custom upsert logic   | `reconcileTransactions()`                               | Handles `imported_id` exact match + 7-day fuzzy match by amount. Zero changes needed.                                      |
+| Pending vs booked display | Custom UI state       | Existing `cleared` field                                | `cleared: false` = pending. Actual Budget already renders pending transactions differently (no checkmark in the register). |
+| Payee creation            | Manual INSERT         | `resolvePayee()` inside `normalizeBankSyncTransactions` | Handles dedup of payees by name, creates only if new.                                                                      |
+| Balance update            | Custom SQL            | `updateAccountBalance()` in `sync.ts`                   | Already called by `processBankSyncDownload()`.                                                                             |
+| Rule application          | Custom payee matching | `runRules()` in `transaction-rules.ts`                  | Applied automatically during `reconcileTransactions()`.                                                                    |
+| IPC bridge                | Custom bridge         | `send()` from `loot-core/platform/client/connection`    | Standard IPC pattern used by all existing providers.                                                                       |
+| Modal state management    | Custom state          | `pushModal()` / `modalsSlice`                           | Redux modal stack already handles chained modals.                                                                          |
 
 ## Common Pitfalls
 
@@ -635,13 +641,13 @@ Call `seedCategoryRules()` from `linkEnableBankingAccount()` in `app.ts` before 
 
 ## State of the Art
 
-| Old Pattern | Phase 2 Pattern | Why |
-|-------------|----------------|-----|
-| GoCardless requisition-based auth (polling for bank processing) | Enable Banking session-based auth (synchronous code exchange) | Different OAuth model: EB exchanges code immediately, no async wait |
-| GoCardless accounts are per-requisition | Enable Banking accounts are per-session | `session_id` is the requisition equivalent |
-| GoCardless transactions split into `booked[]` and `pending[]` arrays | Enable Banking single `transactions[]` with `status: 'BOOK'/'PDNG'` field | Different API shape - merge and tag in normalizer |
-| GoCardless `transactionId` is generally stable across states | Enable Banking `entry_reference` may change PDNG->BOOK | Fuzzy matcher is the safety net |
-| GoCardless consent expires at 90 days by user agreement | Enable Banking `valid_until` is set per session, bank-dependent | Store `valid_until` from session response, proactive expiry warning |
+| Old Pattern                                                          | Phase 2 Pattern                                                           | Why                                                                 |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| GoCardless requisition-based auth (polling for bank processing)      | Enable Banking session-based auth (synchronous code exchange)             | Different OAuth model: EB exchanges code immediately, no async wait |
+| GoCardless accounts are per-requisition                              | Enable Banking accounts are per-session                                   | `session_id` is the requisition equivalent                          |
+| GoCardless transactions split into `booked[]` and `pending[]` arrays | Enable Banking single `transactions[]` with `status: 'BOOK'/'PDNG'` field | Different API shape - merge and tag in normalizer                   |
+| GoCardless `transactionId` is generally stable across states         | Enable Banking `entry_reference` may change PDNG->BOOK                    | Fuzzy matcher is the safety net                                     |
+| GoCardless consent expires at 90 days by user agreement              | Enable Banking `valid_until` is set per session, bank-dependent           | Store `valid_until` from session response, proactive expiry warning |
 
 ## Build Order (Recommended)
 
@@ -710,6 +716,7 @@ Dependencies between components dictate this order:
 ## Metadata
 
 **Confidence breakdown:**
+
 - Standard stack: HIGH - No new packages needed, all verified in Phase 1
 - Architecture/call chain: HIGH - Reconstructed from direct code inspection at every layer
 - Enable Banking API field names: HIGH - Verified against official API reference via WebFetch

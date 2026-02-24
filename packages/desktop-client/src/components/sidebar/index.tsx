@@ -43,9 +43,7 @@ export function FloatableSidebar() {
             }
           : undefined
       }
-      onBlur={
-        sidebarShouldFloat ? () => debouncedHideSidebar() : undefined
-      }
+      onBlur={sidebarShouldFloat ? () => debouncedHideSidebar() : undefined}
       style={{
         position: sidebarShouldFloat ? 'absolute' : undefined,
         top: 8,

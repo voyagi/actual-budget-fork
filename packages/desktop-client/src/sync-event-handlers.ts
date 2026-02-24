@@ -3,7 +3,10 @@ import { t } from 'i18next';
 import { send } from 'loot-core/platform/client/connection';
 
 import { resetSync, sync } from './app/appSlice';
-import { closeAndDownloadBudget, uploadBudget } from './budgetfiles/budgetfilesSlice';
+import {
+  closeAndDownloadBudget,
+  uploadBudget,
+} from './budgetfiles/budgetfilesSlice';
 import { pushModal } from './modals/modalsSlice';
 import type { Notification } from './notifications/notificationsSlice';
 import { loadPrefs } from './prefs/prefsSlice';
@@ -321,7 +324,9 @@ function handleTokenExpired(ctx: SyncErrorContext): SyncErrorHandlerResult {
   };
 }
 
-export function handleUnknownError(ctx: SyncErrorContext): SyncErrorHandlerResult {
+export function handleUnknownError(
+  ctx: SyncErrorContext,
+): SyncErrorHandlerResult {
   const { githubIssueLink, event } = ctx;
   console.trace('unknown error', event);
   return {
@@ -346,7 +351,7 @@ export const syncErrorHandlers: Record<string, SyncErrorHandler> = {
   'decrypt-failure': handleEncryptFailure,
   'invalid-schema': handleInvalidSchema,
   'apply-failure': handleApplyFailure,
-  'network': () => ({ notification: null }),
+  network: () => ({ notification: null }),
   'clock-drift': handleClockDrift,
   'token-expired': handleTokenExpired,
 };

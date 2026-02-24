@@ -2,27 +2,28 @@
 phase: 02-bank-sync-pipeline
 plan: 04
 subsystem: ui
-tags: [enablebanking, react, typescript, oauth, modal, hooks, category-rules, psd2]
+tags:
+  [enablebanking, react, typescript, oauth, modal, hooks, category-rules, psd2]
 
 # Dependency graph
 requires:
   - phase: 02-bank-sync-pipeline
-    provides: "02-03: enablebanking-create-auth, enablebanking-poll-session, enablebanking-accounts-link, enablebanking-sync-status IPC handlers; eb_account_map.actual_account_id populated at link time"
+    provides: '02-03: enablebanking-create-auth, enablebanking-poll-session, enablebanking-accounts-link, enablebanking-sync-status IPC handlers; eb_account_map.actual_account_id populated at link time'
   - phase: 02-bank-sync-pipeline
     provides: "02-02: SyncServerEnableBankingAccount type, AccountSyncSource includes 'enableBanking', ENABLEBANKING_SERVER in server config"
 
 provides:
-  - "authorizeEnableBank() in enablebanking.ts: polls enablebanking-poll-session every 3s with 5-min timeout"
-  - "useEnableBankingStatus() hook: checks server configuration (returns { configured, isLoading })"
-  - "useEnableBankingSyncStatus(accountIds) hook: returns sync statuses keyed by Actual UUID, documents eb_account_map dependency"
-  - "EnableBankingExternalMsgModal: country -> bank select -> OAuth redirect -> poll -> select-linked-accounts"
+  - 'authorizeEnableBank() in enablebanking.ts: polls enablebanking-poll-session every 3s with 5-min timeout'
+  - 'useEnableBankingStatus() hook: checks server configuration (returns { configured, isLoading })'
+  - 'useEnableBankingSyncStatus(accountIds) hook: returns sync statuses keyed by Actual UUID, documents eb_account_map dependency'
+  - 'EnableBankingExternalMsgModal: country -> bank select -> OAuth redirect -> poll -> select-linked-accounts'
   - "'enablebanking-external-msg' registered in modalsSlice and Modals.tsx"
   - "'enableBanking' case in SelectLinkedAccountsModal and its union type"
-  - "useLinkAccountEnableBankingMutation: calls enablebanking-accounts-link with session_id from account"
-  - "Enable Banking button in CreateAccountModal (EU PSD2 bank sync)"
-  - "AccountRow.tsx: imports useEnableBankingSyncStatus, shows error_message in red for EB accounts (SYNC-07)"
-  - "eb-category-rules.js: 47 EU merchant patterns across 5 categories, seedCategoryRules() idempotent"
-  - "app.ts: seedCategoryRules() called in enablebanking-accounts-link after initial sync"
+  - 'useLinkAccountEnableBankingMutation: calls enablebanking-accounts-link with session_id from account'
+  - 'Enable Banking button in CreateAccountModal (EU PSD2 bank sync)'
+  - 'AccountRow.tsx: imports useEnableBankingSyncStatus, shows error_message in red for EB accounts (SYNC-07)'
+  - 'eb-category-rules.js: 47 EU merchant patterns across 5 categories, seedCategoryRules() idempotent'
+  - 'app.ts: seedCategoryRules() called in enablebanking-accounts-link after initial sync'
 
 affects:
   - 02-05-PLAN (scheduler builds on this complete UI/link pipeline)
@@ -32,10 +33,10 @@ affects:
 tech-stack:
   added: []
   patterns:
-    - "Enable Banking modal flow: country/bank select -> authorizeEnableBank polls -> dispatches select-linked-accounts"
-    - "useEnableBankingSyncStatus passes empty array for non-EB accounts (React rules of hooks compliance)"
+    - 'Enable Banking modal flow: country/bank select -> authorizeEnableBank polls -> dispatches select-linked-accounts'
+    - 'useEnableBankingSyncStatus passes empty array for non-EB accounts (React rules of hooks compliance)'
     - "seedCategoryRules idempotency via preference key 'eb-rules-seeded' prevents double-seeding"
-    - "EU merchant rules look up category by name at seed time, skip missing categories gracefully"
+    - 'EU merchant rules look up category by name at seed time, skip missing categories gracefully'
 
 key-files:
   created:
@@ -53,15 +54,15 @@ key-files:
     - packages/loot-core/src/server/accounts/app.ts
 
 key-decisions:
-  - "authorizeEnableBank opens OAuth URL in browser then polls enablebanking-poll-session (not callback-based) - polling matches GoCardless pattern and avoids needing a callback listener in the desktop client"
-  - "useEnableBankingSyncStatus accepts Actual UUIDs not EB UIDs - UI always has account.id, never the internal EB UID"
-  - "Empty array passed to useEnableBankingSyncStatus for non-EB accounts - satisfies React rules of hooks while adding zero overhead"
+  - 'authorizeEnableBank opens OAuth URL in browser then polls enablebanking-poll-session (not callback-based) - polling matches GoCardless pattern and avoids needing a callback listener in the desktop client'
+  - 'useEnableBankingSyncStatus accepts Actual UUIDs not EB UIDs - UI always has account.id, never the internal EB UID'
+  - 'Empty array passed to useEnableBankingSyncStatus for non-EB accounts - satisfies React rules of hooks while adding zero overhead'
   - "EU merchant rules use category names not UUIDs at seed time - adapts to any budget's category setup without hardcoding"
   - "Enable Banking button always visible (not gated on configuredEnableBanking) so users can still click it; the modal shows the 'not configured' message if needed"
 
 patterns-established:
-  - "Enable Banking UI chain: CreateAccountModal -> enablebanking-external-msg -> select-linked-accounts -> closeModal"
-  - "AccountRow error display pattern: hook called unconditionally, conditional render of error span"
+  - 'Enable Banking UI chain: CreateAccountModal -> enablebanking-external-msg -> select-linked-accounts -> closeModal'
+  - 'AccountRow error display pattern: hook called unconditionally, conditional render of error span'
 
 requirements-completed: [SYNC-01, SYNC-02, SYNC-05, SYNC-06, SYNC-07, SYNC-09]
 
@@ -142,6 +143,7 @@ None - no external service configuration required for this UI layer.
 ## Self-Check: PASSED
 
 Files verified:
+
 - `packages/desktop-client/src/enablebanking.ts` - FOUND (exports authorizeEnableBank, polling loop at line 44)
 - `packages/desktop-client/src/hooks/useEnableBankingStatus.ts` - FOUND (exports both hooks, eb_account_map dependency documented)
 - `packages/desktop-client/src/components/modals/EnableBankingExternalMsgModal.tsx` - FOUND (country input, bank list, calls authorizeEnableBank, dispatches select-linked-accounts)
@@ -155,10 +157,12 @@ Files verified:
 - `packages/loot-core/src/server/accounts/app.ts` - FOUND (seedCategoryRules import and call in linkEnableBankingAccount)
 
 Commits verified:
+
 - `84dd44958` - Task 1 feat commit - confirmed in git log
 - `709528fea` - Task 2 feat commit - confirmed in git log
 - `0cf2a2a4e` - Task 3 feat commit - confirmed in git log
 
 ---
-*Phase: 02-bank-sync-pipeline*
-*Completed: 2026-02-19*
+
+_Phase: 02-bank-sync-pipeline_
+_Completed: 2026-02-19_

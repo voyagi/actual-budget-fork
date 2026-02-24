@@ -127,7 +127,11 @@ export function Sidebar() {
 
             <SecondaryButtons
               buttons={[
-                { title: t('Add account'), Icon: SvgAdd, onClick: onAddAccount },
+                {
+                  title: t('Add account'),
+                  Icon: SvgAdd,
+                  onClick: onAddAccount,
+                },
               ]}
             />
           </View>

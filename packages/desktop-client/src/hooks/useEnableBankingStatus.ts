@@ -62,9 +62,7 @@ type SyncStatusEntry = {
  * - isLoading: true while the fetch is in flight
  */
 export function useEnableBankingSyncStatus(accountIds: string[]) {
-  const [statuses, setStatuses] = useState<Record<string, SyncStatusEntry>>(
-    {},
-  );
+  const [statuses, setStatuses] = useState<Record<string, SyncStatusEntry>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   // Stable key to avoid re-fetching on every render when the array

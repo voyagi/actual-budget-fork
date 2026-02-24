@@ -248,9 +248,7 @@ describe('app-enablebanking routes', () => {
     });
 
     it('returns 401 without session token', async () => {
-      const res = await request(app)
-        .post('/get-banks')
-        .send({ country: 'FI' });
+      const res = await request(app).post('/get-banks').send({ country: 'FI' });
       expect(res.statusCode).toBe(401);
     });
   });
@@ -268,10 +266,9 @@ describe('app-enablebanking routes', () => {
 
       // Verify session was created in DB.
       const db = getAccountDb();
-      const session = db.first(
-        'SELECT * FROM eb_sessions WHERE state = ?',
-        [res.body.data.state],
-      );
+      const session = db.first('SELECT * FROM eb_sessions WHERE state = ?', [
+        res.body.data.state,
+      ]);
       expect(session).toBeTruthy();
       expect(session.aspsp_name).toBe('Nordea');
       expect(session.aspsp_country).toBe('FI');
@@ -443,9 +440,7 @@ describe('app-enablebanking routes', () => {
       expect(res.body.status).toBe('ok');
 
       const db = getAccountDb();
-      const session = db.first(
-        "SELECT * FROM eb_sessions WHERE id = 'sess-1'",
-      );
+      const session = db.first("SELECT * FROM eb_sessions WHERE id = 'sess-1'");
       expect(session).toBeFalsy();
 
       const maps = db.all(

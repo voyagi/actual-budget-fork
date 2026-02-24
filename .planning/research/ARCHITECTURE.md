@@ -76,16 +76,16 @@ Enable Banking integrates as a fourth bank sync provider alongside GoCardless, S
 
 ## Component Boundaries
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| `desktop-client` BankSync UI | Render bank picker, trigger OAuth flow, show consent warnings, show sync status | loot-core handlers via IPC bridge |
-| `loot-core` sync.ts | Route sync calls per provider, delegate to processBankSyncDownload, own transaction reconciliation | sync-server Enable Banking endpoints (HTTP POST), SQLite DB (via loot-core DB layer) |
-| `loot-core` types/models/account.ts | Type system: extend account_sync_source union with 'enableBanking' | Consumed by all other packages |
-| `sync-server` app.ts | Mount /enablebanking route module | app-enablebanking module |
-| `sync-server` app-enablebanking/app-enablebanking.js | Express routes: /status, /link, /get-banks, /get-accounts, /transactions, /delete-account | enablebanking-service.js, loot-core (via HTTP caller) |
-| `sync-server` app-enablebanking/enablebanking-service.js | JWT generation (RSA), Enable Banking API calls, token caching, consent state storage | Enable Banking REST API |
-| `sync-server` scheduler.js (new) | Cron: trigger sync for all enable-banking accounts 4x/day, check consent expiry | app-enablebanking routes or direct service calls |
-| Enable Banking API | OAuth bank redirect, session creation, AIS data (accounts, balances, transactions) | Bank ASPSPs via PSD2 |
+| Component                                                | Responsibility                                                                                     | Communicates With                                                                    |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `desktop-client` BankSync UI                             | Render bank picker, trigger OAuth flow, show consent warnings, show sync status                    | loot-core handlers via IPC bridge                                                    |
+| `loot-core` sync.ts                                      | Route sync calls per provider, delegate to processBankSyncDownload, own transaction reconciliation | sync-server Enable Banking endpoints (HTTP POST), SQLite DB (via loot-core DB layer) |
+| `loot-core` types/models/account.ts                      | Type system: extend account_sync_source union with 'enableBanking'                                 | Consumed by all other packages                                                       |
+| `sync-server` app.ts                                     | Mount /enablebanking route module                                                                  | app-enablebanking module                                                             |
+| `sync-server` app-enablebanking/app-enablebanking.js     | Express routes: /status, /link, /get-banks, /get-accounts, /transactions, /delete-account          | enablebanking-service.js, loot-core (via HTTP caller)                                |
+| `sync-server` app-enablebanking/enablebanking-service.js | JWT generation (RSA), Enable Banking API calls, token caching, consent state storage               | Enable Banking REST API                                                              |
+| `sync-server` scheduler.js (new)                         | Cron: trigger sync for all enable-banking accounts 4x/day, check consent expiry                    | app-enablebanking routes or direct service calls                                     |
+| Enable Banking API                                       | OAuth bank redirect, session creation, AIS data (accounts, balances, transactions)                 | Bank ASPSPs via PSD2                                                                 |
 
 ## Data Flow
 
@@ -162,12 +162,14 @@ User clicks sync button on account
 ### Pattern 1: Two-File Provider Module
 
 Every sync provider in sync-server uses this pattern:
+
 - `app-{provider}.js` - Express route definitions, error mapping, request/response shaping
 - `{provider}-service.js` - API client logic, authentication, external HTTP calls
 
 Do NOT merge these. Route logic and API client logic have different change reasons.
 
 **Example structure (modeled on GoCardless):**
+
 ```typescript
 // app-enablebanking.js - routes only
 app.post('/transactions', handleError(async (req, res) => {
@@ -210,6 +212,7 @@ generateJWT(): string {
 ### Pattern 3: NormalizedTransaction Shape
 
 loot-core expects this shape from `downloadEnableBankingTransactions()`:
+
 ```typescript
 {
   transactions: {
@@ -236,10 +239,15 @@ The `account_sync_source` union type must be extended to include `'enableBanking
 
 ```typescript
 // packages/loot-core/src/types/models/account.ts
-type AccountSyncSource = 'goCardless' | 'simpleFin' | 'pluggyai' | 'enableBanking';
+type AccountSyncSource =
+  | 'goCardless'
+  | 'simpleFin'
+  | 'pluggyai'
+  | 'enableBanking';
 ```
 
 And in `sync.ts`:
+
 ```typescript
 // Add a fourth branch in syncAccount():
 } else if (acctRow.account_sync_source === 'enableBanking') {
@@ -251,6 +259,7 @@ And in `sync.ts`:
 ### Pattern 5: Scheduled Sync via node-cron
 
 Native scheduling inside sync-server is preferable to an external Docker sidecar because:
+
 - Single container to manage
 - Direct access to sync-server's DB (session storage, account list)
 - No external auth needed
@@ -262,7 +271,7 @@ import cron from 'node-cron';
 // 4x/day: midnight, 6am, noon, 6pm
 cron.schedule('0 0,6,12,18 * * *', async () => {
   const accounts = await db.all(
-    "SELECT * FROM accounts WHERE account_sync_source = 'enableBanking' AND closed = 0"
+    "SELECT * FROM accounts WHERE account_sync_source = 'enableBanking' AND closed = 0",
   );
   for (const account of accounts) {
     await triggerEnableBankingSync(account);
@@ -345,6 +354,7 @@ Dependencies between components dictate this order:
 
 **Step 1: Enable Banking API client and routes (sync-server)**
 Build first because loot-core depends on this HTTP interface being defined.
+
 - `enablebanking-service.js` (JWT generation, API calls to Enable Banking)
 - `app-enablebanking.js` (Express routes: /status, /get-banks, /link, /get-accounts, /transactions)
 - Mount in `app.ts`
@@ -352,6 +362,7 @@ Build first because loot-core depends on this HTTP interface being defined.
 
 **Step 2: loot-core sync extension**
 Depends on Step 1's route contract being stable.
+
 - Extend `account_sync_source` type to include `'enableBanking'`
 - Add `downloadEnableBankingTransactions()` to `sync.ts`
 - Add `'enableBanking'` branch to `syncAccount()`
@@ -359,6 +370,7 @@ Depends on Step 1's route contract being stable.
 
 **Step 3: Scheduled sync (sync-server)**
 Depends on Steps 1 and 2 being functional end-to-end.
+
 - Add `node-cron` dependency
 - Implement `scheduler.js` with 4x/day cadence
 - Add consent expiry checking (flag sessions with < 14 days remaining)
@@ -366,6 +378,7 @@ Depends on Steps 1 and 2 being functional end-to-end.
 
 **Step 4: UI components (desktop-client)**
 Depends on loot-core handlers from Steps 1-2 being complete.
+
 - Bank selection modal with country picker and ASPSP list
 - OAuth redirect trigger and callback handling
 - Account mapping UI (link Enable Banking accounts to Actual accounts)
@@ -373,12 +386,14 @@ Depends on loot-core handlers from Steps 1-2 being complete.
 
 **Step 5: PWA hardening (desktop-client)**
 Independent of Steps 1-4 (can be done in parallel or after).
+
 - Verify existing `site.webmanifest` and `vite-plugin-pwa` config are sufficient
 - Service worker build currently disabled in vite.config.mts due to offline support issues - investigate and fix
 - Test PWA install on mobile Chrome and Safari
 
 **Step 6: Docker Compose + HTTPS**
 Independent of all above (infrastructure). Required for PWA installability.
+
 - Docker Compose with sync-server + desktop-client containers
 - RSA key mount as Docker secret
 - HTTPS termination (Caddy recommended: automatic cert management)
@@ -387,12 +402,12 @@ Independent of all above (infrastructure). Required for PWA installability.
 
 This is a single-user personal deployment. Scalability concerns are minimal but two are worth noting:
 
-| Concern | At current scale (1 user) | If scaled |
-|---------|--------------------------|-----------|
-| PSD2 rate limit (4x/day) | Fully respected by scheduler | Unchanged - PSD2 limit is per-account, not per-instance |
-| Consent management | Manual renewal via in-app notification | Would need automated re-consent flow |
-| Session storage | In-memory or sync-server local DB | Would need shared DB (Redis/Postgres) for multi-instance |
-| RSA key management | Single file mount | Would need secrets manager (Vault, AWS KMS) |
+| Concern                  | At current scale (1 user)              | If scaled                                                |
+| ------------------------ | -------------------------------------- | -------------------------------------------------------- |
+| PSD2 rate limit (4x/day) | Fully respected by scheduler           | Unchanged - PSD2 limit is per-account, not per-instance  |
+| Consent management       | Manual renewal via in-app notification | Would need automated re-consent flow                     |
+| Session storage          | In-memory or sync-server local DB      | Would need shared DB (Redis/Postgres) for multi-instance |
+| RSA key management       | Single file mount                      | Would need secrets manager (Vault, AWS KMS)              |
 
 ## Key Findings from Research
 

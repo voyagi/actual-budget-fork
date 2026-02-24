@@ -19,56 +19,56 @@
 
 **Progress:**
 [████████░░] 82%
-Phase 1: Foundation and API Client    [4/4] Awaiting human checkpoint
-Phase 2: Bank Sync Pipeline           [4/5] In progress (02-01 through 02-04 complete)
-Phase 3: Automation and Consent       [ ] Not started
-Phase 4: PWA Completion               [ ] Not started
+Phase 1: Foundation and API Client [4/4] Awaiting human checkpoint
+Phase 2: Bank Sync Pipeline [4/5] In progress (02-01 through 02-04 complete)
+Phase 3: Automation and Consent [ ] Not started
+Phase 4: PWA Completion [ ] Not started
 Phase 5: Infrastructure and Production[ ] Not started
 
 Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 
 ## Performance Metrics
 
-| Metric | Value |
-|--------|-------|
-| Phases total | 5 |
-| Requirements mapped | 29/29 |
-| Plans complete | 9 |
-| Phases complete | 0 |
+| Metric                          | Value |
+| ------------------------------- | ----- | ------- | -------- |
+| Phases total                    | 5     |
+| Requirements mapped             | 29/29 |
+| Plans complete                  | 9     |
+| Phases complete                 | 0     |
 | Phase 02-bank-sync-pipeline P04 | 45min | 3 tasks | 11 files |
 
 ## Key Decisions Recorded
 
-| Decision | Rationale | Date |
-|----------|-----------|------|
-| 5-phase structure (not 6) | All 29 requirements fit cleanly into 5 delivery boundaries. Research's "Phase 6 production cutover" is absorbed into Phase 5 success criteria as an explicit production smoke test milestone | 2026-02-18 |
-| Phases 4 and 5 can run in parallel with Phase 3 | PWA and infrastructure work is independent of automation logic once Phase 2 (manual sync) is stable | 2026-02-18 |
-| Enable Banking over GoCardless | GoCardless stopped accepting EU users July 2025, Enable Banking is free for personal use and covers 4,709+ banks | 2026-02-18 |
-| PWA over native app | Lower complexity, single codebase, sufficient for personal use | 2026-02-18 |
-| Caddy for HTTPS | Zero cert management overhead vs nginx + mkcert. Cloudflare Tunnel needed for iOS PWA trust | 2026-02-18 |
-| node-cron 4x/day scheduler | PSD2 maximum rate. Lives in sync-server (not loot-core) because loot-core runs in browser web worker | 2026-02-18 |
-| jose for JWT signing | RS256, zero-dependency, ESM-native. Matches Enable Banking RS256 requirement | 2026-02-18 |
-| Single docker-compose.yml (not dev+prod override) | Per locked decision from CONTEXT.md - simpler, env vars handle environment differences | 2026-02-18 |
-| ACTUAL_WEB_ROOT not hardcoded | Auto-resolves via require.resolve('@actual-app/web/package.json') - more robust than hardcoded path | 2026-02-18 |
-| Monorepo Docker build order | loot-core build:browser must precede desktop-client Vite build - loot-core browser modules are imported | 2026-02-18 |
-| Redirect URL http://localhost:5006/enablebanking/callback | Matches planned Express route in Plan 01-03. Configured on sandbox application at registration time. | 2026-02-18 |
-| RSA key is PKCS#8 format (BEGIN PRIVATE KEY) | Enable Banking browser UI generates PKCS#8. jose handles it natively - no conversion needed. | 2026-02-18 |
-| Lazy key loading on first request (not startup) | Avoids startup failure when EB not configured. Module-level cache means key imported only once per process lifetime. | 2026-02-18 |
-| GET /test-auth placed before session middleware | Enables automated sandbox verification without needing Actual user session. Development-only route; production uses POST /status. | 2026-02-18 |
-| GIT_SEQUENCE_EDITOR on MSYS: use PowerShell not bash script | MSYS bash cannot find shell scripts at workspace paths when git invokes the editor. PowerShell -File with Windows-style forward-slash path resolves correctly. | 2026-02-18 |
-| downloadEnableBankingTransactions takes acctId + since only (no userId/userKey/bankId) | Enable Banking session context is stored server-side - sync-server needs only accountId to look up the session. Simpler than GoCardless pattern. | 2026-02-19 |
-| SyncServerEnableBankingAccount placed in account.ts (not gocardless.ts) | Belongs to account model domain, not GoCardless-specific. Future account linking UI imports from account.ts. | 2026-02-19 |
-| eb_sync_log uses actual_account_id not account_id | The Actual Budget UUID is what the UI has when querying sync status. eb_account_uid retained for API cross-reference. | 2026-02-19 |
-| normalizeTransaction includes top-level date and notes fields | loot-core defaultMappings reads trans['date'] and trans['notes'] directly. Missing date causes thrown error on every transaction. | 2026-02-19 |
-| getTransactions pagination safeguard maxPages=100 | Returns partial results with console.warn rather than throwing - partial data beats a crashed sync job. | 2026-02-19 |
-| normalizeAccount account_id derivation must be replicated in /callback route | account_id ?? uid derivation in utils.js must match what /callback inserts into eb_account_map.eb_account_uid. | 2026-02-19 |
-| GET /callback unauthenticated before export { app as handlers } | Bank's browser redirect has no Actual session cookie - route must be outside session middleware scope | 2026-02-19 |
-| linkEnableBankingAccount aborts on /update-account-map failure | Partial link without actual_account_id causes silent sync log failures and broken /sync-status - better to abort and let user retry | 2026-02-19 |
-| findOrCreateBank receives institution object not string | link.ts reads institution.name - must pass { name: account.institution } not bare string | 2026-02-19 |
-| ACCOUNT_NOT_MAPPED uses status:ok wrapper | loot-core post() throws on status:error and only returns data field - wrapping in status:ok lets download function check res.error_code | 2026-02-19 |
-| authorizeEnableBank uses polling not callback | Polling matches GoCardless pattern, avoids needing a callback listener in the desktop client - works naturally with OAuth redirect flow | 2026-02-19 |
-| useEnableBankingSyncStatus accepts Actual UUIDs | UI always has account.id (Actual UUID), never the internal EB UID - IPC layer handles mapping | 2026-02-19 |
-| EU merchant rules look up category by name not UUID | Adapts to any budget's category setup without hardcoding UUIDs - missing categories skipped gracefully | 2026-02-19 |
+| Decision                                                                               | Rationale                                                                                                                                                                                    | Date       |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 5-phase structure (not 6)                                                              | All 29 requirements fit cleanly into 5 delivery boundaries. Research's "Phase 6 production cutover" is absorbed into Phase 5 success criteria as an explicit production smoke test milestone | 2026-02-18 |
+| Phases 4 and 5 can run in parallel with Phase 3                                        | PWA and infrastructure work is independent of automation logic once Phase 2 (manual sync) is stable                                                                                          | 2026-02-18 |
+| Enable Banking over GoCardless                                                         | GoCardless stopped accepting EU users July 2025, Enable Banking is free for personal use and covers 4,709+ banks                                                                             | 2026-02-18 |
+| PWA over native app                                                                    | Lower complexity, single codebase, sufficient for personal use                                                                                                                               | 2026-02-18 |
+| Caddy for HTTPS                                                                        | Zero cert management overhead vs nginx + mkcert. Cloudflare Tunnel needed for iOS PWA trust                                                                                                  | 2026-02-18 |
+| node-cron 4x/day scheduler                                                             | PSD2 maximum rate. Lives in sync-server (not loot-core) because loot-core runs in browser web worker                                                                                         | 2026-02-18 |
+| jose for JWT signing                                                                   | RS256, zero-dependency, ESM-native. Matches Enable Banking RS256 requirement                                                                                                                 | 2026-02-18 |
+| Single docker-compose.yml (not dev+prod override)                                      | Per locked decision from CONTEXT.md - simpler, env vars handle environment differences                                                                                                       | 2026-02-18 |
+| ACTUAL_WEB_ROOT not hardcoded                                                          | Auto-resolves via require.resolve('@actual-app/web/package.json') - more robust than hardcoded path                                                                                          | 2026-02-18 |
+| Monorepo Docker build order                                                            | loot-core build:browser must precede desktop-client Vite build - loot-core browser modules are imported                                                                                      | 2026-02-18 |
+| Redirect URL http://localhost:5006/enablebanking/callback                              | Matches planned Express route in Plan 01-03. Configured on sandbox application at registration time.                                                                                         | 2026-02-18 |
+| RSA key is PKCS#8 format (BEGIN PRIVATE KEY)                                           | Enable Banking browser UI generates PKCS#8. jose handles it natively - no conversion needed.                                                                                                 | 2026-02-18 |
+| Lazy key loading on first request (not startup)                                        | Avoids startup failure when EB not configured. Module-level cache means key imported only once per process lifetime.                                                                         | 2026-02-18 |
+| GET /test-auth placed before session middleware                                        | Enables automated sandbox verification without needing Actual user session. Development-only route; production uses POST /status.                                                            | 2026-02-18 |
+| GIT_SEQUENCE_EDITOR on MSYS: use PowerShell not bash script                            | MSYS bash cannot find shell scripts at workspace paths when git invokes the editor. PowerShell -File with Windows-style forward-slash path resolves correctly.                               | 2026-02-18 |
+| downloadEnableBankingTransactions takes acctId + since only (no userId/userKey/bankId) | Enable Banking session context is stored server-side - sync-server needs only accountId to look up the session. Simpler than GoCardless pattern.                                             | 2026-02-19 |
+| SyncServerEnableBankingAccount placed in account.ts (not gocardless.ts)                | Belongs to account model domain, not GoCardless-specific. Future account linking UI imports from account.ts.                                                                                 | 2026-02-19 |
+| eb_sync_log uses actual_account_id not account_id                                      | The Actual Budget UUID is what the UI has when querying sync status. eb_account_uid retained for API cross-reference.                                                                        | 2026-02-19 |
+| normalizeTransaction includes top-level date and notes fields                          | loot-core defaultMappings reads trans['date'] and trans['notes'] directly. Missing date causes thrown error on every transaction.                                                            | 2026-02-19 |
+| getTransactions pagination safeguard maxPages=100                                      | Returns partial results with console.warn rather than throwing - partial data beats a crashed sync job.                                                                                      | 2026-02-19 |
+| normalizeAccount account_id derivation must be replicated in /callback route           | account_id ?? uid derivation in utils.js must match what /callback inserts into eb_account_map.eb_account_uid.                                                                               | 2026-02-19 |
+| GET /callback unauthenticated before export { app as handlers }                        | Bank's browser redirect has no Actual session cookie - route must be outside session middleware scope                                                                                        | 2026-02-19 |
+| linkEnableBankingAccount aborts on /update-account-map failure                         | Partial link without actual_account_id causes silent sync log failures and broken /sync-status - better to abort and let user retry                                                          | 2026-02-19 |
+| findOrCreateBank receives institution object not string                                | link.ts reads institution.name - must pass { name: account.institution } not bare string                                                                                                     | 2026-02-19 |
+| ACCOUNT_NOT_MAPPED uses status:ok wrapper                                              | loot-core post() throws on status:error and only returns data field - wrapping in status:ok lets download function check res.error_code                                                      | 2026-02-19 |
+| authorizeEnableBank uses polling not callback                                          | Polling matches GoCardless pattern, avoids needing a callback listener in the desktop client - works naturally with OAuth redirect flow                                                      | 2026-02-19 |
+| useEnableBankingSyncStatus accepts Actual UUIDs                                        | UI always has account.id (Actual UUID), never the internal EB UID - IPC layer handles mapping                                                                                                | 2026-02-19 |
+| EU merchant rules look up category by name not UUID                                    | Adapts to any budget's category setup without hardcoding UUIDs - missing categories skipped gracefully                                                                                       | 2026-02-19 |
 
 ## Critical Pitfalls (from research)
 
@@ -89,6 +89,7 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 ## Accumulated Context
 
 ### Stack Versions (verified against npm registry 2026-02-18)
+
 - `jose`: 6.1.3 (sync-server) - RS256 JWT signing
 - `axios`: 1.13.5 (sync-server) - Enable Banking HTTP client
 - `node-cron`: 4.2.1 (sync-server) - TypeScript-native v4
@@ -105,6 +106,7 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 - RSA key: `./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro`
 
 ### Architecture Summary
+
 - `sync-server/app-enablebanking/` (NEW) - Express routes + Enable Banking API client
 - `sync-server/scheduler.js` (NEW) - node-cron 4x/day + consent expiry checker
 - `loot-core/sync.ts` (MODIFY) - adds `downloadEnableBankingTransactions()` branch
@@ -112,6 +114,7 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 - `desktop-client/banksync/` (ADD) - `EnableBankingLink.tsx`, `ConsentExpiryBanner.tsx`, `EnableBankingSettings.tsx`
 
 ### PWA State (from research)
+
 - `site.webmanifest` already exists
 - `vite-plugin-pwa` and Workbox already present
 - Service worker build is DISABLED in `vite.config.mts` (reason unknown - read before planning Phase 4)
@@ -119,6 +122,7 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 - Main work: re-enable and configure service worker, verify iOS Safari behavior
 
 ### Consent Validity Note
+
 - EU banks: 180 days (extended July 2023 under PSD2 review)
 - UK banks: 90 days
 - Read `maximum_consent_validity` from Enable Banking session response. Never hardcode either value.
@@ -137,17 +141,20 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 **Next action:** Phase 2 Plan 02-04 complete. Continue with 02-05 (scheduler and background sync).
 
 **Phase 1 verification results (automated):**
+
 - `GET /enablebanking/test-auth` returns `{"status":"ok","data":{"configured":true}}`
 - RSA key persists across `docker compose down && docker compose up -d`
 - Container logs clean, server healthy at http://localhost:5006
 - All 11 custom commits tagged `[eb]` (FOUND-04 fully satisfied after Plan 01-04 gap closure)
 
 **Sandbox credentials ready:**
+
 - Application ID: `b619fe6c-ab92-4de5-a7c2-901c0e0ef580`
 - Private key: `secrets/eb_private.pem` (PKCS#8, RS256)
 - Redirect URL: `http://localhost:5006/enablebanking/callback`
 - API base: `https://api.enablebanking.com`
 
 ---
-*State initialized: 2026-02-18*
-*Last updated: 2026-02-19 - Plan 02-04 complete (Enable Banking desktop UI, OAuth flow, category rules)*
+
+_State initialized: 2026-02-18_
+_Last updated: 2026-02-19 - Plan 02-04 complete (Enable Banking desktop UI, OAuth flow, category rules)_

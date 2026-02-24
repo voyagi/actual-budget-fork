@@ -15,8 +15,12 @@ import {
   testAuth,
 } from './enablebanking-service.js';
 import { runMigrations } from './migrations.js';
-import { extractBalance, normalizeAccount, normalizeTransaction } from './utils.js';
 import { handleError } from './util/handle-error.js';
+import {
+  extractBalance,
+  normalizeAccount,
+  normalizeTransaction,
+} from './utils.js';
 
 // Run migrations at module load time so tables are ready before any route fires.
 runMigrations();
@@ -58,10 +62,9 @@ app.get(
     const db = getAccountDb();
 
     // CSRF guard: state must exist in eb_sessions (inserted at create-auth time).
-    const sessionRow = db.first(
-      'SELECT * FROM eb_sessions WHERE state = ?',
-      [state],
-    );
+    const sessionRow = db.first('SELECT * FROM eb_sessions WHERE state = ?', [
+      state,
+    ]);
 
     if (!sessionRow) {
       return res.status(400).send('Invalid or expired state parameter');
@@ -179,7 +182,12 @@ app.post(
       process.env.ENABLE_BANKING_REDIRECT_URL ||
       'http://localhost:5006/enablebanking/callback';
 
-    const result = await createAuth({ aspspName, aspspCountry, redirectUrl, state });
+    const result = await createAuth({
+      aspspName,
+      aspspCountry,
+      redirectUrl,
+      state,
+    });
 
     res.send({ status: 'ok', data: { url: result.url, state } });
   }),
@@ -199,10 +207,9 @@ app.post(
     const { state } = req.body || {};
 
     const db = getAccountDb();
-    const sessionRow = db.first(
-      'SELECT * FROM eb_sessions WHERE state = ?',
-      [state],
-    );
+    const sessionRow = db.first('SELECT * FROM eb_sessions WHERE state = ?', [
+      state,
+    ]);
 
     if (!sessionRow || !sessionRow.accounts) {
       // Session not yet complete - client should retry.
@@ -258,18 +265,29 @@ app.post(
     const logEbUid = mapRow.eb_account_uid;
 
     try {
-      const { booked, pending } = await getTransactions(ebAccountUid, startDate);
+      const { booked, pending } = await getTransactions(
+        ebAccountUid,
+        startDate,
+      );
       const normalizedBooked = booked.map(t => normalizeTransaction(t, true));
-      const normalizedPending = pending.map(t => normalizeTransaction(t, false));
+      const normalizedPending = pending.map(t =>
+        normalizeTransaction(t, false),
+      );
 
       const balancesData = await getBalances(ebAccountUid);
-      const extractedBalance = extractBalance(balancesData.balances ?? balancesData);
+      const extractedBalance = extractBalance(
+        balancesData.balances ?? balancesData,
+      );
 
       db.mutate(
         `INSERT INTO eb_sync_log
           (actual_account_id, eb_account_uid, status, transactions_added)
           VALUES (?, ?, 'ok', ?)`,
-        [logActualId, logEbUid, normalizedBooked.length + normalizedPending.length],
+        [
+          logActualId,
+          logEbUid,
+          normalizedBooked.length + normalizedPending.length,
+        ],
       );
 
       res.send({

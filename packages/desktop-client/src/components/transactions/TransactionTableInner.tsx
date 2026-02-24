@@ -1,11 +1,11 @@
-import {
-  createRef,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
+import { createRef, useCallback, useEffect, useMemo, useState } from 'react';
+import type {
+  CSSProperties,
+  KeyboardEvent,
+  ReactNode,
+  Ref,
+  RefObject,
 } from 'react';
-import type { CSSProperties, KeyboardEvent, ReactNode, Ref, RefObject } from 'react';
 
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
@@ -22,10 +22,10 @@ import type {
 } from 'loot-core/types/models';
 
 import { NewTransaction } from './NewTransaction';
+import { isLastChild } from './table/utils';
 import { TransactionError } from './TransactionError';
 import { TransactionHeader } from './TransactionHeader';
 import { Transaction } from './TransactionRow';
-import { isLastChild } from './table/utils';
 
 import { Table } from '@desktop-client/components/table';
 import type {

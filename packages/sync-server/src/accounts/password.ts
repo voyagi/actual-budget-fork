@@ -43,9 +43,10 @@ export function loginWithPassword(password: string): PasswordResult {
   }
 
   const accountDb = getAccountDb();
-  const authRow = accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
-    'password',
-  ]);
+  const authRow = accountDb.first(
+    'SELECT extra_data FROM auth WHERE method = ?',
+    ['password'],
+  );
   const passwordHash = (authRow as { extra_data?: string } | null)?.extra_data;
 
   if (!passwordHash) {
@@ -135,9 +136,10 @@ export function checkPassword(password: string): boolean {
   }
 
   const accountDb = getAccountDb();
-  const authRow = accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
-    'password',
-  ]);
+  const authRow = accountDb.first(
+    'SELECT extra_data FROM auth WHERE method = ?',
+    ['password'],
+  );
   const passwordHash = (authRow as { extra_data?: string } | null)?.extra_data;
 
   if (!passwordHash) {

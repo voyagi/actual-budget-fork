@@ -106,7 +106,9 @@ export function listenForSyncEvent(store: AppStore, queryClient: QueryClient) {
       if (result.sideEffect) result.sideEffect();
       if (result.notification) {
         store.dispatch(
-          addNotification({ notification: { type: 'error', ...result.notification } }),
+          addNotification({
+            notification: { type: 'error', ...result.notification },
+          }),
         );
       }
     }

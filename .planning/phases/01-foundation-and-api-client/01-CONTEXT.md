@@ -9,23 +9,23 @@
 
 ### Fork Visual Identity
 
-| Decision | Choice |
-|----------|--------|
-| App title (browser tab, PWA manifest) | Keep stock "Actual" - no changes |
-| About/Settings page | Add fork info: version, Enable Banking status, link to repo |
-| Favicon and app icons | Keep stock icons (revisit in Phase 4 PWA) |
-| Runtime EB status indicator | Not in Phase 1 - UI indicators belong in Phase 2 |
+| Decision                              | Choice                                                      |
+| ------------------------------------- | ----------------------------------------------------------- |
+| App title (browser tab, PWA manifest) | Keep stock "Actual" - no changes                            |
+| About/Settings page                   | Add fork info: version, Enable Banking status, link to repo |
+| Favicon and app icons                 | Keep stock icons (revisit in Phase 4 PWA)                   |
+| Runtime EB status indicator           | Not in Phase 1 - UI indicators belong in Phase 2            |
 
 **Rationale:** Minimal fork surface area. The About page addition provides discoverability without disrupting the stock experience.
 
 ### Development Workflow
 
-| Decision | Choice |
-|----------|--------|
-| Dev mode | Hybrid: desktop-client runs locally (hot reload), sync-server in Docker |
-| Local toolchain | Node.js installed. Yarn availability needs verification at setup time |
-| Server reload | Auto-restart on save (nodemon or similar inside Docker) |
-| Docker Compose config | Single docker-compose.yml for both dev and prod, toggled via env vars |
+| Decision              | Choice                                                                  |
+| --------------------- | ----------------------------------------------------------------------- |
+| Dev mode              | Hybrid: desktop-client runs locally (hot reload), sync-server in Docker |
+| Local toolchain       | Node.js installed. Yarn availability needs verification at setup time   |
+| Server reload         | Auto-restart on save (nodemon or similar inside Docker)                 |
+| Docker Compose config | Single docker-compose.yml for both dev and prod, toggled via env vars   |
 
 **Rationale:** Hybrid approach gives fast UI iteration locally while keeping the sync-server (where EB code lives) in a Docker environment matching production. Auto-restart minimizes friction during API client development.
 
@@ -33,17 +33,18 @@
 
 ### Configuration Layout
 
-| Decision | Choice |
-|----------|--------|
-| RSA key location | `secrets/eb_private.pem` (gitignored `secrets/` directory) |
-| Other EB config | `.env` file at repo root (app_id, environment, API URLs) |
-| Sandbox vs production toggle | All in `.env` - swap values or use `.env.sandbox`/`.env.production` |
-| Template file | Both: `.env.example` committed to git AND documented in README |
-| Docker secret mounting | Simple bind mount (`./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro`) |
+| Decision                     | Choice                                                                        |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| RSA key location             | `secrets/eb_private.pem` (gitignored `secrets/` directory)                    |
+| Other EB config              | `.env` file at repo root (app_id, environment, API URLs)                      |
+| Sandbox vs production toggle | All in `.env` - swap values or use `.env.sandbox`/`.env.production`           |
+| Template file                | Both: `.env.example` committed to git AND documented in README                |
+| Docker secret mounting       | Simple bind mount (`./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro`) |
 
 **Rationale:** PEM files don't belong in .env (binary/multiline). The secrets/ directory handles the key, .env handles everything else. Simple bind mount avoids Docker secrets complexity for a single-user app.
 
 **Gitignore additions required:**
+
 - `secrets/`
 - `.env`
 - `.env.sandbox`
@@ -51,16 +52,17 @@
 
 ### Upstream Merge Strategy
 
-| Decision | Choice |
-|----------|--------|
-| Sync frequency | After each phase completion |
-| Conflict resolution | Case by case (no blanket rule) |
-| Branch model | Separate `upstream/main` branch mirrors Actual Budget. Merge from there into fork's main |
-| Branch naming | Standard naming (`feat/`, `fix/`, `chore/`). The `[eb]` commit prefix is sufficient |
+| Decision            | Choice                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| Sync frequency      | After each phase completion                                                              |
+| Conflict resolution | Case by case (no blanket rule)                                                           |
+| Branch model        | Separate `upstream/main` branch mirrors Actual Budget. Merge from there into fork's main |
+| Branch naming       | Standard naming (`feat/`, `fix/`, `chore/`). The `[eb]` commit prefix is sufficient      |
 
 **Rationale:** Phase boundaries are natural merge points since you're not mid-feature. Separate upstream branch keeps a clean reference of stock Actual Budget for comparison and cherry-picking.
 
 **Setup required in Phase 1:**
+
 - Add upstream remote: `git remote add upstream <actual-budget-repo-url>`
 - Create and push `upstream/main` branch tracking the upstream repo
 - Document the merge workflow in README or CONTRIBUTING.md

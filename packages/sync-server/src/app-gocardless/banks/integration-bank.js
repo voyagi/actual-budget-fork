@@ -103,8 +103,7 @@ export default {
       balances.find(b => preferredBalanceTypes.includes(b.balanceType)) ??
       balances[0];
     return sortedTransactions.reduce(
-      (total, trans) =>
-        total - amountToInteger(trans.transactionAmount.amount),
+      (total, trans) => total - amountToInteger(trans.transactionAmount.amount),
       amountToInteger(currentBalance?.balanceAmount?.amount || 0),
     );
   },

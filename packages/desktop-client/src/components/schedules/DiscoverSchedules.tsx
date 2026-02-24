@@ -81,7 +81,11 @@ function DiscoverSchedulesTable({
         onKeyDown={(e: React.KeyboardEvent) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            dispatchSelected({ type: 'select', id: item.id, isRangeSelect: false });
+            dispatchSelected({
+              type: 'select',
+              id: item.id,
+              isRangeSelect: false,
+            });
           }
         }}
         style={{

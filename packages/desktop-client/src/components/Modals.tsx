@@ -29,6 +29,7 @@ import { EditUserAccess } from './modals/EditAccess';
 import { EditFieldModal } from './modals/EditFieldModal';
 import { EditRuleModal } from './modals/EditRuleModal';
 import { EditUserFinanceApp } from './modals/EditUser';
+import { EnableBankingExternalMsgModal } from './modals/EnableBankingExternalMsgModal';
 import { EnvelopeBalanceMenuModal } from './modals/EnvelopeBalanceMenuModal';
 import { EnvelopeBudgetMenuModal } from './modals/EnvelopeBudgetMenuModal';
 import { EnvelopeBudgetMonthMenuModal } from './modals/EnvelopeBudgetMonthMenuModal';
@@ -37,7 +38,6 @@ import { EnvelopeIncomeBalanceMenuModal } from './modals/EnvelopeIncomeBalanceMe
 import { EnvelopeToBudgetMenuModal } from './modals/EnvelopeToBudgetMenuModal';
 import { FixEncryptionKeyModal } from './modals/FixEncryptionKeyModal';
 import { GoalTemplateModal } from './modals/GoalTemplateModal';
-import { EnableBankingExternalMsgModal } from './modals/EnableBankingExternalMsgModal';
 import { GoCardlessExternalMsgModal } from './modals/GoCardlessExternalMsgModal';
 import { GoCardlessInitialiseModal } from './modals/GoCardlessInitialiseModal';
 import { HoldBufferModal } from './modals/HoldBufferModal';

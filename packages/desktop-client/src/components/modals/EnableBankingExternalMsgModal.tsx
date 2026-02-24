@@ -21,11 +21,11 @@ import {
 import { FormField, FormLabel } from '@desktop-client/components/forms';
 import { COUNTRY_OPTIONS } from '@desktop-client/components/util/countries';
 import { getCountryFromBrowser } from '@desktop-client/components/util/localeToCountry';
-import { useGlobalPref } from '@desktop-client/hooks/useGlobalPref';
+import { authorizeEnableBank } from '@desktop-client/enablebanking';
 import { useEnableBankingStatus } from '@desktop-client/hooks/useEnableBankingStatus';
+import { useGlobalPref } from '@desktop-client/hooks/useGlobalPref';
 import { pushModal } from '@desktop-client/modals/modalsSlice';
 import { useDispatch } from '@desktop-client/redux';
-import { authorizeEnableBank } from '@desktop-client/enablebanking';
 
 type AspspOption = {
   id: string;
@@ -302,7 +302,9 @@ export function EnableBankingExternalMsgModal() {
                 )}
               </View>
             ) : success ? (
-              <Paragraph style={{ marginTop: 10, color: theme.noticeTextLight }}>
+              <Paragraph
+                style={{ marginTop: 10, color: theme.noticeTextLight }}
+              >
                 <Trans>
                   Success! Your bank accounts are being linked. Please close
                   this window.
@@ -314,9 +316,9 @@ export function EnableBankingExternalMsgModal() {
               <>
                 <Paragraph style={{ color: theme.errorText }}>
                   <Trans>
-                    Enable Banking integration has not yet been configured. Please
-                    contact your server administrator to set up the Enable Banking
-                    API credentials.
+                    Enable Banking integration has not yet been configured.
+                    Please contact your server administrator to set up the
+                    Enable Banking API credentials.
                   </Trans>
                 </Paragraph>
               </>

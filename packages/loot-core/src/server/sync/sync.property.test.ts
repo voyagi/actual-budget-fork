@@ -12,9 +12,9 @@ import { isError } from './utils';
 
 import * as sync from './index';
 
-const uuidGenerator = fc.integer({ min: 97, max: 122 }).map(x =>
-  String.fromCharCode(x),
-);
+const uuidGenerator = fc
+  .integer({ min: 97, max: 122 })
+  .map(x => String.fromCharCode(x));
 
 beforeEach(() => {
   sync.setSyncingMode('enabled');
@@ -312,7 +312,9 @@ describe('sync property test', () => {
   it.skip('should always sync clients into the same state', async () => {
     await fc.assert(
       fc.asyncProperty(
-        fc.tuple(...Array.from(new Array(100)).map(() => fc.oneof(...generators))),
+        fc.tuple(
+          ...Array.from(new Array(100)).map(() => fc.oneof(...generators)),
+        ),
         async msgs => {
           let r;
 

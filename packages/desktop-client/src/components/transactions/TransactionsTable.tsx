@@ -48,17 +48,11 @@ import type {
   TableNavigator,
 } from '@desktop-client/components/table';
 import { useTableNavigator } from '@desktop-client/components/table';
-import {
-  SchedulesProvider,
-} from '@desktop-client/hooks/useCachedSchedules';
-import {
-  DisplayPayeeProvider,
-} from '@desktop-client/hooks/useDisplayPayee';
+import { SchedulesProvider } from '@desktop-client/hooks/useCachedSchedules';
+import { DisplayPayeeProvider } from '@desktop-client/hooks/useDisplayPayee';
 import { useLocalPref } from '@desktop-client/hooks/useLocalPref';
 import { useMergedRefs } from '@desktop-client/hooks/useMergedRefs';
-import {
-  useSelectedItems,
-} from '@desktop-client/hooks/useSelected';
+import { useSelectedItems } from '@desktop-client/hooks/useSelected';
 import { useSplitsExpanded } from '@desktop-client/hooks/useSplitsExpanded';
 import type { SplitsExpandedContextValue } from '@desktop-client/hooks/useSplitsExpanded';
 import { addNotification } from '@desktop-client/notifications/notificationsSlice';

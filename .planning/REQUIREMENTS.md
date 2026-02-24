@@ -74,54 +74,54 @@ Deferred to future release. Tracked but not in current roadmap.
 
 Explicitly excluded. Documented to prevent scope creep.
 
-| Feature | Reason |
-|---------|--------|
-| Custom UI themes / redesign | Future project, keep existing Actual Budget style unchanged |
-| Payment initiation | Read-only bank access only (AIS). Payment APIs require separate regulatory scope |
-| Native mobile app (React Native, Flutter) | PWA is sufficient for personal use |
-| Multi-user support | Personal use only. Would require auth layer + per-user data isolation |
-| Contributing upstream to Actual Budget | Maybe later, not a goal for v1 |
-| App store publishing | PWA installs directly from browser |
+| Feature                                    | Reason                                                                            |
+| ------------------------------------------ | --------------------------------------------------------------------------------- |
+| Custom UI themes / redesign                | Future project, keep existing Actual Budget style unchanged                       |
+| Payment initiation                         | Read-only bank access only (AIS). Payment APIs require separate regulatory scope  |
+| Native mobile app (React Native, Flutter)  | PWA is sufficient for personal use                                                |
+| Multi-user support                         | Personal use only. Would require auth layer + per-user data isolation             |
+| Contributing upstream to Actual Budget     | Maybe later, not a goal for v1                                                    |
+| App store publishing                       | PWA installs directly from browser                                                |
 | Automatic consent renewal (no user action) | PSD2 requires Strong Customer Authentication at the bank. User MUST be redirected |
-| Webhook-based real-time sync | Enable Banking does not support webhooks. PSD2 rate limits make polling correct |
-| Transaction categorization AI/ML | Actual Budget's rules engine + pre-populated EU merchant rules covers this |
-| Let's Encrypt cert management in the app | Caddy or Cloudflare Tunnel handles this at infrastructure level |
+| Webhook-based real-time sync               | Enable Banking does not support webhooks. PSD2 rate limits make polling correct   |
+| Transaction categorization AI/ML           | Actual Budget's rules engine + pre-populated EU merchant rules covers this        |
+| Let's Encrypt cert management in the app   | Caddy or Cloudflare Tunnel handles this at infrastructure level                   |
 
 ## Traceability
 
 Which phases cover which requirements. Updated during roadmap creation.
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
-| FOUND-02 | Phase 1 | Pending |
-| FOUND-03 | Phase 1 | Complete |
-| FOUND-04 | Phase 1 | Complete |
-| SYNC-01 | Phase 2 | Complete |
-| SYNC-02 | Phase 2 | Pending |
-| SYNC-03 | Phase 2 | Complete |
-| SYNC-04 | Phase 2 | Complete |
-| SYNC-05 | Phase 2 | Complete |
-| SYNC-06 | Phase 2 | Complete |
-| SYNC-07 | Phase 2 | Complete |
-| SYNC-08 | Phase 2 | Complete |
-| SYNC-09 | Phase 2 | Pending |
-| AUTO-01 | Phase 3 | Pending |
-| AUTO-02 | Phase 3 | Pending |
-| AUTO-03 | Phase 3 | Pending |
-| AUTO-04 | Phase 3 | Pending |
-| AUTO-05 | Phase 3 | Pending |
-| AUTO-06 | Phase 3 | Pending |
-| PWA-01 | Phase 4 | Pending |
-| PWA-02 | Phase 4 | Pending |
-| PWA-03 | Phase 4 | Pending |
-| PWA-04 | Phase 4 | Pending |
-| PWA-05 | Phase 4 | Pending |
-| PWA-06 | Phase 4 | Pending |
-| INFRA-01 | Phase 5 | Pending |
-| INFRA-02 | Phase 5 | Pending |
-| INFRA-03 | Phase 5 | Pending |
-| INFRA-04 | Phase 5 | Pending |
+| Requirement | Phase   | Status   |
+| ----------- | ------- | -------- |
+| FOUND-01    | Phase 1 | Pending  |
+| FOUND-02    | Phase 1 | Pending  |
+| FOUND-03    | Phase 1 | Complete |
+| FOUND-04    | Phase 1 | Complete |
+| SYNC-01     | Phase 2 | Complete |
+| SYNC-02     | Phase 2 | Pending  |
+| SYNC-03     | Phase 2 | Complete |
+| SYNC-04     | Phase 2 | Complete |
+| SYNC-05     | Phase 2 | Complete |
+| SYNC-06     | Phase 2 | Complete |
+| SYNC-07     | Phase 2 | Complete |
+| SYNC-08     | Phase 2 | Complete |
+| SYNC-09     | Phase 2 | Pending  |
+| AUTO-01     | Phase 3 | Pending  |
+| AUTO-02     | Phase 3 | Pending  |
+| AUTO-03     | Phase 3 | Pending  |
+| AUTO-04     | Phase 3 | Pending  |
+| AUTO-05     | Phase 3 | Pending  |
+| AUTO-06     | Phase 3 | Pending  |
+| PWA-01      | Phase 4 | Pending  |
+| PWA-02      | Phase 4 | Pending  |
+| PWA-03      | Phase 4 | Pending  |
+| PWA-04      | Phase 4 | Pending  |
+| PWA-05      | Phase 4 | Pending  |
+| PWA-06      | Phase 4 | Pending  |
+| INFRA-01    | Phase 5 | Pending  |
+| INFRA-02    | Phase 5 | Pending  |
+| INFRA-03    | Phase 5 | Pending  |
+| INFRA-04    | Phase 5 | Pending  |
 
 **Coverage:**
 
@@ -130,5 +130,6 @@ Which phases cover which requirements. Updated during roadmap creation.
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-02-18*
-*Last updated: 2026-02-18 after Plan 01-04 (FOUND-04 marked complete)*
+
+_Requirements defined: 2026-02-18_
+_Last updated: 2026-02-18 after Plan 01-04 (FOUND-04 marked complete)_

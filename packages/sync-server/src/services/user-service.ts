@@ -14,7 +14,9 @@ export function getUserById(userId: string): string | null {
   if (!userId) {
     return null;
   }
-  const row = getAccountDb().first('SELECT * FROM users WHERE id = ?', [userId]) as { id?: string } | null;
+  const row = getAccountDb().first('SELECT * FROM users WHERE id = ?', [
+    userId,
+  ]) as { id?: string } | null;
   return row?.id || null;
 }
 
@@ -22,7 +24,9 @@ export function getFileById(fileId: string): string | null {
   if (!fileId) {
     return null;
   }
-  const row = getAccountDb().first('SELECT * FROM files WHERE files.id = ?', [fileId]) as { id?: string } | null;
+  const row = getAccountDb().first('SELECT * FROM files WHERE files.id = ?', [
+    fileId,
+  ]) as { id?: string } | null;
   return row?.id || null;
 }
 
@@ -46,9 +50,10 @@ export function getOwnerId(): string | undefined {
 }
 
 export function getFileOwnerId(fileId: string): string | undefined {
-  const row = getAccountDb().first(`SELECT files.owner FROM files WHERE files.id = ?`, [
-    fileId,
-  ]) as { owner?: string } | null;
+  const row = getAccountDb().first(
+    `SELECT files.owner FROM files WHERE files.id = ?`,
+    [fileId],
+  ) as { owner?: string } | null;
   return row?.owner;
 }
 
@@ -128,11 +133,16 @@ export function deleteUserAccess(userId: string): number {
       userId,
     ]).changes;
   } catch (error) {
-    throw new Error(`Failed to delete user access: ${(error as Error).message}`);
+    throw new Error(
+      `Failed to delete user access: ${(error as Error).message}`,
+    );
   }
 }
 
-export function transferAllFilesFromUser(ownerId: string, oldUserId: string): void {
+export function transferAllFilesFromUser(
+  ownerId: string,
+  oldUserId: string,
+): void {
   if (!ownerId || !oldUserId) {
     throw new Error('Invalid user IDs');
   }
@@ -210,12 +220,12 @@ export function checkFilePermission(
   userId: string,
 ): { granted: number } {
   return (
-    getAccountDb().first(
+    (getAccountDb().first(
       `SELECT 1 as granted
        FROM files
        WHERE files.id = ? and (files.owner = ?)`,
       [fileId, userId],
-    ) as { granted: number } | null || { granted: 0 }
+    ) as { granted: number } | null) || { granted: 0 }
   );
 }
 
@@ -241,7 +251,10 @@ export function addUserAccess(userId: string, fileId: string): void {
   }
 }
 
-export function deleteUserAccessByFileId(userIds: string[], fileId: string): number {
+export function deleteUserAccessByFileId(
+  userIds: string[],
+  fileId: string,
+): number {
   if (!Array.isArray(userIds) || userIds.length === 0) {
     throw new Error('The provided userIds must be a non-empty array.');
   }
@@ -262,7 +275,9 @@ export function deleteUserAccessByFileId(userIds: string[], fileId: string): num
       }
     });
   } catch (error) {
-    throw new Error(`Failed to delete user access: ${(error as Error).message}`);
+    throw new Error(
+      `Failed to delete user access: ${(error as Error).message}`,
+    );
   }
 
   return totalChanges;

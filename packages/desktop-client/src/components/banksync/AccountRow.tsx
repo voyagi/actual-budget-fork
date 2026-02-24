@@ -108,9 +108,7 @@ export const AccountRow = memo(
               }}
               data-vrt-mask
             >
-              <div
-                style={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-              >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span>{lastSyncString}</span>
                 {ebStatus?.status === 'error' && ebStatus?.error_message ? (
                   <span
