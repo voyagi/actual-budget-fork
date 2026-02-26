@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test";
+import type { Locator, Page } from '@playwright/test';
 
 export class BankSyncPage {
   readonly page: Page;
@@ -8,7 +8,7 @@ export class BankSyncPage {
   constructor(page: Page) {
     this.page = page;
 
-    this.heading = page.getByRole("heading", { name: "Bank Sync" });
+    this.heading = page.getByRole('heading', { name: 'Bank Sync' });
 
     this.emptyStateText = page.getByText(
       /To use the bank syncing features, you must first add an account/,
@@ -16,7 +16,7 @@ export class BankSyncPage {
   }
 
   async waitToLoad() {
-    await this.page.waitForSelector("text=Bank Sync", { timeout: 10000 });
+    await this.page.waitForSelector('text=Bank Sync', { timeout: 10000 });
   }
 
   /**
@@ -32,8 +32,8 @@ export class BankSyncPage {
    * Get the Edit button for a specific account.
    */
   getEditButton(accountName: string) {
-    return this.getAccountRow(accountName).getByRole("button", {
-      name: "Edit",
+    return this.getAccountRow(accountName).getByRole('button', {
+      name: 'Edit',
     });
   }
 
@@ -41,8 +41,8 @@ export class BankSyncPage {
    * Get the Link account button for a specific account.
    */
   getLinkButton(accountName: string) {
-    return this.getAccountRow(accountName).getByRole("button", {
-      name: "Link account",
+    return this.getAccountRow(accountName).getByRole('button', {
+      name: 'Link account',
     });
   }
 

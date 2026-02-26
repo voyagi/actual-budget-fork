@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test";
+import type { Locator, Page } from '@playwright/test';
 
 export class SelectLinkedAccountsModal {
   readonly page: Page;
@@ -11,16 +11,16 @@ export class SelectLinkedAccountsModal {
   constructor(page: Page) {
     this.page = page;
 
-    this.heading = page.getByRole("heading", { name: "Link Accounts" });
+    this.heading = page.getByRole('heading', { name: 'Link Accounts' });
 
     this.instructionText = page.getByText(
       /We found the following accounts. Select which ones you want to add/,
     );
 
-    this.closeButton = page.getByRole("button", { name: "Close" });
+    this.closeButton = page.getByRole('button', { name: 'Close' });
 
     this.footerButton = page
-      .getByRole("button", {
+      .getByRole('button', {
         name: /Link|Unlink/,
       })
       .last();
@@ -29,7 +29,7 @@ export class SelectLinkedAccountsModal {
   }
 
   async waitToLoad() {
-    await this.heading.waitFor({ state: "visible", timeout: 10000 });
+    await this.heading.waitFor({ state: 'visible', timeout: 10000 });
   }
 
   /**
@@ -37,9 +37,9 @@ export class SelectLinkedAccountsModal {
    */
   getSetupButton(accountName: string) {
     return this.page
-      .locator("tr, [style]")
+      .locator('tr, [style]')
       .filter({ hasText: accountName })
-      .getByRole("button", { name: "Set up bank sync" });
+      .getByRole('button', { name: 'Set up bank sync' });
   }
 
   /**
@@ -47,9 +47,9 @@ export class SelectLinkedAccountsModal {
    */
   getRemoveButton(accountName: string) {
     return this.page
-      .locator("tr, [style]")
+      .locator('tr, [style]')
       .filter({ hasText: accountName })
-      .getByRole("button", { name: "Remove bank sync" });
+      .getByRole('button', { name: 'Remove bank sync' });
   }
 
   /**
@@ -57,9 +57,9 @@ export class SelectLinkedAccountsModal {
    */
   getLinkAccountButton(accountName: string) {
     return this.page
-      .locator("[style]")
+      .locator('[style]')
       .filter({ hasText: accountName })
-      .getByRole("button", { name: "Link account" });
+      .getByRole('button', { name: 'Link account' });
   }
 
   /**
@@ -81,7 +81,7 @@ export class SelectLinkedAccountsModal {
    * Select an Actual account option from the dropdown.
    */
   async selectActualAccount(optionName: string) {
-    await this.page.getByRole("option", { name: optionName }).first().click();
+    await this.page.getByRole('option', { name: optionName }).first().click();
   }
 
   /**

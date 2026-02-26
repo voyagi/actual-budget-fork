@@ -1,4 +1,4 @@
-import * as colorPalette from "@desktop-client/style/palette";
+import * as colorPalette from '@desktop-client/style/palette';
 
 export const pageBackground = colorPalette.buddyDarkBg;
 export const pageBackgroundModalActive = colorPalette.buddyDarkSurface1;
@@ -17,7 +17,7 @@ export const pageTextLinkLight = colorPalette.buddyPrimaryHover;
 
 export const cardBackground = colorPalette.buddyDarkSurface1;
 export const cardBorder = colorPalette.buddyDarkBorder;
-export const cardShadow = "rgba(0, 0, 0, 0.3)";
+export const cardShadow = 'rgba(0, 0, 0, 0.3)';
 
 export const tableBackground = colorPalette.buddyDarkSurface1;
 export const tableRowBackgroundHover = colorPalette.buddyDarkSurface2;
@@ -34,7 +34,8 @@ export const tableBorderSelected = colorPalette.buddyPrimary;
 export const tableBorderHover = colorPalette.buddyPrimaryHover;
 export const tableBorderSeparator = colorPalette.buddyDarkTextMuted;
 export const tableRowBackgroundHighlight = colorPalette.buddyPrimaryMuted;
-export const tableRowBackgroundHighlightText = colorPalette.buddyDarkTextPrimary;
+export const tableRowBackgroundHighlightText =
+  colorPalette.buddyDarkTextPrimary;
 export const tableRowHeaderBackground = colorPalette.buddyDarkSurface2;
 export const tableRowHeaderText = colorPalette.buddyDarkTextPrimary;
 
@@ -82,7 +83,7 @@ export const modalBorder = colorPalette.buddyDarkBorder;
 export const mobileHeaderBackground = colorPalette.buddyDarkSurface1;
 export const mobileHeaderText = colorPalette.buddyDarkTextPrimary;
 export const mobileHeaderTextSubdued = colorPalette.buddyDarkTextSecondary;
-export const mobileHeaderTextHover = "rgba(200, 200, 200, .15)";
+export const mobileHeaderTextHover = 'rgba(200, 200, 200, .15)';
 export const mobilePageBackground = colorPalette.buddyDarkBg;
 export const mobileNavBackground = colorPalette.buddyDarkSurface1;
 export const mobileNavItem = colorPalette.buddyDarkTextSecondary;
@@ -102,8 +103,8 @@ export const markdownLight = colorPalette.buddyDarkSurface1;
 // Button
 export const buttonMenuText = colorPalette.buddyDarkTextPrimary;
 export const buttonMenuTextHover = buttonMenuText;
-export const buttonMenuBackground = "transparent";
-export const buttonMenuBackgroundHover = "rgba(200, 200, 200, .15)";
+export const buttonMenuBackground = 'transparent';
+export const buttonMenuBackgroundHover = 'rgba(200, 200, 200, .15)';
 export const buttonMenuBorder = colorPalette.buddyDarkTextMuted;
 export const buttonMenuSelectedText = colorPalette.buddyDarkBg;
 export const buttonMenuSelectedTextHover = colorPalette.buddyDarkBg;
@@ -116,7 +117,7 @@ export const buttonPrimaryTextHover = buttonPrimaryText;
 export const buttonPrimaryBackground = colorPalette.buddyPrimary;
 export const buttonPrimaryBackgroundHover = colorPalette.buddyPrimaryHover;
 export const buttonPrimaryBorder = buttonPrimaryBackground;
-export const buttonPrimaryShadow = "rgba(0, 0, 0, 0.4)";
+export const buttonPrimaryShadow = 'rgba(0, 0, 0, 0.4)';
 export const buttonPrimaryDisabledText = colorPalette.buddyDarkTextMuted;
 export const buttonPrimaryDisabledBackground = colorPalette.buddyDarkSurface2;
 export const buttonPrimaryDisabledBorder = buttonPrimaryDisabledBackground;
@@ -126,7 +127,7 @@ export const buttonNormalTextHover = colorPalette.buddyDarkTextPrimary;
 export const buttonNormalBackground = colorPalette.buddyDarkSurface1;
 export const buttonNormalBackgroundHover = colorPalette.buddyDarkSurface2;
 export const buttonNormalBorder = colorPalette.buddyDarkBorder;
-export const buttonNormalShadow = "rgba(0, 0, 0, 0.3)";
+export const buttonNormalShadow = 'rgba(0, 0, 0, 0.3)';
 export const buttonNormalSelectedText = colorPalette.buddyDarkTextPrimary;
 export const buttonNormalSelectedBackground = colorPalette.buddyPrimary;
 export const buttonNormalDisabledText = colorPalette.buddyDarkTextMuted;
@@ -141,9 +142,9 @@ export const calendarSelectedBackground = buttonNormalSelectedBackground;
 
 export const buttonBareText = buttonNormalText;
 export const buttonBareTextHover = buttonNormalText;
-export const buttonBareBackground = "transparent";
-export const buttonBareBackgroundHover = "rgba(200, 200, 200, .15)";
-export const buttonBareBackgroundActive = "rgba(200, 200, 200, .25)";
+export const buttonBareBackground = 'transparent';
+export const buttonBareBackgroundHover = 'rgba(200, 200, 200, .15)';
+export const buttonBareBackgroundActive = 'rgba(200, 200, 200, .25)';
 export const buttonBareDisabledText = buttonNormalDisabledText;
 export const buttonBareDisabledBackground = buttonBareBackground;
 
@@ -181,7 +182,8 @@ export const formInputBorderSelected = colorPalette.buddyPrimary;
 export const formInputText = colorPalette.buddyDarkTextPrimary;
 export const formInputTextSelected = colorPalette.buddyDarkTextPrimary;
 export const formInputTextPlaceholder = colorPalette.buddyDarkTextSecondary;
-export const formInputTextPlaceholderSelected = colorPalette.buddyDarkTextSecondary;
+export const formInputTextPlaceholderSelected =
+  colorPalette.buddyDarkTextSecondary;
 export const formInputTextSelection = colorPalette.buddyDarkSurface1;
 export const formInputShadowSelected = colorPalette.buddyPrimaryHover;
 export const formInputTextHighlight = colorPalette.buddyPrimaryHover;
@@ -235,7 +237,7 @@ export const tooltipBorder = colorPalette.buddyDarkBorder;
 
 export const calendarCellBackground = colorPalette.buddyDarkBg;
 
-export const overlayBackground = "rgba(0, 0, 0, 0.5)";
+export const overlayBackground = 'rgba(0, 0, 0, 0.5)';
 
 // Hero card tokens (surface bg + accent color for border)
 export const heroCardNetWorthStart = colorPalette.buddyDarkSurface2;
