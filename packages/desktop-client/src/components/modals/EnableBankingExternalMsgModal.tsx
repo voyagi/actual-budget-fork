@@ -153,7 +153,7 @@ export function EnableBankingExternalMsgModal() {
 
       setWaiting(null);
       setSuccess(true);
-    } catch (err) {
+    } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       setError({
         code: message === 'timeout' ? 'timeout' : 'unknown',

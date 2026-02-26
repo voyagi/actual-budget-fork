@@ -7,13 +7,15 @@ import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
 function RouteErrorFallback({
-  error,
+  error: rawError,
   resetErrorBoundary,
 }: {
-  error: Error;
+  error: unknown;
   resetErrorBoundary: () => void;
 }) {
   const { t } = useTranslation();
+  const errorMessage =
+    rawError instanceof Error ? rawError.message : String(rawError);
 
   return (
     <View
@@ -32,7 +34,7 @@ function RouteErrorFallback({
       <View
         style={{ fontSize: 14, marginBottom: 20, color: theme.pageTextLight }}
       >
-        {error.message}
+        {errorMessage}
       </View>
       <Button variant="primary" onPress={resetErrorBoundary}>
         {t('Try again')}
