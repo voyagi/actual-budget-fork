@@ -11,8 +11,8 @@ import { tokens } from "@actual-app/components/tokens";
 import { View } from "@actual-app/components/view";
 import { css } from "@emotion/css";
 
-import { SvgCalendar3, SvgCheveronRight } from "@actual-app/components/icons/v2";
-import { SvgCreditCard, SvgStoreFront, SvgTag, SvgTuning } from "@actual-app/components/icons/v1";
+import { SvgCalendar3 } from "@actual-app/components/icons/v2";
+import { SvgCheveronRight, SvgCreditCard, SvgStoreFront, SvgTag, SvgTuning } from "@actual-app/components/icons/v1";
 import { listen } from "loot-core/platform/client/connection";
 import { isElectron } from "loot-core/shared/environment";
 
@@ -168,6 +168,7 @@ function ToolsNavLink({
 }) {
   return (
     <Link
+      variant="internal"
       to={to}
       style={{
         textDecoration: "none",
