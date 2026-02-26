@@ -1,11 +1,11 @@
-import type { Request, Response } from 'express';
-import express from 'express';
-import rateLimit from 'express-rate-limit';
-import ipaddr from 'ipaddr.js';
+import type { Request, Response } from "express";
+import express from "express";
+import rateLimit from "express-rate-limit";
+import ipaddr from "ipaddr.js";
 
-import { config } from './load-config';
-import { requestLoggerMiddleware } from './util/middlewares';
-import { validateSession } from './util/validate-user';
+import { config } from "./load-config";
+import { requestLoggerMiddleware } from "./util/middlewares";
+import { validateSession } from "./util/validate-user";
 
 const app = express();
 
@@ -33,27 +33,24 @@ export const clearAllowlistCache = (): void => {
 
 async function fetchAllowlist(): Promise<string[]> {
   const now = Date.now();
-  if (
-    now - lastAllowlistFetch < ALLOWLIST_CACHE_TTL &&
-    allowlistedRepos.length > 0
-  ) {
+  if (now - lastAllowlistFetch < ALLOWLIST_CACHE_TTL && allowlistedRepos.length > 0) {
     return allowlistedRepos;
   }
 
   try {
     const response = await fetch(
-      'https://raw.githubusercontent.com/actualbudget/plugin-store/refs/heads/main/plugins.json',
+      "https://raw.githubusercontent.com/actualbudget/plugin-store/refs/heads/main/plugins.json",
     );
     if (!response.ok) {
       throw new Error(`Failed to fetch allowlist: ${response.status}`);
     }
     const plugins = (await response.json()) as Array<{ url: string }>;
-    allowlistedRepos = plugins.map(plugin => plugin.url);
+    allowlistedRepos = plugins.map((plugin) => plugin.url);
     lastAllowlistFetch = now;
-    console.log('Updated plugin allowlist:', allowlistedRepos);
+    console.log("Updated plugin allowlist:", allowlistedRepos);
     return allowlistedRepos;
   } catch (error) {
-    console.error('Failed to fetch plugin allowlist:', error);
+    console.error("Failed to fetch plugin allowlist:", error);
     // Return empty array if fetch fails to be safe
     allowlistedRepos = [];
     return allowlistedRepos;
@@ -71,15 +68,7 @@ function isUrlAllowed(targetUrl: string): boolean {
     // Block private/local IP addresses
     if (ipaddr.isValid(hostname)) {
       const ip = ipaddr.parse(hostname);
-      if (
-        [
-          'private',
-          'loopback',
-          'linkLocal',
-          'uniqueLocal',
-          'unspecified',
-        ].includes(ip.range())
-      ) {
+      if (["private", "loopback", "linkLocal", "uniqueLocal", "unspecified"].includes(ip.range())) {
         console.warn(`Blocked request to private/localhost IP: ${hostname}`);
         return false;
       }
@@ -88,7 +77,7 @@ function isUrlAllowed(targetUrl: string): boolean {
     // Always allow the specific plugin-store URL
     if (
       targetUrl ===
-      'https://raw.githubusercontent.com/actualbudget/plugin-store/refs/heads/main/plugins.json'
+      "https://raw.githubusercontent.com/actualbudget/plugin-store/refs/heads/main/plugins.json"
     ) {
       return true;
     }
@@ -97,43 +86,39 @@ function isUrlAllowed(targetUrl: string): boolean {
     for (const repoUrl of allowlistedRepos) {
       try {
         const { pathname } = new URL(repoUrl);
-        const [, repoOwner, repoName] = pathname.split('/');
+        const [, repoOwner, repoName] = pathname.split("/");
 
         if (
           targetUrl === repoUrl ||
-          targetUrl.startsWith(repoUrl + '/') ||
-          (hostname === 'api.github.com' &&
+          targetUrl.startsWith(repoUrl + "/") ||
+          (hostname === "api.github.com" &&
             url.pathname.startsWith(`/repos/${repoOwner}/${repoName}`)) ||
-          (hostname === 'raw.githubusercontent.com' &&
+          (hostname === "raw.githubusercontent.com" &&
             url.pathname.startsWith(`/${repoOwner}/${repoName}/`)) ||
-          (hostname === 'github.com' &&
+          (hostname === "github.com" &&
             url.pathname.startsWith(`/${repoOwner}/${repoName}/releases/`))
         ) {
           return true;
         }
       } catch (e) {
-        console.warn(
-          'Invalid repository URL in allowlist:',
-          repoUrl,
-          (e as Error).message,
-        );
+        console.warn("Invalid repository URL in allowlist:", repoUrl, (e as Error).message);
       }
     }
 
     return false;
   } catch (e) {
-    console.warn('Invalid target URL:', targetUrl, (e as Error).message);
+    console.warn("Invalid target URL:", targetUrl, (e as Error).message);
     return false;
   }
 }
 
-app.use('/', async (req: Request, res: Response) => {
+app.use("/", async (req: Request, res: Response) => {
   // CORS preflight
-  if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Origin', '*');
-    res.set('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type, X-Actual-Token');
-    res.set('Access-Control-Max-Age', '600');
+  if (req.method === "OPTIONS") {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, X-Actual-Token");
+    res.set("Access-Control-Max-Age", "600");
     res.status(204).end();
     return;
   }
@@ -141,7 +126,7 @@ app.use('/', async (req: Request, res: Response) => {
   const targetUrlString = req.query.url as string | undefined;
 
   if (!targetUrlString) {
-    res.status(400).json({ error: 'Missing url parameter' });
+    res.status(400).json({ error: "Missing url parameter" });
     return;
   }
 
@@ -155,7 +140,7 @@ app.use('/', async (req: Request, res: Response) => {
   try {
     url = new URL(targetUrlString);
   } catch {
-    res.status(400).json({ error: 'Invalid url parameter' });
+    res.status(400).json({ error: "Invalid url parameter" });
     return;
   }
 
@@ -163,37 +148,31 @@ app.use('/', async (req: Request, res: Response) => {
   try {
     await fetchAllowlist();
   } catch (error) {
-    console.error('Failed to fetch allowlist:', error);
+    console.error("Failed to fetch allowlist:", error);
     res.status(403).json({
-      error: 'URL not allowed',
-      message: 'Unable to verify allowlist',
+      error: "URL not allowed",
+      message: "Unable to verify allowlist",
     });
     return;
   }
 
   // Check if the URL is allowed
   if (!isUrlAllowed(url.href)) {
-    console.warn('Blocked request to unauthorized URL:', url.href);
+    console.warn("Blocked request to unauthorized URL:", url.href);
     res.status(403).json({
-      error: 'URL not allowed',
-      message:
-        'Only allowlisted plugin repositories are allowed (localhost only in development)',
+      error: "URL not allowed",
+      message: "Only allowlisted plugin repositories are allowed (localhost only in development)",
     });
     return;
   }
 
   try {
     // Extract method, body, and headers from the request body (sent by loot-core)
-    const {
-      method = 'GET',
-      body,
-      headers: customHeaders = {},
-    } = req.body || {};
+    const { method = "GET", body, headers: customHeaders = {} } = req.body || {};
 
-    const methodNormalized =
-      typeof method === 'string' ? method.toUpperCase() : 'GET';
-    if (!['GET', 'HEAD'].includes(methodNormalized)) {
-      res.status(405).json({ error: 'Method not allowed' });
+    const methodNormalized = typeof method === "string" ? method.toUpperCase() : "GET";
+    if (!["GET", "HEAD"].includes(methodNormalized)) {
+      res.status(405).json({ error: "Method not allowed" });
       return;
     }
 
@@ -204,70 +183,67 @@ app.use('/', async (req: Request, res: Response) => {
     } as Record<string, string>;
 
     // Remove headers that shouldn't be forwarded
-    delete requestHeaders['x-actual-token'];
-    delete requestHeaders['content-length'];
-    delete requestHeaders['cookie'];
-    delete requestHeaders['cookie2'];
+    delete requestHeaders["x-actual-token"];
+    delete requestHeaders["content-length"];
+    delete requestHeaders["cookie"];
+    delete requestHeaders["cookie2"];
 
     // Add GitHub authentication if token is configured and request is to GitHub
-    const githubToken = config.get('github.token');
+    const githubToken = config.get("github.token");
     if (
       githubToken &&
-      (url.hostname === 'api.github.com' ||
-        url.hostname === 'raw.githubusercontent.com' ||
-        (url.hostname === 'github.com' && url.pathname.includes('/releases/')))
+      (url.hostname === "api.github.com" ||
+        url.hostname === "raw.githubusercontent.com" ||
+        (url.hostname === "github.com" && url.pathname.includes("/releases/")))
     ) {
-      requestHeaders['Authorization'] = `Bearer ${githubToken}`;
-      requestHeaders['User-Agent'] = 'Actual-Budget-Plugin-System';
-      console.log(
-        `Using GitHub authentication for request to: ${url.hostname}`,
-      );
+      requestHeaders["Authorization"] = `Bearer ${githubToken}`;
+      requestHeaders["User-Agent"] = "Actual-Budget-Plugin-System";
+      console.log(`Using GitHub authentication for request to: ${url.hostname}`);
     }
 
     const response = await fetch(url.href, {
       method,
       headers: requestHeaders,
-      body: ['GET', 'HEAD'].includes(method)
+      body: ["GET", "HEAD"].includes(method)
         ? undefined
-        : typeof body === 'string'
+        : typeof body === "string"
           ? body
           : JSON.stringify(body),
     });
 
-    const contentType =
-      response.headers.get('content-type') || 'application/octet-stream';
+    const contentType = response.headers.get("content-type") || "application/octet-stream";
 
-    res.set('Access-Control-Allow-Origin', '*');
+    res.set("Access-Control-Allow-Origin", "*");
     res.status(response.status);
 
     // Try to detect if this might be JSON content based on URL or content
     const urlString = url.toString().toLowerCase();
     const isLikelyJson =
-      contentType?.includes('application/json') ||
-      urlString.includes('.json') ||
-      urlString.includes('/manifest') ||
-      urlString.includes('manifest.json') ||
-      urlString.includes('package.json');
+      contentType?.includes("application/json") ||
+      urlString.includes(".json") ||
+      urlString.includes("/manifest") ||
+      urlString.includes("manifest.json") ||
+      urlString.includes("package.json");
 
     if (isLikelyJson) {
       // For JSON responses, return the actual content
-      res.set('Content-Type', 'application/json');
+      res.set("Content-Type", "application/json");
       const text = await response.text();
       try {
         res.json(JSON.parse(text));
       } catch {
         // If it's not valid JSON, treat as text
-        res.set('Content-Type', contentType || 'text/plain');
+        res.set("Content-Type", contentType || "text/plain");
         res.send(text);
       }
-    } else if (contentType?.includes('text/')) {
+    } else if (contentType?.includes("text/")) {
       // For text responses, return as plain text
-      res.set('Content-Type', contentType);
+      res.set("Content-Type", contentType);
       const text = await response.text();
       res.send(text);
     } else {
       // For actual binary responses, return as JSON format
-      res.set('Content-Type', 'application/json');
+      res.set("Content-Type", "application/json");
       const buffer = await response.arrayBuffer();
       const binaryData = {
         data: Array.from(new Uint8Array(buffer)),
@@ -277,12 +253,10 @@ app.use('/', async (req: Request, res: Response) => {
       res.json(binaryData);
     }
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        error: 'Error proxying request',
-        details: (err as Error).message,
-      });
+    res.status(500).json({
+      error: "Error proxying request",
+      details: (err as Error).message,
+    });
   }
 });
 

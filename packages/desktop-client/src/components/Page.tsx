@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import { useEffect } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
-import { useResponsive } from '@actual-app/components/hooks/useResponsive';
-import { styles } from '@actual-app/components/styles';
-import { theme } from '@actual-app/components/theme';
-import { View } from '@actual-app/components/view';
+import { useResponsive } from "@actual-app/components/hooks/useResponsive";
+import { styles } from "@actual-app/components/styles";
+import { theme } from "@actual-app/components/theme";
+import { View } from "@actual-app/components/view";
 
 const HEADER_HEIGHT = 60;
 
@@ -15,17 +15,17 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, style }: PageHeaderProps) {
   useEffect(() => {
-    if (typeof title === 'string') {
-      document.title = title + ' - Actual';
+    if (typeof title === "string") {
+      document.title = title + " - Actual";
     }
   }, [title]);
 
   return (
     <View
       style={{
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "flex-start",
+        alignItems: "center",
         marginLeft: 20,
         ...style,
       }}
@@ -60,16 +60,16 @@ export function MobilePageHeader({
   return (
     <View
       style={{
-        alignItems: 'center',
-        flexDirection: 'row',
+        alignItems: "center",
+        flexDirection: "row",
         flexShrink: 0,
         height: HEADER_HEIGHT,
         backgroundColor: theme.mobileHeaderBackground,
         borderBottom: `1px solid ${theme.tableBorder}`,
-        '& *': {
+        "& *": {
           color: theme.mobileHeaderText,
         },
-        '& button[data-pressed]': {
+        "& button[data-pressed]": {
           backgroundColor: theme.mobileHeaderTextHover,
         },
         ...style,
@@ -77,25 +77,25 @@ export function MobilePageHeader({
     >
       <View
         style={{
-          flexBasis: '25%',
-          justifyContent: 'flex-start',
-          flexDirection: 'row',
+          flexBasis: "25%",
+          justifyContent: "flex-start",
+          flexDirection: "row",
         }}
       >
         {leftContent}
       </View>
       <h1
         style={{
-          textAlign: 'center',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'row',
-          flexBasis: '50%',
+          textAlign: "center",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
+          flexBasis: "50%",
           fontSize: 17,
           fontWeight: 600,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          display: 'flex',
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          display: "flex",
           margin: 0,
           padding: 0,
         }}
@@ -104,9 +104,9 @@ export function MobilePageHeader({
       </h1>
       <View
         style={{
-          flexBasis: '25%',
-          justifyContent: 'flex-end',
-          flexDirection: 'row',
+          flexBasis: "25%",
+          justifyContent: "flex-end",
+          flexDirection: "row",
         }}
       >
         {rightContent}
@@ -123,18 +123,12 @@ type PageProps = {
   footer?: ReactNode;
 };
 
-export function Page({
-  header,
-  style,
-  padding,
-  children,
-  footer,
-}: PageProps) {
+export function Page({ header, style, padding, children, footer }: PageProps) {
   const { isNarrowWidth } = useResponsive();
   const childrenPadding = padding != null ? padding : isNarrowWidth ? 16 : 20;
 
   const headerToRender =
-    typeof header === 'string' ? (
+    typeof header === "string" ? (
       isNarrowWidth ? (
         <MobilePageHeader title={header} />
       ) : (
@@ -149,9 +143,7 @@ export function Page({
       style={{
         ...(!isNarrowWidth && styles.page),
         flex: 1,
-        backgroundColor: isNarrowWidth
-          ? theme.mobilePageBackground
-          : theme.pageBackground,
+        backgroundColor: isNarrowWidth ? theme.mobilePageBackground : theme.pageBackground,
         ...style,
       }}
     >
@@ -161,7 +153,7 @@ export function Page({
         role="main"
         style={{
           flex: 1,
-          overflowY: isNarrowWidth ? 'auto' : undefined,
+          overflowY: isNarrowWidth ? "auto" : undefined,
           padding: `0 ${childrenPadding}px`,
         }}
       >
