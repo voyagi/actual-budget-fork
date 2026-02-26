@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
@@ -6,7 +6,7 @@ import { styles } from '@actual-app/components/styles';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
-const HEADER_HEIGHT = 50;
+const HEADER_HEIGHT = 60;
 
 type PageHeaderProps = {
   title: ReactNode;
@@ -65,6 +65,7 @@ export function MobilePageHeader({
         flexShrink: 0,
         height: HEADER_HEIGHT,
         backgroundColor: theme.mobileHeaderBackground,
+        borderBottom: `1px solid ${theme.tableBorder}`,
         '& *': {
           color: theme.mobileHeaderText,
         },
@@ -91,8 +92,9 @@ export function MobilePageHeader({
           flexDirection: 'row',
           flexBasis: '50%',
           fontSize: 17,
-          fontWeight: 500,
-          overflowY: 'auto',
+          fontWeight: 600,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
           display: 'flex',
           margin: 0,
           padding: 0,
@@ -121,9 +123,15 @@ type PageProps = {
   footer?: ReactNode;
 };
 
-export function Page({ header, style, padding, children, footer }: PageProps) {
+export function Page({
+  header,
+  style,
+  padding,
+  children,
+  footer,
+}: PageProps) {
   const { isNarrowWidth } = useResponsive();
-  const childrenPadding = padding != null ? padding : isNarrowWidth ? 10 : 20;
+  const childrenPadding = padding != null ? padding : isNarrowWidth ? 16 : 20;
 
   const headerToRender =
     typeof header === 'string' ? (

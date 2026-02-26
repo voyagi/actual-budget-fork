@@ -219,4 +219,10 @@ export const theme = {
   tooltipBorder: 'var(--color-tooltipBorder)',
   calendarCellBackground: 'var(--color-calendarCellBackground)',
   overlayBackground: 'var(--color-overlayBackground)',
+  heroCardNetWorthStart: 'var(--color-heroCardNetWorthStart)',
+  heroCardNetWorthEnd: 'var(--color-heroCardNetWorthEnd)',
+  heroCardBudgetStart: 'var(--color-heroCardBudgetStart)',
+  heroCardBudgetEnd: 'var(--color-heroCardBudgetEnd)',
+  heroCardText: 'var(--color-heroCardText)',
+  heroCardTextSubdued: 'var(--color-heroCardTextSubdued)',
 };

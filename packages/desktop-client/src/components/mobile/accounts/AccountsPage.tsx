@@ -28,6 +28,7 @@ import {
   useMoveAccountMutation,
   useSyncAndDownloadMutation,
 } from '@desktop-client/accounts';
+import { NetWorthHeroCard } from '@desktop-client/components/accounts/NetWorthHeroCard';
 import { makeAmountFullStyle } from '@desktop-client/components/budget/util';
 import { MOBILE_NAV_HEIGHT } from '@desktop-client/components/mobile/MobileNavTabs';
 import { PullToRefresh } from '@desktop-client/components/mobile/PullToRefresh';
@@ -327,6 +328,7 @@ function AllAccountList({
           aria-label={t('Account list')}
           style={{ paddingBottom: MOBILE_NAV_HEIGHT }}
         >
+          <NetWorthHeroCard />
           <AccountHeader
             id="all"
             name={t('All accounts')}
