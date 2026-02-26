@@ -84,6 +84,58 @@ export const hover = '#fafafa';
 export const border = '#e8ecf0';
 export const selected = '#b3d9ff';
 
+// Buddy V2 - Primary accent (purple, interactive elements)
+export const buddyPrimary = '#6C5CE7';
+export const buddyPrimaryHover = '#7D6FEE';
+export const buddyPrimaryDark = '#5A4BD4';
+export const buddyPrimaryMuted = '#3D3566';
+export const buddyPrimaryLightBg = '#EDE8FF';
+export const buddyPrimarySubtle = '#F4F1FF';
+export const buddyPrimaryLightTheme = '#5B4ED4';
+
+// Buddy V2 - Accent (pink, restricted: nav selected + decorative only)
+export const buddyAccent = '#FF6B8A';
+export const buddyAccentDark = '#D4506E';
+
+// Buddy V2 - Financial positive (teal/green)
+export const buddyPositive = '#2DD4A8';
+export const buddyPositiveDark = '#20A882';
+export const buddyPositiveLight = '#0D9B6A';
+
+// Buddy V2 - Chart/utility colors
+export const buddyBlue = '#4FC3F7';
+export const buddyYellow = '#C8E64C';
+
+// Buddy V2 - Dark surfaces
+export const buddyDarkBg = '#0D1117';
+export const buddyDarkSurface1 = '#1A1B2E';
+export const buddyDarkSurface2 = '#252638';
+export const buddyDarkSurface3 = '#2E2F42';
+export const buddyDarkBorder = '#2A2B3D';
+
+// Buddy V2 - Light surfaces
+export const buddyLightBg = '#F4F5F7';
+export const buddyLightSurface1 = '#FFFFFF';
+export const buddyLightSurface2 = '#F0F1F4';
+export const buddyLightSurface3 = '#F8F9FA';
+export const buddyLightBorder = '#E2E4EA';
+export const buddyLightBorderDark = '#D1D5DB';
+export const buddyLightSidebarBg = '#1A1B2E'; // Intentionally dark sidebar in light theme
+export const buddyLightPositiveBg = '#ECFDF5';
+
+// Buddy V2 - Dark text
+export const buddyDarkTextPrimary = '#F5F5FF';
+export const buddyDarkTextSecondary = '#8E8E93';
+export const buddyDarkTextMuted = '#555566';
+export const buddyDarkTextSubdued = 'rgba(245, 245, 255, 0.85)';
+export const buddyDarkFormLabel = '#9E9EB8';
+
+// Buddy V2 - Light text
+export const buddyLightTextPrimary = '#1A1B2E';
+export const buddyLightTextSecondary = '#5A5D6E';
+export const buddyLightTextMuted = '#9295A5';
+export const buddyLightTextDark = '#0D0E1A';
+
 // Chart colors - Qualitative scale (9 colors)
 export const chartQual1 = '#45B29D'; // Dark Teal
 export const chartQual2 = '#EFC94C'; // Yellow
