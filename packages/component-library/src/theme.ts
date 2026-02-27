@@ -225,4 +225,18 @@ export const theme = {
   heroCardBudgetEnd: 'var(--color-heroCardBudgetEnd)',
   heroCardText: 'var(--color-heroCardText)',
   heroCardTextSubdued: 'var(--color-heroCardTextSubdued)',
+
+  // Design tokens (non-color)
+  radiusSmall: 'var(--token-radius_small)',
+  radiusMedium: 'var(--token-radius_medium)',
+  radiusLarge: 'var(--token-radius_large)',
+  radiusFull: 'var(--token-radius_full)',
+  shadowSmall: 'var(--token-shadow_small)',
+  shadowMedium: 'var(--token-shadow_medium)',
+  shadowLarge: 'var(--token-shadow_large)',
+  spacingXs: 'var(--token-spacing_xs)',
+  spacingSm: 'var(--token-spacing_sm)',
+  spacingMd: 'var(--token-spacing_md)',
+  spacingLg: 'var(--token-spacing_lg)',
+  spacingXl: 'var(--token-spacing_xl)',
 };

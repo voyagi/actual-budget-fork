@@ -103,7 +103,7 @@ export function Sidebar() {
             width: hasWindowButtons ? null : 'auto',
           } as CSSProperties,
           flex: 1,
-          ...styles.darkScrollbar,
+          ...styles.lightScrollbar,
         })}
       >
         <BudgetName>
