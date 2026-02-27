@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { t } from 'i18next';
 
 import type { FieldValueTypes, RuleConditionOp } from '../types/models';

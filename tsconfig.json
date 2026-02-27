@@ -7,7 +7,7 @@
   "compilerOptions": {
     // "composite": true,
     "target": "ES2022",
-    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,

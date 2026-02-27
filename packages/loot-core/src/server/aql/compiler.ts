@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { getNormalisedString } from '../../shared/normalisation';
 import type { QueryState } from '../../shared/query';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { CSSProperties, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -76,16 +75,9 @@ export function ToBudgetAmount({
               textAlign: 'center',
             }}
           >
-            <Block
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
               onClick={onClick}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onClick();
-                }
-              }}
               onContextMenu={onContextMenu}
               data-cellname={sheetName}
               className={css([
@@ -101,19 +93,24 @@ export function ToBudgetAmount({
                       : theme.toBudgetZero,
                   marginBottom: -1,
                   borderBottom: '1px solid transparent',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
                   ':hover': {
-                    borderColor: isPositive
-                      ? theme.toBudgetPositive
-                      : isNegative
-                        ? theme.toBudgetNegative
-                        : theme.toBudgetZero,
+                    borderBottom: `1px solid ${
+                      isPositive
+                        ? theme.toBudgetPositive
+                        : isNegative
+                          ? theme.toBudgetNegative
+                          : theme.toBudgetZero
+                    }`,
                   },
                 },
                 amountStyle,
               ])}
             >
               <FinancialText>{format(num, 'financial')}</FinancialText>
-            </Block>
+            </button>
           </PrivacyFilter>
         </Tooltip>
       </View>

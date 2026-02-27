@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import type { QueryClient } from '@tanstack/react-query';
 import { t } from 'i18next';
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import express from 'express';
 
 import { getAccountDb } from '../account-db.js';

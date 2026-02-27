@@ -4,10 +4,8 @@ import { Text } from '@actual-app/components/text';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
-import {
-  CellValue,
-  CellValueText,
-} from '@desktop-client/components/spreadsheet/CellValue';
+import { CellValueText } from '@desktop-client/components/spreadsheet/CellValue';
+import { EnvelopeCellValue } from '@desktop-client/components/budget/envelope/EnvelopeBudgetComponents';
 import { envelopeBudget } from '@desktop-client/spreadsheet/bindings';
 
 /**
@@ -63,7 +61,7 @@ export function BudgetHeroCard() {
           >
             <Trans>Budgeted</Trans>
           </Text>
-          <CellValue binding={envelopeBudget.totalBudgeted} type="financial">
+          <EnvelopeCellValue binding={envelopeBudget.totalBudgeted} type="financial">
             {props => (
               <CellValueText<
                 'envelope-budget',
@@ -78,7 +76,7 @@ export function BudgetHeroCard() {
                 }}
               />
             )}
-          </CellValue>
+          </EnvelopeCellValue>
         </View>
         <View>
           <Text
@@ -91,7 +89,7 @@ export function BudgetHeroCard() {
           >
             <Trans>Spent</Trans>
           </Text>
-          <CellValue binding={envelopeBudget.totalSpent} type="financial">
+          <EnvelopeCellValue binding={envelopeBudget.totalSpent} type="financial">
             {props => (
               <CellValueText<
                 'envelope-budget',
@@ -106,7 +104,7 @@ export function BudgetHeroCard() {
                 }}
               />
             )}
-          </CellValue>
+          </EnvelopeCellValue>
         </View>
       </View>
     </View>

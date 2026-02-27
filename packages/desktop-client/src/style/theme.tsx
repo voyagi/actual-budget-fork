@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { tokens } from '@actual-app/components/tokens';
+
 import { isNonProductionEnvironment } from 'loot-core/shared/environment';
 import type { DarkTheme, Theme } from 'loot-core/types/prefs';
 
@@ -100,10 +101,11 @@ export function ThemeStyle() {
     .join('\n');
 
   // Design tokens (radius, shadow, spacing) are theme-independent
-  const tokenEntries = Object.entries(tokens).filter(([key]) =>
-    key.startsWith('radius_') ||
-    key.startsWith('shadow_') ||
-    key.startsWith('spacing_'),
+  const tokenEntries = Object.entries(tokens).filter(
+    ([key]) =>
+      key.startsWith('radius_') ||
+      key.startsWith('shadow_') ||
+      key.startsWith('spacing_'),
   );
   const tokenCss = tokenEntries
     .map(([key, value]) => `  --token-${key}: ${value};`)

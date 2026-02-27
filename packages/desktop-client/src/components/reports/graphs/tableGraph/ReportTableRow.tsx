@@ -1,5 +1,5 @@
-import React, { memo } from 'react';
-import type { CSSProperties, RefObject, UIEventHandler } from 'react';
+import { memo } from 'react';
+import type { CSSProperties, KeyboardEvent, RefObject, UIEventHandler } from 'react';
 
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
 import { theme } from '@actual-app/components/theme';
@@ -175,7 +175,7 @@ export const ReportTableRow = memo(
                         interval,
                       })
                     }
-                    onKeyDown={(e: React.KeyboardEvent) => {
+                    onKeyDown={(e: KeyboardEvent) => {
                       if ((e.key === 'Enter' || e.key === ' ') && isClickable) {
                         e.preventDefault();
                         showActivity({
@@ -248,7 +248,7 @@ export const ReportTableRow = memo(
                         id: item.id,
                       })
                     }
-                    onKeyDown={(e: React.KeyboardEvent) => {
+                    onKeyDown={(e: KeyboardEvent) => {
                       if ((e.key === 'Enter' || e.key === ' ') && isClickable) {
                         e.preventDefault();
                         showActivity({
@@ -314,7 +314,7 @@ export const ReportTableRow = memo(
                         id: item.id,
                       })
                     }
-                    onKeyDown={(e: React.KeyboardEvent) => {
+                    onKeyDown={(e: KeyboardEvent) => {
                       if ((e.key === 'Enter' || e.key === ' ') && isClickable) {
                         e.preventDefault();
                         showActivity({
@@ -379,7 +379,7 @@ export const ReportTableRow = memo(
                 id: item.id,
               })
             }
-            onKeyDown={(e: React.KeyboardEvent) => {
+            onKeyDown={(e: KeyboardEvent) => {
               if ((e.key === 'Enter' || e.key === ' ') && isClickable) {
                 e.preventDefault();
                 showActivity({

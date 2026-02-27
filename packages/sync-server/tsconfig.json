@@ -3,7 +3,8 @@
   "compilerOptions": {
     "lib": ["ES2024"],
     "noEmit": false,
-    "outDir": "build"
+    "outDir": "build",
+    "rootDir": "."
   },
   "include": [
     "src/**/*",

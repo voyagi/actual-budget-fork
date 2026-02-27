@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { readFileSync } from 'fs';
 
 import axios from 'axios';

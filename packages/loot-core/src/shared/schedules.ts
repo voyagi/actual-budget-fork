@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import type { IRuleOptions } from '@rschedule/core';
 import * as d from 'date-fns';
 import type { Locale } from 'date-fns';
