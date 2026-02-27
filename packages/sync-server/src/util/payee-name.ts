@@ -1,4 +1,4 @@
-import { title } from 'loot-core/server/accounts/title/index';
+import { title } from './title/index';
 
 interface TransactionAccount {
   iban?: string;

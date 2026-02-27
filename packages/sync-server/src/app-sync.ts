@@ -51,6 +51,10 @@ export { app as handlers };
 
 const OK_RESPONSE = { status: 'ok' };
 
+function boolToInt(deleted) {
+  return deleted ? 1 : 0;
+}
+
 const verifyFileExists = (fileId, filesService, res, errorObject) => {
   try {
     return filesService.get(fileId);
@@ -404,7 +408,7 @@ app.get('/list-user-files', (req, res) => {
   res.send({
     status: 'ok',
     data: rows.map(row => ({
-      deleted: !!row.deleted,
+      deleted: boolToInt(row.deleted),
       fileId: row.id,
       groupId: row.groupId,
       name: row.name,
@@ -447,7 +451,7 @@ app.get('/get-user-file-info', (req, res) => {
   res.send({
     status: 'ok',
     data: {
-      deleted: !!file.deleted,
+      deleted: boolToInt(file.deleted), //   FIXME: convert to boolean, make sure it works in the frontend
       fileId: file.id,
       groupId: file.groupId,
       name: file.name,

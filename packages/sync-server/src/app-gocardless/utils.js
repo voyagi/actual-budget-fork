@@ -42,4 +42,4 @@ export const sortByBookingDateOrValueDate = (transactions = []) =>
     return 0;
   });
 
-export { amountToInteger } from 'loot-core/shared/util';
+export const amountToInteger = n => Math.round(n * 100);
