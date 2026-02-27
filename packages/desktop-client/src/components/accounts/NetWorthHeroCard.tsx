@@ -37,7 +37,10 @@ export function NetWorthHeroCard() {
       >
         <Trans>Total net worth</Trans>
       </Text>
-      <CellValue<'account', 'accounts-balance'> binding={bindings.allAccountBalance()} type="financial">
+      <CellValue<'account', 'accounts-balance'>
+        binding={bindings.allAccountBalance()}
+        type="financial"
+      >
         {props => (
           <CellValueText<'account', 'accounts-balance'>
             {...props}

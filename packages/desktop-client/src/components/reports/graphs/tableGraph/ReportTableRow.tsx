@@ -1,5 +1,10 @@
 import { memo } from 'react';
-import type { CSSProperties, KeyboardEvent, RefObject, UIEventHandler } from 'react';
+import type {
+  CSSProperties,
+  KeyboardEvent,
+  RefObject,
+  UIEventHandler,
+} from 'react';
 
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
 import { theme } from '@actual-app/components/theme';

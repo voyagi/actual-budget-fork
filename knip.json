@@ -67,9 +67,7 @@
         "src/mocks/spreadsheet.ts",
         "vite.api.config.ts"
       ],
-      "ignore": [
-        "typings/**"
-      ]
+      "ignore": ["typings/**"]
     },
     "packages/api": {
       "ignoreDependencies": ["@actual-app/crdt", "better-sqlite3", "uuid"]
