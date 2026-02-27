@@ -56,7 +56,7 @@ __metadata:
     react: "npm:19.2.4"
     react-aria-components: "npm:^1.15.1"
     react-dom: "npm:19.2.4"
-    storybook: "npm:^10.2.0"
+    storybook: "npm:^10.2.10"
     usehooks-ts: "npm:^3.1.1"
     vitest: "npm:^4.0.18"
   peerDependencies:
@@ -107,7 +107,7 @@ __metadata:
     "@types/express": "npm:^5.0.6"
     "@types/node": "npm:^22.19.3"
     "@types/supertest": "npm:^6.0.3"
-    axios: "npm:^1.13.5"
+    axios: "npm:^1.13.6"
     bcrypt: "npm:^6.0.0"
     better-sqlite3: "npm:^12.6.2"
     convict: "npm:^6.2.4"
@@ -10779,7 +10779,7 @@ __metadata:
     husky: "npm:^9.1.7"
     lage: "npm:^2.14.18"
     lint-staged: "npm:^16.2.7"
-    minimatch: "npm:^10.2.2"
+    minimatch: "npm:^10.2.3"
     node-jq: "npm:^6.3.1"
     npm-run-all: "npm:^4.1.5"
     oxfmt: "npm:^0.34.0"
@@ -11349,14 +11349,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.13.5":
-  version: 1.13.5
-  resolution: "axios@npm:1.13.5"
+"axios@npm:^1.13.6":
+  version: 1.13.6
+  resolution: "axios@npm:1.13.6"
   dependencies:
     follow-redirects: "npm:^1.15.11"
     form-data: "npm:^4.0.5"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/db726d09902565ef9a0632893530028310e2ec2b95b727114eca1b101450b00014133dfc3871cffc87983fb922bca7e4874d7e2826d1550a377a157cdf3f05b6
+  checksum: 10/a7ed83c2af3ef21d64609df0f85e76893a915a864c5934df69241001d0578082d6521a0c730bf37518ee458821b5695957cb10db9fc705f2a8996c8686ea7a89
   languageName: node
   linkType: hard
 
@@ -11670,9 +11670,9 @@ __metadata:
   linkType: hard
 
 "bn.js@npm:^4.0.0, bn.js@npm:^4.1.0, bn.js@npm:^4.11.9":
-  version: 4.12.2
-  resolution: "bn.js@npm:4.12.2"
-  checksum: 10/5803983405c087443e0e6c9bb5d0bc863d9f987d77e710f81b14c55616494f5a274e1650ee892531acb3529d52c0e0ea48aa12d2873dd80a75dde9d73a2ec518
+  version: 4.12.3
+  resolution: "bn.js@npm:4.12.3"
+  checksum: 10/57ed5a055f946f3e009f1589c45a5242db07f3dddfc72e4506f0dd9d8b145f0dbee4edabc2499288f3fc338eb712fb96a1c623a2ed2bcd49781df1a64db64dd1
   languageName: node
   linkType: hard
 
@@ -21010,12 +21010,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^10.2.1, minimatch@npm:^10.2.2":
+"minimatch@npm:^10.2.1":
   version: 10.2.2
   resolution: "minimatch@npm:10.2.2"
   dependencies:
     brace-expansion: "npm:^5.0.2"
   checksum: 10/e135be7b502ac97c02bcee42ccc1c55dc26dbac036c0f4acde69e42fe339d7fb53fae711e57b3546cb533426382ea492c73a073c7f78832e0453d120d48dd015
+  languageName: node
+  linkType: hard
+
+"minimatch@npm:^10.2.3":
+  version: 10.2.4
+  resolution: "minimatch@npm:10.2.4"
+  dependencies:
+    brace-expansion: "npm:^5.0.2"
+  checksum: 10/aea4874e521c55bb60744685bbffe3d152e5460f84efac3ea936e6bbe2ceba7deb93345fec3f9bb17f7b6946776073a64d40ae32bf5f298ad690308121068a1f
   languageName: node
   linkType: hard
 
@@ -26370,9 +26379,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"storybook@npm:^10.2.0":
-  version: 10.2.0
-  resolution: "storybook@npm:10.2.0"
+"storybook@npm:^10.2.10":
+  version: 10.2.13
+  resolution: "storybook@npm:10.2.13"
   dependencies:
     "@storybook/global": "npm:^5.0.0"
     "@storybook/icons": "npm:^2.0.1"
@@ -26393,7 +26402,7 @@ __metadata:
       optional: true
   bin:
     storybook: ./dist/bin/dispatcher.js
-  checksum: 10/cac19b62c3dfd7a0a2e5d642472b2b1fee183bb5f992a6b070d0ff091aae62b79df2db24bedc57458bcf225f7cabc03e7a013b87aa065fe29b2ace76473dfa46
+  checksum: 10/1e325ed686f080f61858a631d7fb5bef62ee54bf1381fdda951a0f40a30a6b4ce65480e149d1af7fd53813da8ae9e9ff4a8c30e61d607bda35d40c2f13b47015
   languageName: node
   linkType: hard
 
@@ -26914,20 +26923,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:^7.4.0, tar@npm:^7.4.3":
-  version: 7.5.1
-  resolution: "tar@npm:7.5.1"
-  dependencies:
-    "@isaacs/fs-minipass": "npm:^4.0.0"
-    chownr: "npm:^3.0.0"
-    minipass: "npm:^7.1.2"
-    minizlib: "npm:^3.1.0"
-    yallist: "npm:^5.0.0"
-  checksum: 10/4848cd2fa2fcaf0734cf54e14bc685056eb43a74d7cc7f954c3ac88fea88c85d95b1d7896619f91aab6f2234c5eec731c18aaa201a78fcf86985bdc824ed7a00
-  languageName: node
-  linkType: hard
-
-"tar@npm:^7.5.6, tar@npm:^7.5.7":
+"tar@npm:^7.4.0, tar@npm:^7.4.3, tar@npm:^7.5.6, tar@npm:^7.5.7":
   version: 7.5.9
   resolution: "tar@npm:7.5.9"
   dependencies:
