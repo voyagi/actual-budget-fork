@@ -5,7 +5,6 @@ import { t } from 'i18next';
 import { listen } from 'loot-core/platform/client/connection';
 
 import { accountQueries } from './accounts';
-import { sync } from './app/appSlice';
 import { categoryQueries } from './budget';
 import { addNotification } from './notifications/notificationsSlice';
 import { reloadPayees } from './payees/payeesSlice';

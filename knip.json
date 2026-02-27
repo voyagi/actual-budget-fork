@@ -89,5 +89,5 @@
       "ignoreDependencies": ["workbox-precaching"]
     }
   },
-  "exclude": ["duplicateExports"]
+  "exclude": ["duplicates"]
 }

@@ -23,14 +23,7 @@ function getGroupDb(groupId: string): WrappedDatabase {
   return db;
 }
 
-interface MessageEnvelope {
-  getTimestamp(): string;
-  getIsencrypted(): boolean;
-  getContent(): Uint8Array;
-  setTimestamp(timestamp: string): void;
-  setIsencrypted(isEncrypted: boolean): void;
-  setContent(content: Buffer | Uint8Array): void;
-}
+type MessageEnvelope = InstanceType<typeof SyncProtoBuf.MessageEnvelope>;
 
 function addMessages(
   db: WrappedDatabase,
@@ -112,7 +105,7 @@ export function sync(
       envelopePb.setTimestamp(msg.timestamp as string);
       envelopePb.setIsencrypted(msg.is_encrypted as boolean);
       envelopePb.setContent(msg.content as Buffer);
-      return envelopePb as unknown as MessageEnvelope;
+      return envelopePb;
     }),
   };
 }

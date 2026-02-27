@@ -85,20 +85,32 @@ export function applyChanges<T extends { id: string }>(
   return items;
 }
 
-/**
- * @deprecated Use `Map.groupBy(data, item => item[field])` directly instead.
- */
 export function partitionByField<T, K extends keyof T>(data: T[], field: K) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return Map.groupBy(data, item => item[field]) as Map<any, T[]>;
+  const res = new Map();
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
+    const key = item[field];
+
+    const items = res.get(key) || [];
+    items.push(item);
+
+    res.set(key, items);
+  }
+  return res;
 }
 
-/**
- * @deprecated Use `Map.groupBy(data, item => item[field])` directly instead.
- */
 export function groupBy<T, K extends keyof T>(data: T[], field: K) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return Map.groupBy(data, item => item[field]) as Map<any, T[]>;
+  const res = new Map<T[K], T[]>();
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
+    const key = item[field];
+
+    const items = res.get(key) || [];
+    items.push(item);
+
+    res.set(key, items);
+  }
+  return res;
 }
 
 // This should replace the existing `groupById` function, since a

@@ -56,7 +56,8 @@ const verifyFileExists = (fileId, filesService, res, errorObject) => {
     return filesService.get(fileId);
   } catch (e) {
     if (e instanceof FileNotFound) {
-      res.status(404).send(errorObject);
+      //FIXME: error code should be 404. Need to make sure frontend is ok with it.
+      res.status(400).send(errorObject);
       return;
     }
     throw e;
