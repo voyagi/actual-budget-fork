@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { useCallback, useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 

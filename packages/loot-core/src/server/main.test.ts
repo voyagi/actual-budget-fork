@@ -52,6 +52,8 @@ async function createTestBudget(name) {
 
 describe('Budgets', () => {
   afterEach(async () => {
+    // Close the database before deleting files to avoid EBUSY on Windows
+    await db.closeDatabase();
     fs._setDocumentDir(null);
     const budgetPath = fs.join(
       __dirname,

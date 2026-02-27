@@ -216,6 +216,8 @@ export function Cell({
           children()
         ) : (
           <View
+            role="button"
+            tabIndex={0}
             style={{
               flexDirection: 'row',
               flex: 1,
@@ -242,6 +244,12 @@ export function Cell({
                     }
                   }
             }
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onExpose?.(name);
+              }
+            }}
           >
             {unexposedContent ? (
               unexposedContent({ value, formatter })
@@ -562,9 +570,10 @@ export const CellButton = forwardRef<HTMLDivElement, CellButtonProps>(
       <View
         innerRef={ref}
         className={className}
+        role="button"
         tabIndex={0}
         onKeyDown={e => {
-          if (e.key === 'x' || e.key === ' ') {
+          if (e.key === 'x' || e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             if (!disabled) {
               onSelect?.(e);
@@ -1162,6 +1171,9 @@ export const Table = forwardRef(
           flex: 1,
           outline: 'none',
           overflow: 'hidden',
+          ':focus-visible': {
+            boxShadow: '0 0 0 2px ' + theme.pageTextPositive,
+          },
           ...style,
         }}
         tabIndex={0}

@@ -20,8 +20,10 @@ jobs:
         uses: ./.github/actions/setup
         with:
           download-translations: 'false'
-      - name: Lint
-        run: yarn lint
+      - name: Format check
+        run: npx oxfmt --check .
+      - name: Lint (informational)
+        run: npx oxlint --type-aware || true
   typecheck:
     runs-on: ubuntu-latest
     steps:

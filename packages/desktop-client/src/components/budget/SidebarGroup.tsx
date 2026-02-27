@@ -78,8 +78,17 @@ export function SidebarGroup({
         height: 20,
       }}
       ref={triggerRef}
+      role="button"
+      tabIndex={0}
+      aria-expanded={!collapsed}
       onClick={() => {
         onToggleCollapse(group.id);
+      }}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggleCollapse(group.id);
+        }
       }}
       onContextMenu={handleContextMenu}
     >
@@ -113,6 +122,9 @@ export function SidebarGroup({
             <Button
               variant="bare"
               className="hover-visible"
+              aria-label={t('Group menu')}
+              aria-expanded={menuOpen}
+              aria-haspopup="menu"
               onPress={() => {
                 resetPosition();
                 setMenuOpen(true);

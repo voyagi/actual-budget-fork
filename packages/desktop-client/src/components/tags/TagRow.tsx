@@ -90,6 +90,8 @@ export const TagRow = memo(
         collapsed
         onMouseEnter={() => onHover(tag.id)}
         onMouseLeave={() => onHover()}
+        onFocus={() => onHover(tag.id)}
+        onBlur={() => onHover()}
         onContextMenu={handleContextMenu}
       >
         <Popover

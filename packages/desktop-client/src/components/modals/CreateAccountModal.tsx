@@ -25,6 +25,7 @@ import {
 } from '@desktop-client/components/common/Modal';
 import { useMultiuserEnabled } from '@desktop-client/components/ServerContext';
 import { authorizeBank } from '@desktop-client/gocardless';
+import { useEnableBankingStatus } from '@desktop-client/hooks/useEnableBankingStatus';
 import { useGoCardlessStatus } from '@desktop-client/hooks/useGoCardlessStatus';
 import { usePluggyAiStatus } from '@desktop-client/hooks/usePluggyAiStatus';
 import { useSimpleFinStatus } from '@desktop-client/hooks/useSimpleFinStatus';
@@ -57,6 +58,16 @@ export function CreateAccountModal({
   >(null);
   const { hasPermission } = useAuth();
   const multiuserEnabled = useMultiuserEnabled();
+
+  const onConnectEnableBanking = () => {
+    dispatch(
+      pushModal({
+        modal: {
+          name: 'enablebanking-external-msg',
+        },
+      }),
+    );
+  };
 
   const onConnectGoCardless = () => {
     if (!isGoCardlessSetupComplete) {
@@ -311,6 +322,8 @@ export function CreateAccountModal({
   useEffect(() => {
     setIsGoCardlessSetupComplete(configuredGoCardless);
   }, [configuredGoCardless]);
+
+  const { configured: configuredEnableBanking } = useEnableBankingStatus();
 
   const { configuredSimpleFin } = useSimpleFinStatus();
   useEffect(() => {
@@ -572,6 +585,40 @@ export function CreateAccountModal({
                           to automatically download transactions. Pluggy.ai
                           provides reliable, up-to-date information from
                           hundreds of banks.
+                        </Trans>
+                      </Text>
+
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          gap: 10,
+                          marginTop: '18px',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <ButtonWithLoading
+                          isDisabled={syncServerStatus !== 'online'}
+                          style={{
+                            padding: '10px 0',
+                            fontSize: 15,
+                            fontWeight: 600,
+                            flex: 1,
+                          }}
+                          onPress={onConnectEnableBanking}
+                        >
+                          {configuredEnableBanking
+                            ? t('Link bank account with Enable Banking')
+                            : t('Set up Enable Banking for bank sync')}
+                        </ButtonWithLoading>
+                      </View>
+                      <Text style={{ lineHeight: '1.4em', fontSize: 15 }}>
+                        <Trans>
+                          <strong>
+                            Link an <em>EU/European</em> bank account
+                          </strong>{' '}
+                          to automatically download transactions. Enable Banking
+                          provides PSD2-compliant access to 4,700+ European
+                          banks.
                         </Trans>
                       </Text>
                     </>

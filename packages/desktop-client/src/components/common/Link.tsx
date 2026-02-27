@@ -68,6 +68,8 @@ const ExternalLink = ({
 const TextLink = ({ style, onClick, children, ...props }: TextLinkProps) => {
   return (
     <Text
+      role="button"
+      tabIndex={0}
       style={{
         backgroundColor: 'transparent',
         display: 'inline',
@@ -81,6 +83,12 @@ const TextLink = ({ style, onClick, children, ...props }: TextLinkProps) => {
       }}
       {...props}
       onClick={onClick}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.(e as unknown as React.MouseEvent<HTMLSpanElement>);
+        }
+      }}
     >
       {children}
     </Text>

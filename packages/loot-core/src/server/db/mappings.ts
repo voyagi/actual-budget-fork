@@ -53,7 +53,3 @@ function onApplySync(oldValues, newValues) {
 export function getMappings() {
   return allMappings;
 }
-
-export function getMapping(id) {
-  return allMappings.get(id) || null;
-}

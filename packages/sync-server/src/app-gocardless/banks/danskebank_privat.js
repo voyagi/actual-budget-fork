@@ -1,13 +1,11 @@
-import { amountToInteger } from '../utils';
-
 import Fallback from './integration-bank';
 
 /** @type {import('./bank.interface').IBank} */
 export default {
   ...Fallback,
 
-  // TODO: Add other Danske Bank BICs?
-  // https://danskeci.com/ci/transaction-banking/bank-identifier-code
+  // TODO: Add BICs for other Danske Bank regions (Sweden, Finland, etc.).
+  // Full list at https://danskeci.com/ci/transaction-banking/bank-identifier-code
   institutionIds: ['DANSKEBANK_DABADKKK', 'DANSKEBANK_DABANO22'],
 
   normalizeTransaction(transaction, booked) {
@@ -30,12 +28,10 @@ export default {
   },
 
   calculateStartingBalance(sortedTransactions = [], balances = []) {
-    const currentBalance = balances.find(
-      balance => balance.balanceType === 'interimAvailable',
+    return Fallback.calculateStartingBalanceFromType(
+      sortedTransactions,
+      balances,
+      ['interimAvailable'],
     );
-
-    return sortedTransactions.reduce((total, trans) => {
-      return total - amountToInteger(trans.transactionAmount.amount);
-    }, amountToInteger(currentBalance.balanceAmount.amount));
   },
 };

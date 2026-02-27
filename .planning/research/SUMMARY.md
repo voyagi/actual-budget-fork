@@ -20,6 +20,7 @@ The PWA work is largely done by the existing codebase. Actual Budget already has
 All additions are to the existing TypeScript + React + SQLite + Vite + Yarn 4 monorepo. No new frameworks or build systems. Four packages are added:
 
 **Core technologies:**
+
 - `jose` (6.1.3, `sync-server`): RS256 JWT signing for Enable Banking auth - zero-dependency, ESM-native, de-facto standard for modern Node JWT
 - `axios` (1.13.5, `sync-server`): HTTP client for Enable Banking API - matches what the existing GoCardless adapter uses, avoids a second HTTP abstraction
 - `node-cron` (4.2.1, `sync-server`): 4x/day scheduled sync - v4 is TypeScript-native, zero dependencies, cron expressions fit the fixed-interval requirement exactly
@@ -35,6 +36,7 @@ See [STACK.md](.planning/research/STACK.md) for detailed rationale and alternati
 The Enable Banking integration has a natural dependency chain. Features are listed in the order they unlock each other.
 
 **Must have (table stakes):**
+
 - Enable Banking OAuth redirect flow - without this, zero transactions sync
 - Account linking UI - maps bank accounts to Actual accounts, required before any import
 - Transaction auto-import + balance update - the core stated goal
@@ -47,12 +49,14 @@ The Enable Banking integration has a natural dependency chain. Features are list
 - Service worker offline read - Workbox already present, needs caching strategy configured
 
 **Should have (differentiators for this use case):**
+
 - Pending transaction display - Enable Banking returns `PDNG` vs `BOOK` status
 - Per-account last-synced timestamp - visible data freshness indicator
 - Multi-bank support - adapter pattern supports it naturally
 - Sync-on-open trigger - complements cron schedule for immediate freshness
 
 **Defer to v2:**
+
 - Sync log / history - useful for debugging but not blocking
 - Push notifications for consent expiry - in-app banner is sufficient
 - Payment initiation - separate regulatory scope, not needed for personal budget tracking
@@ -66,6 +70,7 @@ See [FEATURES.md](.planning/research/FEATURES.md) for full feature table with co
 Enable Banking slots into Actual Budget's existing bank sync architecture as a fourth provider. The integration adds one new module in `sync-server`, one new scheduler, type extensions in `loot-core`, and three new UI components in `desktop-client`. Existing transaction reconciliation, deduplication, and rule application in loot-core are shared and require no changes.
 
 **Major components:**
+
 1. `sync-server/app-enablebanking/` (NEW) - Express routes + Enable Banking API client with RS256 JWT auth, session/account storage, transaction normalization
 2. `sync-server/scheduler.js` (NEW) - node-cron 4x/day trigger, consent expiry checker, writes to notifications table
 3. `loot-core/sync.ts` (MODIFY) - adds `downloadEnableBankingTransactions()` and `'enableBanking'` branch in `syncAccount()`
@@ -74,6 +79,7 @@ Enable Banking slots into Actual Budget's existing bank sync architecture as a f
 6. Docker Compose + Caddy (NEW) - HTTPS termination, RSA key mount as bind volume
 
 **Patterns to follow:**
+
 - Two-file provider module: `app-{provider}.js` (routes only) + `{provider}-service.js` (API client only)
 - NormalizedTransaction shape that matches what `processBankSyncDownload()` expects (already defined)
 - JWT generated per-request or cached with 1-hour TTL, never stored long-lived
@@ -157,10 +163,12 @@ Based on research, the feature dependency chain and architectural layer dependen
 ### Research Flags
 
 Phases likely needing `/gsd:research-phase` before planning:
+
 - **Phase 1:** Confirm current GoCardless adapter file structure and interface (may have changed since July 2025 when EU accounts stopped). Read `packages/sync-server/src/app-gocardless/` before implementing `app-enablebanking/`.
 - **Phase 4:** Read current `packages/desktop-client/vite.config.mts` and `src/` to understand why service worker build is disabled. The reason determines the fix.
 
 Phases with standard, well-documented patterns:
+
 - **Phase 2:** `processBankSyncDownload()` and `reconcileTransactions()` are internal Actual Budget APIs. Pattern is clear from GoCardless adapter.
 - **Phase 3:** `node-cron` 4x/day scheduling is a solved problem. Implementation is straightforward.
 - **Phase 5:** Docker Compose + Caddy + named volumes is well-documented. Cloudflare Tunnel is the only uncertain piece.
@@ -168,12 +176,12 @@ Phases with standard, well-documented patterns:
 
 ## Confidence Assessment
 
-| Area | Confidence | Notes |
-|------|------------|-------|
-| Stack | HIGH | All package versions verified against npm registry. Enable Banking auth requirements confirmed against official API docs. GoCardless adapter confirmed using axios. |
-| Features | MEDIUM-HIGH | Must-have features confirmed against Enable Banking API reference and PSD2 spec. PWA installability criteria confirmed against web.dev. Consent validity clarification (180 days EU) confirmed from Enable Banking changelog and third-party sources. |
-| Architecture | HIGH | Based on direct inspection of the Actual Budget monorepo source. Component boundaries, file locations, and data flow confirmed against actual code, not documentation alone. |
-| Pitfalls | MEDIUM-HIGH | RSA key and Docker volume pitfalls confirmed from official Docker and Enable Banking docs. Pending-to-booked dedup confirmed from PSD2 spec and Open Banking transaction state docs. iOS PWA pitfalls from multiple community sources, no official Apple documentation. |
+| Area         | Confidence  | Notes                                                                                                                                                                                                                                                                   |
+| ------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH        | All package versions verified against npm registry. Enable Banking auth requirements confirmed against official API docs. GoCardless adapter confirmed using axios.                                                                                                     |
+| Features     | MEDIUM-HIGH | Must-have features confirmed against Enable Banking API reference and PSD2 spec. PWA installability criteria confirmed against web.dev. Consent validity clarification (180 days EU) confirmed from Enable Banking changelog and third-party sources.                   |
+| Architecture | HIGH        | Based on direct inspection of the Actual Budget monorepo source. Component boundaries, file locations, and data flow confirmed against actual code, not documentation alone.                                                                                            |
+| Pitfalls     | MEDIUM-HIGH | RSA key and Docker volume pitfalls confirmed from official Docker and Enable Banking docs. Pending-to-booked dedup confirmed from PSD2 spec and Open Banking transaction state docs. iOS PWA pitfalls from multiple community sources, no official Apple documentation. |
 
 **Overall confidence:** MEDIUM-HIGH
 
@@ -187,6 +195,7 @@ Phases with standard, well-documented patterns:
 ## Sources
 
 ### Primary (HIGH confidence)
+
 - [Enable Banking API Reference](https://enablebanking.com/docs/api/reference/) - authentication, JWT spec, endpoints, session model
 - [Enable Banking Quick Start](https://enablebanking.com/docs/api/quick-start/) - OAuth redirect flow, session exchange
 - [Enable Banking Sandbox](https://enablebanking.com/docs/api/sandbox/) - sandbox limitations and divergence from production
@@ -199,6 +208,7 @@ Phases with standard, well-documented patterns:
 - [Docker Desktop WSL2 volumes](https://docs.docker.com/desktop/features/wsl/) - named volume behavior on Windows
 
 ### Secondary (MEDIUM confidence)
+
 - [Enable Banking changelog October 2025](https://enablebanking.com/blog/2025/11/05/enable-banking-changelog-october-2025) - 180-day consent validity default
 - [actual-auto-sync community tool](https://github.com/seriouslag/actual-auto-sync) - proves cron + Actual API pattern for scheduled sync
 - [Actual Budget bank sync docs](https://actualbudget.org/docs/advanced/bank-sync/) - GoCardless stopped new EU accounts July 2025
@@ -208,7 +218,8 @@ Phases with standard, well-documented patterns:
 - PWA on iOS limitations (Brainhub, MagicBell) - service worker instability, offline behavior
 
 ### Tertiary (LOW confidence)
+
 - Community posts on Docker volume path changes in v26.1.4 (josephguadagno.net) - needs local verification on setup day
 
-*Research completed: 2026-02-18*
-*Ready for roadmap: yes*
+_Research completed: 2026-02-18_
+_Ready for roadmap: yes_

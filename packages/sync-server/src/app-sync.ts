@@ -19,7 +19,9 @@ import {
   validateUploadedFile,
 } from './app-sync/validation';
 import { config } from './load-config';
+import * as UserService from './services/user-service';
 import * as simpleSync from './sync-simple';
+import logger from './util/logger';
 import {
   errorMiddleware,
   requestLoggerMiddleware,
@@ -59,8 +61,6 @@ const verifyFileExists = (fileId, filesService, res, errorObject) => {
   } catch (e) {
     if (e instanceof FileNotFound) {
       //FIXME: error code should be 404. Need to make sure frontend is ok with it.
-      //TODO: put this into a middleware that checks if FileNotFound is thrown and returns 404 and same error message
-      // for every FileNotFound error
       res.status(400).send(errorObject);
       return;
     }
@@ -68,12 +68,24 @@ const verifyFileExists = (fileId, filesService, res, errorObject) => {
   }
 };
 
+function requireFileAccess(file: File, userId: string) {
+  const isOwner = file.owner === userId;
+  const isServerAdmin = isAdmin(userId);
+  if (isOwner || isServerAdmin) {
+    return null;
+  }
+  if (UserService.countUserAccess(file.id, userId) > 0) {
+    return null;
+  }
+  return 'file-access-not-allowed';
+}
+
 app.post('/sync', async (req, res): Promise<void> => {
   let requestPb;
   try {
     requestPb = SyncProtoBuf.SyncRequest.deserializeBinary(req.body);
   } catch (e) {
-    console.log('Error parsing sync request', e);
+    logger.error('Error parsing sync request', e);
     res.status(500);
     res.send({ status: 'error', reason: 'internal-error' });
     return;
@@ -104,6 +116,13 @@ app.post('/sync', async (req, res): Promise<void> => {
   );
 
   if (!currentFile) {
+    return;
+  }
+
+  const fileAccessError = requireFileAccess(currentFile, res.locals.user_id);
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
     return;
   }
 
@@ -138,6 +157,13 @@ app.post('/user-get-key', (req, res) => {
     return;
   }
 
+  const fileAccessError = requireFileAccess(file, res.locals.user_id);
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
+    return;
+  }
+
   res.send({
     status: 'ok',
     data: {
@@ -152,8 +178,16 @@ app.post('/user-create-key', (req, res) => {
   const { fileId, keyId, keySalt, testContent } = req.body || {};
 
   const filesService = new FilesService(getAccountDb());
+  const file = verifyFileExists(fileId, filesService, res, 'file-not-found');
 
-  if (!verifyFileExists(fileId, filesService, res, 'file not found')) {
+  if (!file) {
+    return;
+  }
+
+  const fileAccessError = requireFileAccess(file, res.locals.user_id);
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
     return;
   }
 
@@ -184,6 +218,13 @@ app.post('/reset-user-file', async (req, res) => {
     return;
   }
 
+  const fileAccessError = requireFileAccess(file, res.locals.user_id);
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
+    return;
+  }
+
   const groupId = file.groupId;
 
   filesService.update(fileId, new FileUpdate({ groupId: null }));
@@ -192,7 +233,7 @@ app.post('/reset-user-file', async (req, res) => {
     try {
       await fs.unlink(getPathForGroupFile(groupId));
     } catch {
-      console.log(`Unable to delete sync data for group "${groupId}"`);
+      logger.warn(`Unable to delete sync data for group "${groupId}"`);
     }
   }
 
@@ -201,8 +242,7 @@ app.post('/reset-user-file', async (req, res) => {
 
 app.post('/upload-user-file', async (req, res) => {
   if (typeof req.headers['x-actual-name'] !== 'string') {
-    // FIXME: Not sure how this cannot be a string when the header is
-    // set.
+    // Express headers can be string | string[] | undefined. Type guard required.
     res.status(400).send('single x-actual-name is required');
     return;
   }
@@ -237,6 +277,15 @@ app.post('/upload-user-file', async (req, res) => {
     }
   }
 
+  const fileAccessError = currentFile
+    ? requireFileAccess(currentFile, res.locals.user_id)
+    : null;
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
+    return;
+  }
+
   const errorMessage = validateUploadedFile(groupId, keyId, currentFile);
   if (errorMessage) {
     res.status(400).send(errorMessage);
@@ -246,7 +295,7 @@ app.post('/upload-user-file', async (req, res) => {
   try {
     await fs.writeFile(getPathForUserFile(fileId), req.body);
   } catch (err) {
-    console.log('Error writing file', err);
+    logger.error('Error writing file', err);
     res.status(500).send({ status: 'error' });
     return;
   }
@@ -296,14 +345,27 @@ app.post('/upload-user-file', async (req, res) => {
 app.get('/download-user-file', async (req, res) => {
   const fileId = req.headers['x-actual-file-id'];
   if (typeof fileId !== 'string') {
-    // FIXME: Not sure how this cannot be a string when the header is
-    // set.
+    // Express headers can be string | string[] | undefined. Type guard required.
     res.status(400).send('Single file ID is required');
     return;
   }
 
   const filesService = new FilesService(getAccountDb());
-  if (!verifyFileExists(fileId, filesService, res, 'User or file not found')) {
+  const file = verifyFileExists(
+    fileId,
+    filesService,
+    res,
+    'User or file not found',
+  );
+
+  if (!file) {
+    return;
+  }
+
+  const fileAccessError = requireFileAccess(file, res.locals.user_id);
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
     return;
   }
 
@@ -323,8 +385,16 @@ app.post('/update-user-filename', (req, res) => {
   const { fileId, name } = req.body || {};
 
   const filesService = new FilesService(getAccountDb());
+  const file = verifyFileExists(fileId, filesService, res, 'file-not-found');
 
-  if (!verifyFileExists(fileId, filesService, res, 'file not found')) {
+  if (!file) {
+    return;
+  }
+
+  const fileAccessError = requireFileAccess(file, res.locals.user_id);
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
     return;
   }
 
@@ -355,14 +425,10 @@ app.get('/list-user-files', (req, res) => {
 app.get('/get-user-file-info', (req, res) => {
   const fileId = req.headers['x-actual-file-id'];
 
-  // TODO: Return 422 if fileId is not provided. Need to make sure frontend can handle it
-  // if (!fileId) {
-  //   return res.status(422).send({
-  //     details: 'fileId-required',
-  //     reason: 'unprocessable-entity',
-  //     status: 'error',
-  //   });
-  // }
+  if (!fileId) {
+    res.status(422).send({ status: 'error', reason: 'file-id-required' });
+    return;
+  }
 
   const fileService = new FilesService(getAccountDb());
 
@@ -372,6 +438,13 @@ app.get('/get-user-file-info', (req, res) => {
   });
 
   if (!file) {
+    return;
+  }
+
+  const fileAccessError = requireFileAccess(file, res.locals.user_id);
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
     return;
   }
 
@@ -409,18 +482,10 @@ app.post('/delete-user-file', (req, res) => {
     return;
   }
 
-  // Check if user has permission to delete the file
-  const { user_id: userId } = res.locals;
-
-  const isOwner = file.owner === userId;
-  const isServerAdmin = isAdmin(userId);
-
-  if (!isOwner && !isServerAdmin) {
-    res.status(403).send({
-      status: 'error',
-      reason: 'forbidden',
-      details: 'file-delete-not-allowed',
-    });
+  const fileAccessError = requireFileAccess(file, res.locals.user_id);
+  if (fileAccessError) {
+    res.status(403);
+    res.send(fileAccessError);
     return;
   }
 

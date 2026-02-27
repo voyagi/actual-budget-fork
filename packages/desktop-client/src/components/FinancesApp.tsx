@@ -6,6 +6,7 @@ import { Navigate, Route, Routes, useHref, useLocation } from 'react-router';
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
+import { css } from '@emotion/css';
 import { useQuery } from '@tanstack/react-query';
 
 import * as undo from 'loot-core/platform/client/undo';
@@ -22,6 +23,7 @@ import { Reports } from './reports';
 import { LoadingIndicator } from './reports/LoadingIndicator';
 import { NarrowAlternate, WideComponent } from './responsive';
 import { UserDirectoryPage } from './responsive/wide';
+import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { useMultiuserEnabled } from './ServerContext';
 import { Settings } from './settings';
 import { FloatableSidebar } from './sidebar';
@@ -195,6 +197,31 @@ export function FinancesApp() {
 
   return (
     <View style={{ height: '100%' }}>
+      <a
+        href="#main-content"
+        className={css({
+          position: 'absolute',
+          left: -9999,
+          top: 'auto',
+          width: 1,
+          height: 1,
+          overflow: 'hidden',
+          '&:focus': {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: 'auto',
+            height: 'auto',
+            padding: '10px 15px',
+            backgroundColor: theme.pageBackground,
+            color: theme.pageText,
+            zIndex: 9999,
+            outline: `2px solid ${theme.pageTextPositive}`,
+          },
+        })}
+      >
+        {t('Skip to main content')}
+      </a>
       <RouterBehaviors />
       <GlobalKeys />
       <CommandBar />
@@ -241,135 +268,140 @@ export function FinancesApp() {
               <Notifications />
               <BankSyncStatus />
 
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    isAccountsFetching || !accounts ? (
-                      <LoadingIndicator />
-                    ) : accounts.length > 0 ? (
-                      <Navigate to="/budget" replace />
-                    ) : (
-                      // If there are no accounts, we want to redirect the user to
-                      // the All Accounts screen which will prompt them to add an account
-                      <Navigate to="/accounts" replace />
-                    )
-                  }
-                />
-
-                <Route path="/reports/*" element={<Reports />} />
-
-                <Route
-                  path="/budget"
-                  element={<NarrowAlternate name="Budget" />}
-                />
-
-                <Route
-                  path="/schedules"
-                  element={<NarrowAlternate name="Schedules" />}
-                />
-                <Route
-                  path="/schedules/:id"
-                  element={
-                    <WideNotSupported>
-                      <NarrowAlternate name="ScheduleEdit" />
-                    </WideNotSupported>
-                  }
-                />
-
-                <Route
-                  path="/payees"
-                  element={<NarrowAlternate name="Payees" />}
-                />
-                <Route
-                  path="/payees/:id"
-                  element={
-                    <WideNotSupported>
-                      <NarrowAlternate name="PayeeEdit" />
-                    </WideNotSupported>
-                  }
-                />
-                <Route
-                  path="/rules"
-                  element={<NarrowAlternate name="Rules" />}
-                />
-                <Route
-                  path="/rules/:id"
-                  element={<NarrowAlternate name="RuleEdit" />}
-                />
-                <Route
-                  path="/bank-sync"
-                  element={<NarrowAlternate name="BankSync" />}
-                />
-                <Route
-                  path="/bank-sync/account/:accountId/edit"
-                  element={
-                    <WideNotSupported redirectTo="/bank-sync">
-                      <MobileBankSyncAccountEditPage />
-                    </WideNotSupported>
-                  }
-                />
-                <Route path="/tags" element={<ManageTagsPage />} />
-                <Route path="/settings" element={<Settings />} />
-
-                <Route
-                  path="/gocardless/link"
-                  element={
-                    <NarrowNotSupported>
-                      <WideComponent name="GoCardlessLink" />
-                    </NarrowNotSupported>
-                  }
-                />
-
-                <Route
-                  path="/accounts"
-                  element={<NarrowAlternate name="Accounts" />}
-                />
-
-                <Route
-                  path="/accounts/:id"
-                  element={<NarrowAlternate name="Account" />}
-                />
-
-                <Route
-                  path="/transactions/:transactionId"
-                  element={
-                    <WideNotSupported>
-                      <TransactionEdit />
-                    </WideNotSupported>
-                  }
-                />
-
-                <Route
-                  path="/categories/:id"
-                  element={<NarrowAlternate name="Category" />}
-                />
-                {multiuserEnabled && (
+              <RouteErrorBoundary>
+                <Routes>
                   <Route
-                    path="/user-directory"
+                    path="/"
                     element={
-                      <ProtectedRoute
-                        permission={Permissions.ADMINISTRATOR}
-                        element={<UserDirectoryPage />}
-                      />
+                      isAccountsFetching || !accounts ? (
+                        <LoadingIndicator />
+                      ) : accounts.length > 0 ? (
+                        <Navigate to="/budget" replace />
+                      ) : (
+                        // If there are no accounts, we want to redirect the user to
+                        // the All Accounts screen which will prompt them to add an account
+                        <Navigate to="/accounts" replace />
+                      )
                     }
                   />
-                )}
-                {multiuserEnabled && (
+
+                  <Route path="/reports/*" element={<Reports />} />
+
                   <Route
-                    path="/user-access"
+                    path="/budget"
+                    element={<NarrowAlternate name="Budget" />}
+                  />
+
+                  <Route
+                    path="/schedules"
+                    element={<NarrowAlternate name="Schedules" />}
+                  />
+                  <Route
+                    path="/schedules/:id"
                     element={
-                      <ProtectedRoute
-                        permission={Permissions.ADMINISTRATOR}
-                        validateOwner
-                        element={<UserAccessPage />}
-                      />
+                      <WideNotSupported>
+                        <NarrowAlternate name="ScheduleEdit" />
+                      </WideNotSupported>
                     }
                   />
-                )}
-                {/* redirect all other traffic to the budget page */}
-                <Route path="/*" element={<Navigate to="/budget" replace />} />
-              </Routes>
+
+                  <Route
+                    path="/payees"
+                    element={<NarrowAlternate name="Payees" />}
+                  />
+                  <Route
+                    path="/payees/:id"
+                    element={
+                      <WideNotSupported>
+                        <NarrowAlternate name="PayeeEdit" />
+                      </WideNotSupported>
+                    }
+                  />
+                  <Route
+                    path="/rules"
+                    element={<NarrowAlternate name="Rules" />}
+                  />
+                  <Route
+                    path="/rules/:id"
+                    element={<NarrowAlternate name="RuleEdit" />}
+                  />
+                  <Route
+                    path="/bank-sync"
+                    element={<NarrowAlternate name="BankSync" />}
+                  />
+                  <Route
+                    path="/bank-sync/account/:accountId/edit"
+                    element={
+                      <WideNotSupported redirectTo="/bank-sync">
+                        <MobileBankSyncAccountEditPage />
+                      </WideNotSupported>
+                    }
+                  />
+                  <Route path="/tags" element={<ManageTagsPage />} />
+                  <Route path="/settings" element={<Settings />} />
+
+                  <Route
+                    path="/gocardless/link"
+                    element={
+                      <NarrowNotSupported>
+                        <WideComponent name="GoCardlessLink" />
+                      </NarrowNotSupported>
+                    }
+                  />
+
+                  <Route
+                    path="/accounts"
+                    element={<NarrowAlternate name="Accounts" />}
+                  />
+
+                  <Route
+                    path="/accounts/:id"
+                    element={<NarrowAlternate name="Account" />}
+                  />
+
+                  <Route
+                    path="/transactions/:transactionId"
+                    element={
+                      <WideNotSupported>
+                        <TransactionEdit />
+                      </WideNotSupported>
+                    }
+                  />
+
+                  <Route
+                    path="/categories/:id"
+                    element={<NarrowAlternate name="Category" />}
+                  />
+                  {multiuserEnabled && (
+                    <Route
+                      path="/user-directory"
+                      element={
+                        <ProtectedRoute
+                          permission={Permissions.ADMINISTRATOR}
+                          element={<UserDirectoryPage />}
+                        />
+                      }
+                    />
+                  )}
+                  {multiuserEnabled && (
+                    <Route
+                      path="/user-access"
+                      element={
+                        <ProtectedRoute
+                          permission={Permissions.ADMINISTRATOR}
+                          validateOwner
+                          element={<UserAccessPage />}
+                        />
+                      }
+                    />
+                  )}
+                  {/* redirect all other traffic to the budget page */}
+                  <Route
+                    path="/*"
+                    element={<Navigate to="/budget" replace />}
+                  />
+                </Routes>
+              </RouteErrorBoundary>
             </View>
 
             <Routes>

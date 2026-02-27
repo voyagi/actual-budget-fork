@@ -16,6 +16,7 @@ import type {
   CategoryGroupEntity,
 } from 'loot-core/types/models';
 
+import { CategoryIcon } from './CategoryIcon';
 import { SidebarCategoryButtons } from './SidebarCategoryButtons';
 
 import { InputCell } from '@desktop-client/components/table';
@@ -84,12 +85,20 @@ export function SidebarCategory({
       ref={triggerRef}
       onContextMenu={handleContextMenu}
     >
+      <CategoryIcon
+        name={category.name}
+        icon={category.icon}
+        color={category.color}
+        size={20}
+        style={{ marginRight: 6 }}
+      />
       <TextOneLine data-testid="category-name">{category.name}</TextOneLine>
       <View style={{ flexShrink: 0, marginLeft: 5 }}>
         <Button
           variant="bare"
           className="hover-visible"
           style={{ color: 'currentColor', padding: 3 }}
+          aria-label={t('Category menu')}
           onPress={() => {
             resetPosition();
             setMenuOpen(true);

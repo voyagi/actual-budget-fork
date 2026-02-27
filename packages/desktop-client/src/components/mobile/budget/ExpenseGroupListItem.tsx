@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import type { ComponentPropsWithoutRef } from 'react';
 import { GridListItem } from 'react-aria-components';
 
@@ -141,7 +141,16 @@ export function ExpenseGroupHeader({
   return (
     <View
       data-testid="category-group-row"
+      role="button"
+      tabIndex={0}
+      aria-expanded={!isCollapsed(categoryGroup.id)}
       onClick={() => onToggleCollapse(categoryGroup.id)}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggleCollapse(categoryGroup.id);
+        }
+      }}
       style={{
         cursor: 'pointer',
         height: ROW_HEIGHT,

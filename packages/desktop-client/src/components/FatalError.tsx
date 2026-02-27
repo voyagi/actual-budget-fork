@@ -25,12 +25,16 @@ type AppError = Error & {
 };
 
 type FatalErrorProps = {
-  error: Error | AppError;
+  error: unknown;
 };
 
 type RenderSimpleProps = FatalErrorProps;
 
-function RenderSimple({ error }: RenderSimpleProps) {
+function RenderSimple({ error: rawError }: RenderSimpleProps) {
+  const error =
+    rawError instanceof Error
+      ? (rawError as AppError)
+      : new Error(String(rawError));
   let msg: ReactNode;
 
   if ('IDBFailure' in error && error.IDBFailure) {
@@ -196,8 +200,12 @@ function SharedArrayBufferOverride() {
   );
 }
 
-export function FatalError({ error }: FatalErrorProps) {
+export function FatalError({ error: rawError }: FatalErrorProps) {
   const { t } = useTranslation();
+  const error =
+    rawError instanceof Error
+      ? (rawError as AppError)
+      : new Error(String(rawError));
 
   const { modalStack } = useModalState();
   const lastModal = modalStack[modalStack.length - 1];

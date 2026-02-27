@@ -841,7 +841,7 @@ describe('Learning categories', () => {
       const arr = rules
         .filter(rule => rule.actions[0].value === cat)
         .map(r => r.conditions.map(c => c.value));
-      return Array.prototype.concat.apply([], arr);
+      return arr.flat();
     };
 
     // The `foo` payee has been removed from all rules and added to

@@ -1,5 +1,10 @@
-import React, { memo } from 'react';
-import type { CSSProperties, RefObject, UIEventHandler } from 'react';
+import { memo } from 'react';
+import type {
+  CSSProperties,
+  KeyboardEvent,
+  RefObject,
+  UIEventHandler,
+} from 'react';
 
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
 import { theme } from '@actual-app/components/theme';
@@ -77,25 +82,21 @@ export const ReportTableRow = memo(
     const { data: categories = { grouped: [], list: [] } } = useCategories();
     const { data: accounts = [] } = useAccounts();
 
-    const pointer =
+    const isClickable =
       !isNarrowWidth &&
       !['Group', 'Interval'].includes(groupBy) &&
       !compact &&
-      !categories.grouped.map(g => g.id).includes(item.id)
-        ? 'pointer'
-        : 'inherit';
+      !categories.grouped.map(g => g.id).includes(item.id);
 
-    const hoverUnderline =
-      !isNarrowWidth &&
-      !['Group', 'Interval'].includes(groupBy) &&
-      !compact &&
-      !categories.grouped.map(g => g.id).includes(item.id)
-        ? {
-            cursor: pointer,
-            ':hover': { textDecoration: 'underline' },
-            flexGrow: 0,
-          }
-        : {};
+    const pointer = isClickable ? 'pointer' : 'inherit';
+
+    const hoverUnderline = isClickable
+      ? {
+          cursor: pointer,
+          ':hover': { textDecoration: 'underline' },
+          flexGrow: 0,
+        }
+      : {};
 
     return (
       <Row
@@ -162,10 +163,7 @@ export const ReportTableRow = memo(
                         : undefined
                     }
                     onClick={() =>
-                      !isNarrowWidth &&
-                      !['Group', 'Interval'].includes(groupBy) &&
-                      !compact &&
-                      !categories.grouped.map(g => g.id).includes(item.id) &&
+                      isClickable &&
                       showActivity({
                         navigate,
                         categories,
@@ -182,6 +180,26 @@ export const ReportTableRow = memo(
                         interval,
                       })
                     }
+                    onKeyDown={(e: KeyboardEvent) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && isClickable) {
+                        e.preventDefault();
+                        showActivity({
+                          navigate,
+                          categories,
+                          accounts,
+                          balanceTypeOp,
+                          filters,
+                          showHiddenCategories,
+                          showOffBudget,
+                          type: 'time',
+                          startDate: intervalItem.intervalStartDate || '',
+                          endDate: intervalItem.intervalEndDate || '',
+                          field: groupBy.toLowerCase(),
+                          id: item.id,
+                          interval,
+                        });
+                      }
+                    }}
                     width="flex"
                     privacyFilter
                   />
@@ -219,10 +237,7 @@ export const ReportTableRow = memo(
                     )}
                     valueStyle={compactStyle}
                     onClick={() =>
-                      !isNarrowWidth &&
-                      !['Group', 'Interval'].includes(groupBy) &&
-                      !compact &&
-                      !categories.grouped.map(g => g.id).includes(item.id) &&
+                      isClickable &&
                       showActivity({
                         navigate,
                         categories,
@@ -238,6 +253,25 @@ export const ReportTableRow = memo(
                         id: item.id,
                       })
                     }
+                    onKeyDown={(e: KeyboardEvent) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && isClickable) {
+                        e.preventDefault();
+                        showActivity({
+                          navigate,
+                          categories,
+                          accounts,
+                          balanceTypeOp,
+                          filters,
+                          showHiddenCategories,
+                          showOffBudget,
+                          type: 'assets',
+                          startDate,
+                          endDate,
+                          field: groupBy.toLowerCase(),
+                          id: item.id,
+                        });
+                      }
+                    }}
                   />
                   <Cell
                     value={format(item.totalDebts, 'financial')}
@@ -269,10 +303,7 @@ export const ReportTableRow = memo(
                     )}
                     valueStyle={compactStyle}
                     onClick={() =>
-                      !isNarrowWidth &&
-                      !['Group', 'Interval'].includes(groupBy) &&
-                      !compact &&
-                      !categories.grouped.map(g => g.id).includes(item.id) &&
+                      isClickable &&
                       showActivity({
                         navigate,
                         categories,
@@ -288,6 +319,25 @@ export const ReportTableRow = memo(
                         id: item.id,
                       })
                     }
+                    onKeyDown={(e: KeyboardEvent) => {
+                      if ((e.key === 'Enter' || e.key === ' ') && isClickable) {
+                        e.preventDefault();
+                        showActivity({
+                          navigate,
+                          categories,
+                          accounts,
+                          balanceTypeOp,
+                          filters,
+                          showHiddenCategories,
+                          showOffBudget,
+                          type: 'debts',
+                          startDate,
+                          endDate,
+                          field: groupBy.toLowerCase(),
+                          id: item.id,
+                        });
+                      }
+                    }}
                   />
                 </>
               )}
@@ -318,10 +368,7 @@ export const ReportTableRow = memo(
             )}
             valueStyle={compactStyle}
             onClick={() =>
-              !isNarrowWidth &&
-              !['Group', 'Interval'].includes(groupBy) &&
-              !compact &&
-              !categories.grouped.map(g => g.id).includes(item.id) &&
+              isClickable &&
               showActivity({
                 navigate,
                 categories,
@@ -337,6 +384,25 @@ export const ReportTableRow = memo(
                 id: item.id,
               })
             }
+            onKeyDown={(e: KeyboardEvent) => {
+              if ((e.key === 'Enter' || e.key === ' ') && isClickable) {
+                e.preventDefault();
+                showActivity({
+                  navigate,
+                  categories,
+                  accounts,
+                  balanceTypeOp,
+                  filters,
+                  showHiddenCategories,
+                  showOffBudget,
+                  type: 'totals',
+                  startDate,
+                  endDate,
+                  field: groupBy.toLowerCase(),
+                  id: item.id,
+                });
+              }
+            }}
             width="flex"
             privacyFilter
           />

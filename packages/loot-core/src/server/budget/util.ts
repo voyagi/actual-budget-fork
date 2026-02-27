@@ -12,10 +12,6 @@ export function sumAmounts(...amounts) {
   );
 }
 
-export function flatten2(arr) {
-  return Array.prototype.concat.apply([], arr);
-}
-
 export function unflatten2(arr) {
   const res = [];
   for (let i = 0; i < arr.length; i += 2) {

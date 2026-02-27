@@ -67,8 +67,8 @@ export async function post(
 
   try {
     responseData = JSON.parse(text);
-  } catch {
-    // Something seriously went wrong. TODO handle errors
+  } catch (err) {
+    logger.log('Failed to parse JSON response: ' + url + '\n' + String(err));
     throw new PostError('parse-json', { meta: text });
   }
 
@@ -117,8 +117,8 @@ export async function del(url, data, headers = {}, timeout = null) {
 
   try {
     res = JSON.parse(text);
-  } catch {
-    // Something seriously went wrong. TODO handle errors
+  } catch (err) {
+    logger.log('Failed to parse JSON response: ' + url + '\n' + String(err));
     throw new PostError('parse-json', { meta: text });
   }
 
@@ -165,8 +165,8 @@ export async function patch(url, data, headers = {}, timeout = null) {
 
   try {
     res = JSON.parse(text);
-  } catch {
-    // Something seriously went wrong. TODO handle errors
+  } catch (err) {
+    logger.log('Failed to parse JSON response: ' + url + '\n' + String(err));
     throw new PostError('parse-json', { meta: text });
   }
 

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@actual-app/components/button';
@@ -126,7 +126,16 @@ function IncomeGroupHeader({
   return (
     <View
       data-testid="category-group-row"
+      role="button"
+      tabIndex={0}
+      aria-expanded={!isCollapsed(group.id)}
       onClick={() => onToggleCollapse(group.id)}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggleCollapse(group.id);
+        }
+      }}
       style={{
         cursor: 'pointer',
         height: ROW_HEIGHT,

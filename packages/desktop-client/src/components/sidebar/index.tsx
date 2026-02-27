@@ -35,6 +35,15 @@ export function FloatableSidebar() {
       onMouseLeave={
         sidebarShouldFloat ? () => debouncedHideSidebar() : undefined
       }
+      onFocus={
+        sidebarShouldFloat
+          ? () => {
+              debouncedHideSidebar.cancel();
+              sidebar.setHidden(false);
+            }
+          : undefined
+      }
+      onBlur={sidebarShouldFloat ? () => debouncedHideSidebar() : undefined}
       style={{
         position: sidebarShouldFloat ? 'absolute' : undefined,
         top: 8,

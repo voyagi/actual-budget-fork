@@ -149,7 +149,12 @@ export function Menu<const NameType = string>({
   return (
     <View
       className={className}
-      style={{ outline: 'none', borderRadius: 4, overflow: 'hidden', ...style }}
+      style={{
+        outline: 'none',
+        borderRadius: theme.radiusMedium,
+        overflow: 'hidden',
+        ...style,
+      }}
       tabIndex={0}
       onKeyDown={onKeyDown}
       innerRef={elRef}

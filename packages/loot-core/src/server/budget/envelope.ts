@@ -6,7 +6,7 @@ import * as sheet from '../sheet';
 import { resolveName } from '../spreadsheet/util';
 
 import { createCategory as createCategoryFromBase } from './base';
-import { flatten2, number, sumAmounts, unflatten2 } from './util';
+import { number, sumAmounts, unflatten2 } from './util';
 
 function getBlankSheet(months) {
   const blankMonth = monthUtils.prevMonth(months[0]);
@@ -128,12 +128,12 @@ export function createSummary(groups, categories, prevSheetName, sheetName) {
 
   sheet.get().createDynamic(sheetName, 'last-month-overspent', {
     initialValue: 0,
-    dependencies: flatten2(
-      expenseCategories.map(cat => [
+    dependencies: expenseCategories
+      .map(cat => [
         `${prevSheetName}!leftover-${cat.id}`,
         `${prevSheetName}!carryover-${cat.id}`,
-      ]),
-    ),
+      ])
+      .flat(),
     run: (...data) => {
       data = unflatten2(data);
       return safeNumber(
@@ -161,12 +161,12 @@ export function createSummary(groups, categories, prevSheetName, sheetName) {
   sheet.get().createDynamic(sheetName, 'buffered', { initialValue: 0 });
   sheet.get().createDynamic(sheetName, 'buffered-auto', {
     initialValue: 0,
-    dependencies: flatten2(
-      incomeCategories.map(c => [
+    dependencies: incomeCategories
+      .map(c => [
         `${sheetName}!sum-amount-${c.id}`,
         `${sheetName}!carryover-${c.id}`,
-      ]),
-    ),
+      ])
+      .flat(),
     run: (...data) => {
       data = unflatten2(data);
       return safeNumber(
@@ -310,14 +310,10 @@ export function handleCategoryChange(months, oldValue, newValue) {
       if (newValue.is_income) {
         sheet
           .get()
-          .addDependencies(
-            sheetName,
-            'buffered-auto',
-            flatten2([
-              `${sheetName}!sum-amount-${id}`,
-              `${sheetName}!carryover-${id}`,
-            ]),
-          );
+          .addDependencies(sheetName, 'buffered-auto', [
+            `${sheetName}!sum-amount-${id}`,
+            `${sheetName}!carryover-${id}`,
+          ]);
       }
     });
   } else if (oldValue && oldValue.cat_group !== newValue.cat_group) {

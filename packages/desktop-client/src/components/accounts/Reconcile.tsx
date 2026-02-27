@@ -183,6 +183,7 @@ export function ReconcileMenu({
             <Input
               value={inputValue}
               onChangeValue={setInputValue}
+              aria-label={t('Reconcile balance')}
               style={{ margin: '7px 0' }}
             />
           </InitialFocus>

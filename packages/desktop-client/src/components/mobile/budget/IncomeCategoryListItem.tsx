@@ -17,6 +17,7 @@ import { BalanceCell } from './BalanceCell';
 import { BudgetCell } from './BudgetCell';
 import { getColumnWidth, ROW_HEIGHT } from './BudgetTable';
 
+import { CategoryIcon } from '@desktop-client/components/budget/CategoryIcon';
 import { useNavigate } from '@desktop-client/hooks/useNavigate';
 import { useSyncedPref } from '@desktop-client/hooks/useSyncedPref';
 import { collapseModals, pushModal } from '@desktop-client/modals/modalsSlice';
@@ -68,8 +69,15 @@ function IncomeCategoryName({ category, onEdit }: IncomeCategoryNameProps) {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'flex-start',
+            gap: 6,
           }}
         >
+          <CategoryIcon
+            name={category.name}
+            icon={category.icon}
+            color={category.color}
+            size={28}
+          />
           <Text
             style={{
               ...styles.lineClamp(2),

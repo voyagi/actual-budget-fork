@@ -41,6 +41,7 @@ export function InOutOption({
           value={outValue}
           onChangeValue={onChangeText}
           placeholder={t("Value for out rows, e.g: 'Credit'")}
+          aria-label={t('Value for outflow rows')}
         />
       )}
     </View>

@@ -38,9 +38,9 @@ export function AuthSettings() {
         <>
           <label>
             <Trans>OpenID is</Trans>{' '}
-            <label style={{ fontWeight: 'bold' }}>
+            <span style={{ fontWeight: 'bold' }}>
               {loginMethod === 'openid' ? t('enabled') : t('disabled')}
-            </label>
+            </span>
           </label>
           {isOffline && (
             <View>

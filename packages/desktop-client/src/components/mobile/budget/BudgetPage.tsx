@@ -45,6 +45,7 @@ import {
   useSaveCategoryMutation,
 } from '@desktop-client/budget';
 import { closeBudget } from '@desktop-client/budgetfiles/budgetfilesSlice';
+import { BudgetHeroCard } from '@desktop-client/components/budget/BudgetHeroCard';
 import { prewarmMonth } from '@desktop-client/components/budget/util';
 import { FinancialText } from '@desktop-client/components/FinancialText';
 import { MobilePageHeader, Page } from '@desktop-client/components/Page';
@@ -585,6 +586,7 @@ export function BudgetPage() {
       }
     >
       <SheetNameProvider name={monthUtils.sheetForMonth(startMonth)}>
+        <BudgetHeroCard />
         <SyncRefresh
           onSync={async () => {
             dispatch(sync());

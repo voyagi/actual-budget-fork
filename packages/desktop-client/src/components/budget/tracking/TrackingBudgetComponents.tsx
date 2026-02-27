@@ -377,7 +377,15 @@ export const CategoryMonth = memo(function CategoryMonth({
       <Field name="spent" width="flex" style={{ textAlign: 'right' }}>
         <View
           data-testid="category-month-spent"
+          role="button"
+          tabIndex={0}
           onClick={() => onShowActivity(category.id, month)}
+          onKeyDown={(e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onShowActivity(category.id, month);
+            }
+          }}
           style={{
             flexDirection: 'row',
             alignItems: 'center',

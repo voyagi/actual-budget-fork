@@ -1,7 +1,7 @@
+// @ts-strict-ignore
 import { getNormalisedString } from '../../shared/normalisation';
 import type { QueryState } from '../../shared/query';
 
-// @ts-strict-ignore
 let _uid = 0;
 function resetUid() {
   _uid = 0;

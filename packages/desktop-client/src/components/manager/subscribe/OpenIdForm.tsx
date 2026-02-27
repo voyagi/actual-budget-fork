@@ -144,6 +144,7 @@ export function OpenIdForm({
                 type="text"
                 value={issuer}
                 placeholder="https://accounts.domain.tld/"
+                aria-label={t('OpenID provider URL')}
                 onChangeValue={newValue => setIssuer(newValue)}
               />
             </View>

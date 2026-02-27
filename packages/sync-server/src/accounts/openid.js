@@ -1,4 +1,16 @@
-import { custom, generators, Issuer } from 'openid-client';
+import {
+  discovery,
+  Configuration,
+  buildAuthorizationUrl,
+  authorizationCodeGrant,
+  genericGrantRequest,
+  fetchUserInfo,
+  randomState,
+  randomPKCECodeVerifier,
+  calculatePKCECodeChallenge,
+  skipSubjectCheck,
+  customFetch,
+} from 'openid-client';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -15,6 +27,26 @@ import { TOKEN_EXPIRATION_NEVER } from '../util/validate-user';
 
 import { checkPassword } from './password';
 
+/**
+ * Creates a fetch wrapper that enforces a timeout via AbortController.
+ * Replaces the v5 custom.setHttpOptionsDefaults({ timeout }) mechanism.
+ */
+function createTimeoutFetch(timeoutMs) {
+  return async (url, options = {}) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      return response;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+}
+
 export async function bootstrapOpenId(configParameter) {
   if (!('issuer' in configParameter) && !('discoveryURL' in configParameter)) {
     return { error: 'missing-issuer-or-discoveryURL' };
@@ -28,10 +60,6 @@ export async function bootstrapOpenId(configParameter) {
   if (!('server_hostname' in configParameter)) {
     return { error: 'missing-server-hostname' };
   }
-
-  custom.setHttpOptionsDefaults({
-    timeout: 20 * 1000, // 20 seconds
-  });
 
   try {
     //FOR BACKWARD COMPATIBLITY:
@@ -65,29 +93,59 @@ export async function bootstrapOpenId(configParameter) {
   return {};
 }
 
+/**
+ * Sets up the OpenID client configuration using the v6 functional API.
+ *
+ * In v6, discovery() returns a Configuration object that replaces both the
+ * v5 Issuer and Client instances. For manual issuer configuration (object
+ * with endpoints), we construct a Configuration directly with ServerMetadata.
+ */
 async function setupOpenIdClient(configParameter) {
-  const issuer =
-    typeof configParameter.issuer === 'string'
-      ? await Issuer.discover(configParameter.issuer)
-      : new Issuer({
-          issuer: configParameter.issuer.name,
-          authorization_endpoint: configParameter.issuer.authorization_endpoint,
-          token_endpoint: configParameter.issuer.token_endpoint,
-          userinfo_endpoint: configParameter.issuer.userinfo_endpoint,
-        });
+  const redirectUri = new URL(
+    '/openid/callback',
+    configParameter.server_hostname,
+  ).toString();
 
-  const client = new issuer.Client({
-    client_id: configParameter.client_id,
-    client_secret: configParameter.client_secret,
-    redirect_uri: new URL(
-      '/openid/callback',
-      configParameter.server_hostname,
-    ).toString(),
-    validate_id_token: true,
-  });
+  if (typeof configParameter.issuer === 'string') {
+    // Auto-discovery: fetch metadata from the issuer URL
+    // The timeout option (in seconds) applies to discovery and all future requests.
+    // The [customFetch] option replaces global fetch on the resolved Configuration.
+    const oidcConfig = await discovery(
+      new URL(configParameter.issuer),
+      configParameter.client_id,
+      configParameter.client_secret,
+      undefined,
+      {
+        timeout: 20,
+        [customFetch]: createTimeoutFetch(20 * 1000),
+      },
+    );
+    // Attach redirect_uri to the config for use in other functions
+    oidcConfig[redirectUriSymbol] = redirectUri;
+    return oidcConfig;
+  } else {
+    // Manual configuration: construct ServerMetadata from provided endpoints
+    const serverMetadata = {
+      issuer: configParameter.issuer.name,
+      authorization_endpoint: configParameter.issuer.authorization_endpoint,
+      token_endpoint: configParameter.issuer.token_endpoint,
+      userinfo_endpoint: configParameter.issuer.userinfo_endpoint,
+    };
 
-  return client;
+    const oidcConfig = new Configuration(
+      serverMetadata,
+      configParameter.client_id,
+      configParameter.client_secret,
+    );
+    oidcConfig[customFetch] = createTimeoutFetch(20 * 1000);
+    // Attach redirect_uri to the config for use in other functions
+    oidcConfig[redirectUriSymbol] = redirectUri;
+    return oidcConfig;
+  }
 }
+
+// Symbol to store redirect_uri on the Configuration object
+const redirectUriSymbol = Symbol('redirectUri');
 
 export async function loginWithOpenIdSetup(
   returnUrl,
@@ -117,31 +175,32 @@ export async function loginWithOpenIdSetup(
     }
   }
 
-  let config = accountDb.first('SELECT extra_data FROM auth WHERE method = ?', [
-    'openid',
-  ]);
-  if (!config) {
+  let dbConfig = accountDb.first(
+    'SELECT extra_data FROM auth WHERE method = ?',
+    ['openid'],
+  );
+  if (!dbConfig) {
     return { error: 'openid-not-configured' };
   }
 
   try {
-    config = JSON.parse(config['extra_data']);
+    dbConfig = JSON.parse(dbConfig['extra_data']);
   } catch (err) {
     console.error('Error parsing OpenID configuration:', err);
     return { error: 'openid-setup-failed' };
   }
 
-  let client;
+  let oidcConfig;
   try {
-    client = await setupOpenIdClient(config);
+    oidcConfig = await setupOpenIdClient(dbConfig);
   } catch (err) {
     console.error('Error setting up OpenID client:', err);
     return { error: 'openid-setup-failed' };
   }
 
-  const state = generators.state();
-  const code_verifier = generators.codeVerifier();
-  const code_challenge = generators.codeChallenge(code_verifier);
+  const state = randomState();
+  const code_verifier = randomPKCECodeVerifier();
+  const code_challenge = await calculatePKCECodeChallenge(code_verifier);
 
   const now_time = Date.now();
   const expiry_time = now_time + 300 * 1000;
@@ -155,7 +214,9 @@ export async function loginWithOpenIdSetup(
     [state, code_verifier, returnUrl, expiry_time],
   );
 
-  const url = client.authorizationUrl({
+  const redirectUri = oidcConfig[redirectUriSymbol];
+  const url = buildAuthorizationUrl(oidcConfig, {
+    redirect_uri: redirectUri,
     response_type: 'code',
     scope: 'openid email profile',
     state,
@@ -163,7 +224,7 @@ export async function loginWithOpenIdSetup(
     code_challenge_method: 'S256',
   });
 
-  return { url };
+  return { url: url.href };
 }
 
 export async function loginWithOpenIdFinalize(body) {
@@ -187,9 +248,9 @@ export async function loginWithOpenIdFinalize(body) {
     console.error('Error parsing OpenID configuration:', err);
     return { error: 'openid-setup-failed' };
   }
-  let client;
+  let oidcConfig;
   try {
-    client = await setupOpenIdClient(configFromDb);
+    oidcConfig = await setupOpenIdClient(configFromDb);
   } catch (err) {
     console.error('Error setting up OpenID client:', err);
     return { error: 'openid-setup-failed' };
@@ -207,23 +268,39 @@ export async function loginWithOpenIdFinalize(body) {
   const { code_verifier, return_url } = pendingRequest;
 
   try {
-    let tokenSet = null;
+    const redirectUri = oidcConfig[redirectUriSymbol];
+    let tokens = null;
 
     if (!configFromDb.authMethod || configFromDb.authMethod === 'openid') {
-      const params = { code: body.code, state: body.state, iss: body.iss };
-      tokenSet = await client.callback(client.redirect_uris[0], params, {
-        code_verifier,
-        state: body.state,
+      // Standard OpenID Connect authorization code flow
+      // In v6, authorizationCodeGrant expects a URL containing the callback parameters
+      const callbackUrl = new URL(redirectUri);
+      callbackUrl.searchParams.set('code', body.code);
+      callbackUrl.searchParams.set('state', body.state);
+      if (body.iss) {
+        callbackUrl.searchParams.set('iss', body.iss);
+      }
+
+      tokens = await authorizationCodeGrant(oidcConfig, callbackUrl, {
+        pkceCodeVerifier: code_verifier,
+        expectedState: body.state,
       });
     } else {
-      tokenSet = await client.grant({
-        grant_type: 'authorization_code',
+      // Alternative grant type: use genericGrantRequest for non-standard flows
+      tokens = await genericGrantRequest(oidcConfig, 'authorization_code', {
         code: body.code,
-        redirect_uri: client.redirect_uris[0],
+        redirect_uri: redirectUri,
         code_verifier,
       });
     }
-    const userInfo = await client.userinfo(tokenSet.access_token);
+
+    // In v6, fetchUserInfo requires an expectedSubject parameter.
+    // Use skipSubjectCheck since the original v5 code did not verify the subject.
+    const userInfo = await fetchUserInfo(
+      oidcConfig,
+      tokens.access_token,
+      skipSubjectCheck,
+    );
     const identity =
       userInfo.preferred_username ??
       userInfo.login ??
@@ -307,7 +384,11 @@ export async function loginWithOpenIdFinalize(body) {
 
     let expiration;
     if (config.get('token_expiration') === 'openid-provider') {
-      expiration = tokenSet.expires_at ?? TOKEN_EXPIRATION_NEVER;
+      // In v6, expires_in is in seconds (optional). Calculate expires_at from it.
+      const expiresAt = tokens.expires_in
+        ? Math.floor(Date.now() / 1000) + tokens.expires_in
+        : null;
+      expiration = expiresAt ?? TOKEN_EXPIRATION_NEVER;
     } else if (config.get('token_expiration') === 'never') {
       expiration = TOKEN_EXPIRATION_NEVER;
     } else if (typeof config.get('token_expiration') === 'number') {

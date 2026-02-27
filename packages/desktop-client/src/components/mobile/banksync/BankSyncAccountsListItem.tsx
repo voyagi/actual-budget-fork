@@ -1,3 +1,4 @@
+import React from 'react';
 import { Trans } from 'react-i18next';
 
 import { SpaceBetween } from '@actual-app/components/space-between';
@@ -32,6 +33,8 @@ export function BankSyncAccountsListItem({
   return (
     <View
       data-testid="bank-sync-account"
+      role="button"
+      tabIndex={0}
       style={{
         backgroundColor: theme.tableBackground,
         borderBottomWidth: 1,
@@ -42,6 +45,12 @@ export function BankSyncAccountsListItem({
         cursor: 'pointer',
       }}
       onClick={() => onAction(account, isLinked ? 'edit' : 'link')}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onAction(account, isLinked ? 'edit' : 'link');
+        }
+      }}
     >
       <SpaceBetween gap={60}>
         <SpaceBetween

@@ -116,6 +116,7 @@ export function TransferOwnership({
               {availableUsers.length > 0 && (
                 <View>
                   <Select
+                    id="user-field"
                     options={availableUsers}
                     onChange={(newValue: string) => {
                       setUserId(newValue);

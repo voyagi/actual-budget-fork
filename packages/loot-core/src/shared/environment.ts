@@ -1,4 +1,4 @@
-export function isPreviewEnvironment() {
+function isPreviewEnvironment() {
   return String(process.env.REACT_APP_NETLIFY) === 'true';
 }
 

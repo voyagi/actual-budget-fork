@@ -6,6 +6,7 @@ import type {
   KeyboardEvent,
   ReactNode,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Button } from '@actual-app/components/button';
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
@@ -150,7 +151,7 @@ function defaultRenderItems<T extends AutocompleteItem>(
   highlightedIndex: number,
 ) {
   return (
-    <div>
+    <div role="listbox">
       {items.map((item, index) => {
         const name = getItemName(item);
         return (
@@ -171,15 +172,15 @@ function defaultRenderItems<T extends AutocompleteItem>(
             // tapping and the resulting action being performed. It turns out
             // there's some "fast path" logic that can be triggered in various
             // ways to force WebKit to bail on the content observation process.
-            // One of those ways is setting `role="button"` (or a number of
-            // other aria roles) on the element, which is what we're doing here.
+            // One of those ways is setting a landmark ARIA role (such as
+            // "option") on the element, which is what we're doing here.
+            // "option" is also the semantically correct role for combobox items.
             //
             // ref:
             // * https://github.com/WebKit/WebKit/blob/447d90b0c52b2951a69df78f06bb5e6b10262f4b/LayoutTests/fast/events/touch/ios/content-observation/400ms-hover-intent.html
             // * https://github.com/WebKit/WebKit/blob/58956cf59ba01267644b5e8fe766efa7aa6f0c5c/Source/WebCore/page/ios/ContentChangeObserver.cpp
             // * https://github.com/WebKit/WebKit/blob/58956cf59ba01267644b5e8fe766efa7aa6f0c5c/Source/WebKit/WebProcess/WebPage/ios/WebPageIOS.mm#L783
-            // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-            role="button"
+            role="option"
             className={css({
               padding: 5,
               cursor: 'default',
@@ -650,6 +651,7 @@ type MultiItemProps = {
 };
 
 function MultiItem({ name, onRemove }: MultiItemProps) {
+  const { t } = useTranslation();
   return (
     <View
       style={{
@@ -662,7 +664,12 @@ function MultiItem({ name, onRemove }: MultiItemProps) {
       }}
     >
       {name}
-      <Button variant="bare" style={{ marginLeft: 1 }} onPress={onRemove}>
+      <Button
+        variant="bare"
+        style={{ marginLeft: 1 }}
+        onPress={onRemove}
+        aria-label={t('Remove')}
+      >
         <SvgRemove style={{ width: 8, height: 8 }} />
       </Button>
     </View>

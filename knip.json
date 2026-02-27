@@ -1,0 +1,91 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["lage.config.js", "vitest.config.ts"],
+      "ignoreDependencies": [
+        "@vitest/coverage-v8",
+        "baseline-browser-mapping",
+        "eslint-plugin-perfectionist",
+        "eslint-plugin-typescript-paths"
+      ]
+    },
+    "packages/sync-server": {
+      "entry": [
+        "app.ts",
+        "bin/actual-server.js",
+        "src/app-sync.ts",
+        "src/app-account.ts",
+        "src/app-admin.ts",
+        "src/app-secrets.ts",
+        "src/app-openid.ts",
+        "src/app-cors-proxy.ts",
+        "src/app-gocardless/app-gocardless.js",
+        "src/app-pluggyai/app-pluggyai.js",
+        "src/app-simplefin/app-simplefin.js",
+        "src/app-enablebanking/app-enablebanking.ts",
+        "src/scripts/*.js",
+        "loader.mjs",
+        "register-loader.mjs"
+      ],
+      "ignore": [
+        "migrations/**",
+        "src/app-gocardless/banks/**",
+        "src/app-enablebanking/enablebanking.types.ts",
+        "src/config-types.ts",
+        "src/util/hash.ts",
+        "src/util/prompt.ts"
+      ],
+      "ignoreDependencies": ["cors", "pluggy-sdk"]
+    },
+    "packages/desktop-client": {
+      "ignore": [
+        "src/browser-preload.browser.js",
+        "src/browser-server.js",
+        "src/build-shims.js",
+        "globals.ts"
+      ]
+    },
+    "packages/desktop-electron": {
+      "entry": ["preload.ts", "server.ts", "beforePackHook.ts"]
+    },
+    "packages/component-library": {
+      "ignore": [
+        "src/icons/.svgrrc.js",
+        "src/icons/add-attribute.js",
+        "src/icons/index-template.ts",
+        "src/icons/template.ts"
+      ]
+    },
+    "packages/crdt": {
+      "ignore": ["src/proto/sync_pb.ts"]
+    },
+    "packages/loot-core": {
+      "entry": [
+        "src/platform/server/connection/index.api.ts",
+        "src/platform/server/fetch/index.api.ts",
+        "src/mocks/spreadsheet.ts",
+        "vite.api.config.ts"
+      ],
+      "ignore": ["typings/**"]
+    },
+    "packages/api": {
+      "ignoreDependencies": ["@actual-app/crdt", "better-sqlite3", "uuid"]
+    },
+    "packages/docs": {
+      "entry": [
+        "docs/api/APIList.jsx",
+        "docs/api/types.jsx",
+        "docusaurus.netlify-config.js",
+        "src/components/**/*.{jsx,tsx}",
+        "src/theme/**/*.{jsx,js}"
+      ],
+      "ignoreDependencies": ["clsx"]
+    },
+    "packages/plugins-service": {
+      "entry": ["src/plugin-service-worker.ts"],
+      "ignoreDependencies": ["workbox-precaching"]
+    }
+  },
+  "exclude": ["duplicates"]
+}

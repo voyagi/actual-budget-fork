@@ -1,7 +1,6 @@
 import React, { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import type { CSSProperties, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
-import { animated, to, useSpring } from 'react-spring';
 import { useSwipeable } from 'react-swipeable';
 
 import { Button, ButtonWithLoading } from '@actual-app/components/button';
@@ -14,6 +13,7 @@ import { Text } from '@actual-app/components/text';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 import { css } from '@emotion/css';
+import { animated, to, useSpring } from '@react-spring/web';
 
 import { Link } from './common/Link';
 import { MODAL_Z_INDEX } from './common/Modal';

@@ -10,4 +10,6 @@ export type CategoryEntity = {
   sort_order?: number;
   tombstone?: boolean;
   hidden?: boolean;
+  icon?: string;
+  color?: string;
 };

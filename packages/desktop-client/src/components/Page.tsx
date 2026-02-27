@@ -1,13 +1,12 @@
-import React from 'react';
+import { useEffect } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
 import { styles } from '@actual-app/components/styles';
-import { Text } from '@actual-app/components/text';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
-const HEADER_HEIGHT = 50;
+const HEADER_HEIGHT = 60;
 
 type PageHeaderProps = {
   title: ReactNode;
@@ -15,6 +14,12 @@ type PageHeaderProps = {
 };
 
 export function PageHeader({ title, style }: PageHeaderProps) {
+  useEffect(() => {
+    if (typeof title === 'string') {
+      document.title = title + ' - Actual';
+    }
+  }, [title]);
+
   return (
     <View
       style={{
@@ -25,15 +30,16 @@ export function PageHeader({ title, style }: PageHeaderProps) {
         ...style,
       }}
     >
-      <View
+      <h1
         style={{
-          flexDirection: 'row',
           fontSize: 25,
           fontWeight: 500,
+          margin: 0,
+          padding: 0,
         }}
       >
-        {typeof title === 'string' ? <Text>{title}</Text> : title}
-      </View>
+        {title}
+      </h1>
     </View>
   );
 }
@@ -59,6 +65,7 @@ export function MobilePageHeader({
         flexShrink: 0,
         height: HEADER_HEIGHT,
         backgroundColor: theme.mobileHeaderBackground,
+        borderBottom: `1px solid ${theme.tableBorder}`,
         '& *': {
           color: theme.mobileHeaderText,
         },
@@ -85,8 +92,9 @@ export function MobilePageHeader({
           flexDirection: 'row',
           flexBasis: '50%',
           fontSize: 17,
-          fontWeight: 500,
-          overflowY: 'auto',
+          fontWeight: 600,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
           display: 'flex',
           margin: 0,
           padding: 0,
@@ -117,7 +125,7 @@ type PageProps = {
 
 export function Page({ header, style, padding, children, footer }: PageProps) {
   const { isNarrowWidth } = useResponsive();
-  const childrenPadding = padding != null ? padding : isNarrowWidth ? 10 : 20;
+  const childrenPadding = padding != null ? padding : isNarrowWidth ? 16 : 20;
 
   const headerToRender =
     typeof header === 'string' ? (
@@ -143,6 +151,7 @@ export function Page({ header, style, padding, children, footer }: PageProps) {
     >
       {headerToRender}
       <View
+        id="main-content"
         role="main"
         style={{
           flex: 1,

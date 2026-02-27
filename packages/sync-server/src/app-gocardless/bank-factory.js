@@ -187,7 +187,7 @@ const SPECIAL_CONTINUOUS_ACCESS_BANKS = [
   'SOLUTION_BANK_CRDRIT2FXXX',
   'WIDIBA_WIDIITMM',
   'ZADRUZNA_KRASKA_BANKA_TRST_GORICA_ZADRUGA_CCRTIT2TV00',
-].map(i => i.replace('*', ''));
+].map(i => i.replace(/\*/g, ''));
 
 export function isSpecialContinuousAccessBank(institutionId) {
   return SPECIAL_CONTINUOUS_ACCESS_BANKS.some(i => institutionId.startsWith(i));

@@ -33,8 +33,10 @@ type CarryoverIndicatorProps = {
 };
 
 export function CarryoverIndicator({ style }: CarryoverIndicatorProps) {
+  const { t } = useTranslation();
   return (
     <View
+      aria-label={t('Carried over')}
       style={{
         marginLeft: 2,
         position: 'absolute',

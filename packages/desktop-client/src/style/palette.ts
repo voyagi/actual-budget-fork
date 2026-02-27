@@ -1,27 +1,3 @@
-// Only for use in contextual color definitions
-export const gray50 = '#f6f8fa';
-export const gray80 = '#f0f4f6';
-export const gray100 = '#e8ecf0';
-export const gray150 = '#d4dae0';
-export const gray200 = '#bdc5cf';
-export const gray300 = '#98a1ae';
-export const gray400 = '#747c8b';
-export const gray500 = '#4d5768';
-export const gray600 = '#373b4a';
-export const gray700 = '#242733';
-export const gray800 = '#141520';
-export const gray900 = '#080811';
-export const navy50 = '#f7fafc';
-export const navy100 = '#e8ecf0';
-export const navy150 = '#d9e2ec';
-export const navy200 = '#bcccdc';
-export const navy300 = '#9fb3c8';
-export const navy400 = '#829ab1';
-export const navy500 = '#627d98';
-export const navy600 = '#486581';
-export const navy700 = '#334e68';
-export const navy800 = '#243b53';
-export const navy900 = '#102a43';
 export const blue50 = '#f5fcff';
 export const blue100 = '#e3f0ff';
 export const blue150 = '#b3d9ff';
@@ -80,9 +56,55 @@ export const purple800 = '#580a94';
 export const purple900 = '#44056e';
 export const white = '#ffffff';
 export const black = '#000000';
-export const hover = '#fafafa';
-export const border = '#e8ecf0';
-export const selected = '#b3d9ff';
+
+// Buddy V2 - Primary accent (purple, interactive elements)
+export const buddyPrimary = '#6C5CE7';
+export const buddyPrimaryHover = '#7D6FEE';
+export const buddyPrimaryDark = '#5A4BD4';
+export const buddyPrimaryMuted = '#3D3566';
+export const buddyPrimaryLightBg = '#EDE8FF';
+export const buddyPrimarySubtle = '#F4F1FF';
+export const buddyPrimaryLightTheme = '#5B4ED4';
+
+// Buddy V2 - Accent (pink, restricted: nav selected + decorative only)
+export const buddyAccent = '#FF6B8A';
+
+// Buddy V2 - Financial positive (teal/green)
+export const buddyPositive = '#2DD4A8';
+export const buddyPositiveLight = '#0D9B6A';
+
+// Buddy V2 - Chart/utility colors
+export const buddyBlue = '#4FC3F7';
+
+// Buddy V2 - Dark surfaces
+export const buddyDarkBg = '#0D1117';
+export const buddyDarkSurface1 = '#1A1B2E';
+export const buddyDarkSurface2 = '#252638';
+export const buddyDarkSurface3 = '#2E2F42';
+export const buddyDarkBorder = '#2A2B3D';
+
+// Buddy V2 - Light surfaces
+export const buddyLightBg = '#F4F3F0';
+export const buddyLightSurface1 = '#FDFCFB';
+export const buddyLightSurface2 = '#F0F0ED';
+export const buddyLightSurface3 = '#F8F7F5';
+export const buddyLightBorder = '#E2E1DD';
+export const buddyLightBorderDark = '#D1D0CC';
+export const buddyLightSidebarBg = '#F5F4F1';
+export const buddyLightPositiveBg = '#ECFDF5';
+
+// Buddy V2 - Dark text
+export const buddyDarkTextPrimary = '#F5F5FF';
+export const buddyDarkTextSecondary = '#8E8E93';
+export const buddyDarkTextMuted = '#555566';
+export const buddyDarkTextSubdued = 'rgba(245, 245, 255, 0.85)';
+export const buddyDarkFormLabel = '#9E9EB8';
+
+// Buddy V2 - Light text
+export const buddyLightTextPrimary = '#1A1B2E';
+export const buddyLightTextSecondary = '#5A5D6E';
+export const buddyLightTextMuted = '#9295A5';
+export const buddyLightTextDark = '#0D0E1A';
 
 // Chart colors - Qualitative scale (9 colors)
 export const chartQual1 = '#45B29D'; // Dark Teal

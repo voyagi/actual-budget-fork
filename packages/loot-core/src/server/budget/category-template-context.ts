@@ -667,7 +667,8 @@ export class CategoryTemplateContext {
     ) {
       const sheetName = monthUtils.sheetForMonth(m);
       if (firstMonth) {
-        //TODO figure out if I already  found these values and can pass them in
+        // TODO: check if alreadyBudgeted/spent were already computed upstream
+        // and can be passed in to avoid redundant spreadsheet lookups
         const spent = await getSheetValue(
           sheetName,
           `sum-amount-${templateContext.category.id}`,

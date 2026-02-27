@@ -35,6 +35,7 @@ export function MultiplierOption({
         style={{ display: multiplierEnabled ? 'inherit' : 'none' }}
         value={multiplierAmount}
         placeholder={t('Multiplier')}
+        aria-label={t('Multiplier amount')}
         onChangeValue={onChangeAmount}
       />
     </View>

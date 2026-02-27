@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, type KeyboardEvent } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 import { Block } from '@actual-app/components/block';
@@ -38,7 +38,15 @@ function BackupTable({ backups, onSelect }: BackupTableProps) {
         <Row
           key={backup.id}
           collapsed={idx !== 0}
+          role="button"
+          tabIndex={0}
           onClick={() => onSelect(backup.id)}
+          onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelect(backup.id);
+            }
+          }}
           style={{ cursor: 'pointer' }}
         >
           <Cell

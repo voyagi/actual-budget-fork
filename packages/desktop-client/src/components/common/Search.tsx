@@ -74,6 +74,7 @@ export function Search({
         ref={ref}
         value={value}
         placeholder={placeholder}
+        aria-label={t('Search')}
         onEscape={() => onChange('')}
         onChangeValue={onChange}
         className={css({

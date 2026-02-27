@@ -63,12 +63,18 @@ export function SingleInputModal({
               <InitialFocus>
                 <InputField
                   placeholder={inputPlaceholder}
+                  aria-label={inputPlaceholder}
+                  aria-describedby={
+                    errorMessage ? 'single-input-error' : undefined
+                  }
                   defaultValue={value}
                   onChangeValue={setValue}
                 />
               </InitialFocus>
               {errorMessage && (
                 <FormError
+                  id="single-input-error"
+                  role="alert"
                   style={{
                     paddingTop: 5,
                     marginLeft: styles.mobileEditingPadding,

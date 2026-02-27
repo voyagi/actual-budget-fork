@@ -46,6 +46,7 @@ export const HistoricalAutomation = ({
         />
         <GenericInput
           key="look-back-input"
+          id="look-back-field"
           type="number"
           value={
             template.type === 'average' ? template.numMonths : template.lookBack

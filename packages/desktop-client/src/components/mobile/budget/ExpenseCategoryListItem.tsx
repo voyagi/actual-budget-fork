@@ -20,6 +20,7 @@ import { BudgetCell } from './BudgetCell';
 import { getColumnWidth, ROW_HEIGHT } from './BudgetTable';
 import { SpentCell } from './SpentCell';
 
+import { CategoryIcon } from '@desktop-client/components/budget/CategoryIcon';
 import { useCategoriesById } from '@desktop-client/hooks/useCategories';
 import { useFormat } from '@desktop-client/hooks/useFormat';
 import { useNavigate } from '@desktop-client/hooks/useNavigate';
@@ -80,8 +81,15 @@ function ExpenseCategoryName({
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'flex-start',
+            gap: 6,
           }}
         >
+          <CategoryIcon
+            name={category.name}
+            icon={category.icon}
+            color={category.color}
+            size={28}
+          />
           <Text
             style={{
               ...styles.lineClamp(2),

@@ -86,6 +86,7 @@ Each task was committed atomically:
 3. **Task 3: Verify app accessible in Chrome and budget creation works** - user-verified checkpoint (no code commit)
 
 **Dockerfile fixes (post-plan deviations):**
+
 - `e7b0b82` - fix: set IS_GENERIC_BROWSER=1 for Vite web build
 - `750b8f4` - fix: add loot-core browser build step to Dockerfile
 
@@ -110,6 +111,7 @@ Each task was committed atomically:
 ### Auto-fixed Issues
 
 **1. [Rule 1 - Bug] Missing loot-core browser build step in Dockerfile**
+
 - **Found during:** Task 2 (Docker build and run)
 - **Issue:** The desktop-client Vite build imports from `@actual-app/loot-core/browser` which requires a prior `yarn workspace @actual-app/loot-core build:browser` step. Without it, the Vite build fails with missing module errors.
 - **Fix:** Added `RUN yarn workspace @actual-app/loot-core build:browser` before the desktop-client build step in the Dockerfile.
@@ -118,6 +120,7 @@ Each task was committed atomically:
 - **Committed in:** `750b8f4` (fix commit after Task 2)
 
 **2. [Rule 1 - Bug] IS_GENERIC_BROWSER=1 missing from Vite web build**
+
 - **Found during:** Task 2 (Docker build and run)
 - **Issue:** The desktop-client Vite build runs in a Node.js/Docker context, not a browser or Electron context. Without `IS_GENERIC_BROWSER=1`, the build uses Electron-specific code paths that fail in a generic browser environment.
 - **Fix:** Added `ENV IS_GENERIC_BROWSER=1` to the Dockerfile before the `yarn workspace @actual-app/web build` step.
@@ -126,6 +129,7 @@ Each task was committed atomically:
 - **Committed in:** `e7b0b82` (fix commit after Task 2)
 
 **3. [Rule 2 - Missing Critical] Added .dockerignore file**
+
 - **Found during:** Task 2 (Dockerfile creation)
 - **Issue:** Without a .dockerignore, Docker copies node_modules and .git into the build context, causing very slow builds and potentially leaking git history into the image.
 - **Fix:** Created `.dockerignore` excluding node_modules, .git, secrets/, .env files, and IDE directories.
@@ -153,5 +157,6 @@ None - no external service configuration required for this plan. The Enable Bank
 - The temporary RSA key in secrets/ must be replaced with the real sandbox key before Plan 02 testing
 
 ---
-*Phase: 01-foundation-and-api-client*
-*Completed: 2026-02-18*
+
+_Phase: 01-foundation-and-api-client_
+_Completed: 2026-02-18_

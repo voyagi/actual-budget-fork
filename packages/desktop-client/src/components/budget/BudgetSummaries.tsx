@@ -6,10 +6,10 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { animated, useSpring } from 'react-spring';
 
 import { View } from '@actual-app/components/view';
 import { css } from '@emotion/css';
+import { animated, useSpring } from '@react-spring/web';
 
 import { addMonths, subMonths } from 'loot-core/shared/months';
 

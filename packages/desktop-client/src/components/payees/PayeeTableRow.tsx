@@ -153,6 +153,9 @@ export const PayeeTableRow = memo(
         }}
         data-focus-key={payee.id}
         onMouseEnter={() => onHover && onHover(payee.id)}
+        onMouseLeave={() => onHover && onHover(undefined)}
+        onFocus={() => onHover && onHover(payee.id)}
+        onBlur={() => onHover && onHover(undefined)}
         onContextMenu={handleContextMenu}
       >
         <Popover

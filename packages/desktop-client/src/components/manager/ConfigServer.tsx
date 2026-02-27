@@ -163,7 +163,11 @@ export function ElectronServerConfig({
         </Text>
 
         {configError && (
-          <Text style={{ color: theme.errorText, marginTop: 10 }}>
+          <Text
+            id="config-error"
+            role="alert"
+            style={{ color: theme.errorText, marginTop: 10 }}
+          >
             {configError}
           </Text>
         )}
@@ -181,6 +185,7 @@ export function ElectronServerConfig({
               value="localhost"
               disabled
               type="text"
+              aria-label={t('Domain')}
               className={css({
                 '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
                   WebkitAppearance: 'none',
@@ -199,6 +204,7 @@ export function ElectronServerConfig({
               name="port"
               value={String(electronServerPort)}
               aria-label={t('Port')}
+              aria-describedby={configError ? 'config-error' : undefined}
               type="number"
               className={css({
                 '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
@@ -473,6 +479,7 @@ export function ConfigServer() {
           >
             <BigInput
               autoFocus
+              aria-label={t('Server URL')}
               placeholder={t('https://example.com')}
               value={url || ''}
               onChangeValue={setUrl}

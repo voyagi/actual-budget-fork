@@ -81,13 +81,14 @@ GoCardless (formerly Nordigen) stopped accepting new accounts for EU bank sync i
 
 ## Key Decisions
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Enable Banking over GoCardless | GoCardless stopped accepting EU users July 2025, Enable Banking is free for personal use | - Pending |
-| PWA over native mobile app | Lower complexity, single codebase, sufficient for personal use | - Pending |
-| Fork latest stable release | Stable base, avoid unreleased breaking changes | - Pending |
-| Docker Desktop on local machine | Simple setup, no ongoing hosting costs | - Pending |
-| In-app or cron-based scheduled sync | Architecture-dependent, decide during research | - Pending |
+| Decision                            | Rationale                                                                                | Outcome   |
+| ----------------------------------- | ---------------------------------------------------------------------------------------- | --------- |
+| Enable Banking over GoCardless      | GoCardless stopped accepting EU users July 2025, Enable Banking is free for personal use | - Pending |
+| PWA over native mobile app          | Lower complexity, single codebase, sufficient for personal use                           | - Pending |
+| Fork latest stable release          | Stable base, avoid unreleased breaking changes                                           | - Pending |
+| Docker Desktop on local machine     | Simple setup, no ongoing hosting costs                                                   | - Pending |
+| In-app or cron-based scheduled sync | Architecture-dependent, decide during research                                           | - Pending |
 
 ---
-*Last updated: 2026-02-18 after initialization*
+
+_Last updated: 2026-02-18 after initialization_

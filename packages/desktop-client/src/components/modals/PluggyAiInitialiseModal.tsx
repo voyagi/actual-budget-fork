@@ -131,10 +131,12 @@ export const PluggyAiInitialiseModal = ({
                   id="client-id-field"
                   type="text"
                   value={clientId}
+                  aria-describedby={!isValid ? 'pluggyai-error' : undefined}
                   onChangeValue={value => {
                     setClientId(value);
                     setIsValid(true);
                   }}
+                  required
                 />
               </InitialFocus>
             </FormField>
@@ -152,6 +154,7 @@ export const PluggyAiInitialiseModal = ({
                   setClientSecret(value);
                   setIsValid(true);
                 }}
+                required
               />
             </FormField>
 
@@ -169,10 +172,15 @@ export const PluggyAiInitialiseModal = ({
                   setItemIds(value);
                   setIsValid(true);
                 }}
+                required
               />
             </FormField>
 
-            {!isValid && <Error>{error}</Error>}
+            {!isValid && (
+              <Error id="pluggyai-error" role="alert">
+                {error}
+              </Error>
+            )}
           </View>
 
           <ModalButtons>

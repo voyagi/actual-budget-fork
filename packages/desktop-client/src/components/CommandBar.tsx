@@ -289,6 +289,11 @@ export function CommandBar() {
           backgroundColor: 'transparent',
           color: 'var(--color-pageText)',
           outline: 'none',
+          '&:focus-visible': {
+            outline: '2px solid',
+            outlineColor: 'var(--color-pageTextPositive)',
+            outlineOffset: '-2px',
+          },
           '&::placeholder': {
             color: 'var(--color-pageTextSubdued)',
           },

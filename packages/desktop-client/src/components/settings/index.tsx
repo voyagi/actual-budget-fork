@@ -1,9 +1,17 @@
-import React, { useEffect } from 'react';
-import type { ReactNode } from 'react';
+import { useEffect } from 'react';
+import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 import { Button } from '@actual-app/components/button';
 import { useResponsive } from '@actual-app/components/hooks/useResponsive';
+import {
+  SvgCheveronRight,
+  SvgCreditCard,
+  SvgStoreFront,
+  SvgTag,
+  SvgTuning,
+} from '@actual-app/components/icons/v1';
+import { SvgCalendar3 } from '@actual-app/components/icons/v2';
 import { Input } from '@actual-app/components/input';
 import { Text } from '@actual-app/components/text';
 import { theme } from '@actual-app/components/theme';
@@ -41,8 +49,10 @@ import { Page } from '@desktop-client/components/Page';
 import { useServerVersion } from '@desktop-client/components/ServerContext';
 import { useFeatureFlag } from '@desktop-client/hooks/useFeatureFlag';
 import { useGlobalPref } from '@desktop-client/hooks/useGlobalPref';
+import { useIsTestEnv } from '@desktop-client/hooks/useIsTestEnv';
 import { useMetadataPref } from '@desktop-client/hooks/useMetadataPref';
 import { useSyncedPref } from '@desktop-client/hooks/useSyncedPref';
+import { useSyncServerStatus } from '@desktop-client/hooks/useSyncServerStatus';
 import { loadPrefs } from '@desktop-client/prefs/prefsSlice';
 import { useDispatch, useSelector } from '@desktop-client/redux';
 
@@ -171,6 +181,77 @@ function AdvancedAbout() {
   );
 }
 
+function ToolsNavLink({
+  to,
+  icon: Icon,
+  label,
+}: {
+  to: string;
+  icon: ComponentType<{ width: number; height: number; style?: CSSProperties }>;
+  label: string;
+}) {
+  return (
+    <Link
+      variant="internal"
+      to={to}
+      style={{
+        textDecoration: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '14px 4px',
+        borderBottom: `1px solid ${theme.tableBorder}`,
+        color: theme.pageText,
+        borderRadius: 8,
+        transition: 'background-color 0.15s ease-out',
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <Icon width={20} height={20} aria-hidden="true" />
+        <Text style={{ fontSize: 15, fontWeight: 500 }}>{label}</Text>
+      </View>
+      <SvgCheveronRight
+        width={16}
+        height={16}
+        aria-hidden="true"
+        style={{ color: theme.pageTextSubdued }}
+      />
+    </Link>
+  );
+}
+
+function ToolsNavigation() {
+  const { t } = useTranslation();
+  const syncServerStatus = useSyncServerStatus();
+  const isTestEnv = useIsTestEnv();
+  const isUsingServer = syncServerStatus !== 'no-server' || isTestEnv;
+
+  return (
+    <Setting>
+      <Text style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>
+        <Trans>Tools</Trans>
+      </Text>
+      <View>
+        <ToolsNavLink
+          to="/schedules"
+          icon={SvgCalendar3}
+          label={t('Schedules')}
+        />
+        <ToolsNavLink to="/payees" icon={SvgStoreFront} label={t('Payees')} />
+        <ToolsNavLink to="/rules" icon={SvgTuning} label={t('Rules')} />
+        {isUsingServer && (
+          <ToolsNavLink
+            to="/bank-sync"
+            icon={SvgCreditCard}
+            label={t('Bank Sync')}
+          />
+        )}
+        <ToolsNavLink to="/tags" icon={SvgTag} label={t('Tags')} />
+      </View>
+    </Setting>
+  );
+}
+
 export function Settings() {
   const { t } = useTranslation();
   const [floatingSidebar] = useGlobalPref('floatingSidebar');
@@ -241,6 +322,7 @@ export function Settings() {
             </Button>
           </View>
         )}
+        {isNarrowWidth && <ToolsNavigation />}
         <About />
         <ThemeSettings />
         <FormatSettings />

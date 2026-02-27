@@ -90,20 +90,26 @@ export const SimpleFinInitialiseModal = ({
                 id="token-field"
                 type="password"
                 value={token}
+                autoFocus
+                aria-describedby={!isValid ? 'simplefin-error' : undefined}
                 onChangeValue={value => {
                   setToken(value);
                   setIsValid(true);
                 }}
+                required
               />
             </FormField>
 
-            {!isValid && <Error>{error}</Error>}
+            {!isValid && (
+              <Error id="simplefin-error" role="alert">
+                {error}
+              </Error>
+            )}
           </View>
 
           <ModalButtons>
             <ButtonWithLoading
               variant="primary"
-              autoFocus
               isLoading={isLoading}
               onPress={() => {
                 onSubmit(close);

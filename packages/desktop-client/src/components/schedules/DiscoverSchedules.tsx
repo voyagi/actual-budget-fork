@@ -69,12 +69,24 @@ function DiscoverSchedulesTable({
       <Row
         height={ROW_HEIGHT}
         inset={15}
+        role="button"
+        tabIndex={0}
         onClick={e => {
           dispatchSelected({
             type: 'select',
             id: item.id,
             isRangeSelect: e.shiftKey,
           });
+        }}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            dispatchSelected({
+              type: 'select',
+              id: item.id,
+              isRangeSelect: false,
+            });
+          }
         }}
         style={{
           borderColor: selected ? theme.tableBorderSelected : theme.tableBorder,

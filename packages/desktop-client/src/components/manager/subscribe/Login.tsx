@@ -67,11 +67,13 @@ function PasswordLogin({ setError, dispatch }) {
     >
       <BigInput
         autoFocus
+        aria-label={t('Password')}
         placeholder={t('Password')}
         type="password"
         onChangeValue={setPassword}
         style={{ flex: 1 }}
         onEnter={onSubmitPassword}
+        required
       />
       <ButtonWithLoading
         variant="primary"
@@ -159,12 +161,14 @@ function OpenIdLogin({ setError }) {
             {warnMasterCreation && askForPassword && (
               <ResponsiveInput
                 autoFocus
+                aria-label={t('Server password')}
                 placeholder={t('Enter server password')}
                 type="password"
                 onChangeValue={newValue => {
                   setFirstLoginPassword(newValue);
                 }}
                 style={{ flex: 1 }}
+                required
               />
             )}
             <Button
@@ -434,6 +438,7 @@ export function Login() {
 
       {error && (
         <Text
+          role="alert"
           style={{
             marginTop: 20,
             color: theme.errorText,

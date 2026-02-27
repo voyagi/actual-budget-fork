@@ -104,8 +104,11 @@ export function groupBy<T, K extends keyof T>(data: T[], field: K) {
   for (let i = 0; i < data.length; i++) {
     const item = data[i];
     const key = item[field];
-    const existing = res.get(key) || [];
-    res.set(key, existing.concat([item]));
+
+    const items = res.get(key) || [];
+    items.push(item);
+
+    res.set(key, items);
   }
   return res;
 }

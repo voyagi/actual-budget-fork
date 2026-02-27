@@ -112,9 +112,9 @@ export type ApiHandlers = {
 
   'api/transaction-update': (arg: {
     id: TransactionEntity['id'];
+    // TODO: Replace `fields` with `Partial<TransactionEntity>` once the
+    // handler validates that only known TransactionEntity keys are passed.
     fields;
-    // TODO: fix me
-    // fields: Partial<TransactionEntity>;
   }) => Promise<Awaited<ReturnType<typeof batchUpdateTransactions>>['updated']>;
 
   'api/transaction-delete': (arg: {
@@ -136,9 +136,9 @@ export type ApiHandlers = {
 
   'api/account-update': (arg: {
     id: APIAccountEntity['id'];
+    // TODO: Replace `fields` with `Partial<APIAccountEntity>` once the
+    // handler validates that only known APIAccountEntity keys are passed.
     fields;
-    // TODO: fix me
-    // fields: Partial<APIAccountEntity>;
   }) => Promise<void>;
 
   'api/account-close': (arg: {
@@ -168,9 +168,9 @@ export type ApiHandlers = {
 
   'api/category-group-update': (arg: {
     id: APICategoryGroupEntity['id'];
+    // TODO: Replace `fields` with `Partial<APICategoryGroupEntity>` once the
+    // handler validates that only known APICategoryGroupEntity keys are passed.
     fields;
-    // TODO: fix me
-    // fields: Partial<APICategoryGroupEntity>;
   }) => Promise<void>;
 
   'api/category-group-delete': (arg: {
@@ -184,9 +184,9 @@ export type ApiHandlers = {
 
   'api/category-update': (arg: {
     id: APICategoryEntity['id'];
+    // TODO: Replace `fields` with `Partial<APICategoryEntity>` once the
+    // handler validates that only known APICategoryEntity keys are passed.
     fields;
-    // TODO: fix me
-    // fields: Partial<APICategoryEntity>;
   }) => Promise<void>;
 
   'api/category-delete': (arg: {
@@ -204,9 +204,9 @@ export type ApiHandlers = {
 
   'api/payee-update': (arg: {
     id: APIPayeeEntity['id'];
+    // TODO: Replace `fields` with `Partial<APIPayeeEntity>` once the
+    // handler validates that only known APIPayeeEntity keys are passed.
     fields;
-    // TODO: fix me
-    // fields: Partial<APIPayeeEntity>;
   }) => Promise<void>;
 
   'api/payee-delete': (arg: { id: APIPayeeEntity['id'] }) => Promise<void>;

@@ -305,7 +305,9 @@ export async function upload() {
           ? { 'X-ACTUAL-ENCRYPT-META': JSON.stringify(uploadMeta) }
           : null),
         ...(groupId ? { 'X-ACTUAL-GROUP-ID': groupId } : null),
-        // TODO: fix me
+        // TODO: fetchJSON's headers parameter should be typed as
+        // Record<string, string> so spreading conditional objects does not
+        // require an explicit `any` cast here.
         // oxlint-disable-next-line typescript/no-explicit-any
       },
       body: uploadContent,

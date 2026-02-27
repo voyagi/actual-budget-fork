@@ -1,3 +1,6 @@
+// NOTE: Parallel type definitions exist in sync-server at
+// src/app-gocardless/gocardless-node.types.ts
+// Keep in sync when modifying. Consolidation tracked as tech debt.
 export type GoCardlessToken = {
   id: string;
   accounts: SyncServerGoCardlessAccount[];

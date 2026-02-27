@@ -33,8 +33,10 @@ runs:
         path: ${{ format('{0}/**/node_modules', inputs.working-directory) }}
         key: yarn-v1-${{ runner.os }}-${{ steps.get-node.outputs.version }}-${{ hashFiles(format('{0}/**/yarn.lock', inputs.working-directory)) }}
     - name: Ensure Lage cache directory exists
-      run: mkdir -p ${{ format('{0}/.lage', inputs.working-directory) }}
+      run: mkdir -p "${WORKING_DIR}/.lage"
       shell: bash
+      env:
+        WORKING_DIR: ${{ inputs.working-directory }}
     - name: Cache Lage
       uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       with:
