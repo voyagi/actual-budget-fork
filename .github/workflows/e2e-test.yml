@@ -23,8 +23,6 @@ concurrency:
 
 jobs:
   functional:
-    # Disabled: Playwright browser version mismatch in CI (pre-existing upstream issue)
-    if: false
     name: Functional (shard ${{ matrix.shard }}/5)
     runs-on: ubuntu-latest
     strategy:
@@ -52,7 +50,6 @@ jobs:
           overwrite: true
 
   functional-desktop-app:
-    if: false
     name: Functional Desktop App
     runs-on: ubuntu-latest
     container:
@@ -77,7 +74,6 @@ jobs:
           overwrite: true
 
   vrt:
-    if: false
     name: Visual regression (shard ${{ matrix.shard }}/5)
     runs-on: ubuntu-latest
     strategy:
@@ -106,7 +102,6 @@ jobs:
     name: Merge VRT Reports
     needs: vrt
     runs-on: ubuntu-latest
-    if: false
     container:
       image: mcr.microsoft.com/playwright:v1.57.0-jammy
     steps:
