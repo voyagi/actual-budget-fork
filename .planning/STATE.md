@@ -1,7 +1,7 @@
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-02-19
-**Session:** Plan 02-04 execution complete (Enable Banking desktop UI, category rules)
+**Last updated:** 2026-02-28
+**Session:** Non-GSD maintenance complete (tech debt, CI, upstream merge)
 
 ## Project Reference
 
@@ -134,11 +134,44 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 - Cloudflare Tunnel vs LAN-only + Caddy: which approach for phone HTTPS access? (Determines Phase 5 approach for iOS)
 - Docker volume path behavior on WSL2 Docker Desktop: verify named volume behavior on setup day
 
+## Non-GSD Work (Feb 25-28)
+
+Work outside the Enable Banking GSD roadmap that affects the codebase:
+
+### Buddy Redesign (Feb 25-26)
+
+- Dark theme with warm-neutral + purple accent palette
+- New color palette defined in `palette.ts`
+- UI component styling updates across desktop-client
+
+### Tech Debt Remediation / Upstream Merge (Feb 26-27)
+
+- Merged upstream actualbudget/actual into fork (PR #2)
+- Replaced prettier/eslint with oxfmt/oxlint (matching upstream)
+- Added knip dead-code workflow (informational, `--no-exit-code`)
+- Restored local `titleFirst`/`boolToInt` utils that upstream removed
+- Squash-merged via `chore/techdebt-remediation` branch
+
+### CI Fixes (Feb 27-28)
+
+- Split lint job: oxfmt `--check` (hard fail) + oxlint (informational `|| true`)
+- E2E tests remain disabled (`if: false`) due to pre-existing Playwright browser version mismatch (`chromium_headless_shell-1208` missing from `mcr.microsoft.com/playwright:v1.57.0-jammy`)
+- Autofix workflow disabled (pre-existing upstream oxlint errors)
+- Repo made public, GitHub Actions unlimited free minutes
+- Branch protection configured on master
+- Merged Dependabot PRs for dependency updates
+
+### Repository State Changes
+
+- Repo visibility: private -> public
+- CI status: lint, typecheck, test, validate-cli all passing (PR #6 green)
+- Formatter: oxfmt (not prettier, despite `.prettierrc` still existing)
+
 ## Session Continuity
 
-**Stopped at:** Completed 02-04-PLAN.md
+**Stopped at:** Non-GSD maintenance complete
 
-**Next action:** Phase 2 Plan 02-04 complete. Continue with 02-05 (scheduler and background sync).
+**Next action:** Phase 2 Plan 02-05 (scheduler and background sync). GSD roadmap unchanged.
 
 **Phase 1 verification results (automated):**
 
