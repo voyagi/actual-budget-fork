@@ -126,7 +126,7 @@ export async function seedCategoryRules() {
     ]);
 
     await db.run(
-      'INSERT OR IGNORE INTO rules (id, stage, conditionsOp, conditions, actions, tombstone) VALUES (?, null, ?, ?, ?, 0)',
+      'INSERT OR IGNORE INTO rules (id, stage, conditions_op, conditions, actions, tombstone) VALUES (?, null, ?, ?, ?, 0)',
       [uuidv4(), 'and', conditions, actions],
     );
   }

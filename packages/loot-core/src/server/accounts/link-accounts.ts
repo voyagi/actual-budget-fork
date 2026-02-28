@@ -269,7 +269,6 @@ export async function linkEnableBankingAccount({
       id: newAccountId,
       account_id: account.account_id,
       bank: bank.id,
-      bankName: account.institution,
       account_sync_source: 'enableBanking',
     });
   } else {
@@ -280,9 +279,6 @@ export async function linkEnableBankingAccount({
       name: account.name,
       official_name: account.official_name,
       bank: bank.id,
-      bankName: account.institution,
-      bankId: sessionId,
-      balance_current: account.balance,
       mask: account.mask,
       offbudget: offBudget ? 1 : 0,
       account_sync_source: 'enableBanking',
@@ -307,7 +303,8 @@ export async function linkEnableBankingAccount({
     },
   );
 
-  if (!mapRes || mapRes.status !== 'ok') {
+  // post() already throws on non-ok status. Check for error codes in data.
+  if (mapRes?.error_code) {
     throw new Error(
       'Failed to update account map for ' +
         account.account_id +

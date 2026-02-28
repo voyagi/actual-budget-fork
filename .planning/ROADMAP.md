@@ -73,14 +73,14 @@ Plans:
 
 **Research flag:** Standard patterns. `processBankSyncDownload()` and `reconcileTransactions()` are shared loot-core APIs documented in the GoCardless adapter. No additional research needed.
 
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 
 Plans:
 
 - [x] 02-01-PLAN.md - Sync-server data layer: DB migrations, service extensions, transaction normalizer
 - [x] 02-02-PLAN.md - loot-core types and sync extension: AccountSyncSource, server-config, download function
-- [ ] 02-03-PLAN.md - Sync-server routes and loot-core IPC handlers: OAuth flow, transactions, sync status
-- [ ] 02-04-PLAN.md - Desktop UI and category rules: OAuth modal, account linking, EU merchant rules
+- [x] 02-03-PLAN.md - Sync-server routes and loot-core IPC handlers: OAuth flow, transactions, sync status
+- [x] 02-04-PLAN.md - Desktop UI and category rules: OAuth modal, account linking, EU merchant rules
 - [ ] 02-05-PLAN.md - Docker rebuild and end-to-end sandbox verification (human checkpoint)
 
 ### Phase 3: Automation and Consent Lifecycle
