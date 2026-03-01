@@ -353,7 +353,7 @@ app.post(
       );
       const session = mapRow
         ? db.first(
-            'SELECT valid_until, aspsp_name FROM eb_sessions WHERE id = ?',
+            'SELECT valid_until, aspsp_name, aspsp_country FROM eb_sessions WHERE id = ?',
             [mapRow.session_id],
           )
         : null;
@@ -378,10 +378,35 @@ app.post(
         consent_valid_until: session?.valid_until ?? null,
         session_id: mapRow?.session_id ?? null,
         aspsp_name: session?.aspsp_name ?? null,
+        aspsp_country: session?.aspsp_country ?? null,
       };
     }
 
     res.send({ status: 'ok', data: { statuses } });
+  }),
+);
+
+// Updates eb_account_map to point all accounts from an old session to the new
+// one after a re-authorization flow. Called by the client modal once the OAuth
+// callback has completed and a new session_id is available.
+app.post(
+  '/reauth-complete',
+  handleError(async (req, res) => {
+    const { newSessionId, oldSessionId } = req.body || {};
+    if (!newSessionId || !oldSessionId) {
+      return res.send({ status: 'ok', data: { error_code: 'INVALID_INPUT' } });
+    }
+    const db = getAccountDb();
+
+    // Update all account map rows from old session to new session
+    db.mutate(
+      'UPDATE eb_account_map SET session_id = ? WHERE session_id = ?',
+      [newSessionId, oldSessionId],
+    );
+
+    console.log(`[eb] Re-auth complete: session ${oldSessionId} -> ${newSessionId}`);
+
+    res.send({ status: 'ok', data: {} });
   }),
 );
 

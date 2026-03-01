@@ -485,6 +485,38 @@ describe('app-enablebanking routes', () => {
       expect(entry.consent_valid_until).toBeNull();
       expect(entry.session_id).toBeNull();
     });
+
+    it('returns aspsp_country alongside aspsp_name and consent_valid_until for EB-linked accounts', async () => {
+      // Seed a session with all consent fields
+      seedSession({
+        sessionId: 'sess-with-country',
+        state: 'csrf-country',
+        aspspName: 'Nordea',
+        aspspCountry: 'FI',
+      });
+      const db = getAccountDb();
+      // Link the account in the map
+      db.mutate(
+        'UPDATE eb_account_map SET actual_account_id = ? WHERE eb_account_uid = ?',
+        ['actual-country-acct', 'eb-uid-1'],
+      );
+      // Set valid_until on the session
+      db.mutate('UPDATE eb_sessions SET valid_until = ? WHERE id = ?', [
+        '2026-12-31T00:00:00Z',
+        'sess-with-country',
+      ]);
+
+      const res = await request(app)
+        .post('/sync-status')
+        .set('x-actual-token', 'valid-token')
+        .send({ accountIds: ['actual-country-acct'] });
+
+      const entry = res.body.data.statuses['actual-country-acct'];
+      expect(entry.aspsp_name).toBe('Nordea');
+      expect(entry.aspsp_country).toBe('FI');
+      expect(entry.consent_valid_until).toBe('2026-12-31T00:00:00Z');
+      expect(entry.session_id).toBe('sess-with-country');
+    });
   });
 
   describe('POST /update-account-map', () => {
@@ -531,6 +563,59 @@ describe('app-enablebanking routes', () => {
         .send({ ebAccountUid: 'nonexistent', actualAccountId: 'actual-1' });
 
       expect(res.body.data.error_code).toBe('ACCOUNT_NOT_FOUND');
+    });
+  });
+
+  describe('POST /reauth-complete', () => {
+    it('updates session_id in eb_account_map from old to new session', async () => {
+      // Seed an old session with two accounts
+      seedSession({
+        sessionId: 'old-session',
+        state: 'csrf-old',
+        accounts: [
+          { uid: 'eb-uid-1', account_id: { iban: 'FI111111' }, name: 'Acct 1' },
+          { uid: 'eb-uid-2', account_id: { iban: 'FI222222' }, name: 'Acct 2' },
+        ],
+      });
+      // Seed the new session row (from the re-auth OAuth flow)
+      seedSession({ sessionId: 'new-session', state: 'csrf-new', accounts: [] });
+
+      const res = await request(app)
+        .post('/reauth-complete')
+        .set('x-actual-token', 'valid-token')
+        .send({ newSessionId: 'new-session', oldSessionId: 'old-session' });
+
+      expect(res.body.status).toBe('ok');
+
+      const db = getAccountDb();
+      const maps = db.all(
+        "SELECT session_id FROM eb_account_map WHERE session_id = 'new-session'",
+      );
+      // Both accounts should now point to the new session
+      expect(maps).toHaveLength(2);
+
+      const oldMaps = db.all(
+        "SELECT session_id FROM eb_account_map WHERE session_id = 'old-session'",
+      );
+      expect(oldMaps).toHaveLength(0);
+    });
+
+    it('returns INVALID_INPUT when newSessionId is missing', async () => {
+      const res = await request(app)
+        .post('/reauth-complete')
+        .set('x-actual-token', 'valid-token')
+        .send({ oldSessionId: 'old-session' });
+
+      expect(res.body.data.error_code).toBe('INVALID_INPUT');
+    });
+
+    it('returns INVALID_INPUT when oldSessionId is missing', async () => {
+      const res = await request(app)
+        .post('/reauth-complete')
+        .set('x-actual-token', 'valid-token')
+        .send({ newSessionId: 'new-session' });
+
+      expect(res.body.data.error_code).toBe('INVALID_INPUT');
     });
   });
 });

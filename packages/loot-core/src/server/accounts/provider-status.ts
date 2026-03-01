@@ -437,3 +437,30 @@ export async function enableBankingSyncStatus({
     },
   );
 }
+
+export async function enableBankingReauthComplete({
+  newSessionId,
+  oldSessionId,
+}: {
+  newSessionId: string;
+  oldSessionId: string;
+}) {
+  const userToken = await asyncStorage.getItem('user-token');
+
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('Failed to get server config.');
+  }
+
+  return post(
+    serverConfig.ENABLEBANKING_SERVER + '/reauth-complete',
+    { newSessionId, oldSessionId },
+    {
+      'X-ACTUAL-TOKEN': userToken,
+    },
+  );
+}

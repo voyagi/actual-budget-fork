@@ -35,6 +35,7 @@ import {
   enableBankingCreateAuth,
   enableBankingGetBanks,
   enableBankingPollSession,
+  enableBankingReauthComplete,
   enableBankingStatus,
   enableBankingSyncStatus,
   getGoCardlessBanks,
@@ -89,6 +90,7 @@ export type AccountHandlers = {
   'enablebanking-poll-session': typeof enableBankingPollSession;
   'enablebanking-accounts-link': typeof linkEnableBankingAccount;
   'enablebanking-sync-status': typeof enableBankingSyncStatus;
+  'enablebanking-reauth-complete': typeof enableBankingReauthComplete;
 };
 
 async function updateAccount({
@@ -586,3 +588,4 @@ app.method('enablebanking-create-auth', enableBankingCreateAuth);
 app.method('enablebanking-poll-session', enableBankingPollSession);
 app.method('enablebanking-accounts-link', linkEnableBankingAccount);
 app.method('enablebanking-sync-status', enableBankingSyncStatus);
+app.method('enablebanking-reauth-complete', enableBankingReauthComplete);

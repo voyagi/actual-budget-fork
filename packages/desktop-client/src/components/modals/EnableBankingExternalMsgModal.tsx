@@ -8,7 +8,7 @@ import { Paragraph } from '@actual-app/components/paragraph';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
-import { sendCatch } from 'loot-core/platform/client/connection';
+import { send, sendCatch } from 'loot-core/platform/client/connection';
 
 import { Error, Warning } from '@desktop-client/components/alerts';
 import { Autocomplete } from '@desktop-client/components/autocomplete/Autocomplete';
@@ -26,6 +26,13 @@ import { useEnableBankingStatus } from '@desktop-client/hooks/useEnableBankingSt
 import { useGlobalPref } from '@desktop-client/hooks/useGlobalPref';
 import { pushModal } from '@desktop-client/modals/modalsSlice';
 import { useDispatch } from '@desktop-client/redux';
+
+type EnableBankingExternalMsgModalProps = {
+  sessionId?: string;
+  aspspName?: string;
+  aspspCountry?: string;
+  reauth?: boolean;
+};
 
 type AspspOption = {
   id: string;
@@ -96,7 +103,12 @@ function renderError(
   );
 }
 
-export function EnableBankingExternalMsgModal() {
+export function EnableBankingExternalMsgModal({
+  sessionId,
+  aspspName,
+  aspspCountry,
+  reauth = false,
+}: EnableBankingExternalMsgModalProps = {}) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [language] = useGlobalPref('language');
@@ -112,10 +124,15 @@ export function EnableBankingExternalMsgModal() {
 
   const [waiting, setWaiting] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
+  // In re-auth mode, pre-fill bank and country from props to bypass the picker.
+  // This ensures onJump() doesn't silently abort due to the guard
+  // `if (!selectedBankId || !country) return`.
   const [selectedBankId, setSelectedBankId] = useState<string | undefined>(
-    undefined,
+    reauth ? aspspName : undefined,
   );
-  const [country, setCountry] = useState<string | undefined>(detectedCountry);
+  const [country, setCountry] = useState<string | undefined>(
+    reauth ? aspspCountry : detectedCountry,
+  );
   const [error, setError] = useState<{
     code: 'unknown' | 'timeout';
     message?: string;
@@ -139,20 +156,46 @@ export function EnableBankingExternalMsgModal() {
     try {
       const { accounts } = await authorizeEnableBank(selectedBankId, country);
 
-      dispatch(
-        pushModal({
-          modal: {
-            name: 'select-linked-accounts',
-            options: {
-              externalAccounts: accounts,
-              syncSource: 'enableBanking',
-            },
-          },
-        }),
-      );
+      if (reauth) {
+        // Re-auth mode: swap the old session for the new one in eb_account_map.
+        // The new session_id is shared by all accounts from the same OAuth flow.
+        if (!accounts || accounts.length === 0) {
+          setError({
+            code: 'unknown',
+            message: t('No accounts returned from re-authorization'),
+          });
+          setWaiting(null);
+          return;
+        }
 
-      setWaiting(null);
-      setSuccess(true);
+        const newSessionId = accounts[0].session_id;
+
+        await send('enablebanking-reauth-complete', {
+          newSessionId,
+          oldSessionId: sessionId,
+        });
+
+        // Trigger an immediate sync so the user sees fresh data after re-auth.
+        send('accounts-bank-sync', { ids: [] }).catch(() => {});
+
+        setWaiting(null);
+        setSuccess(true);
+      } else {
+        dispatch(
+          pushModal({
+            modal: {
+              name: 'select-linked-accounts',
+              options: {
+                externalAccounts: accounts,
+                syncSource: 'enableBanking',
+              },
+            },
+          }),
+        );
+
+        setWaiting(null);
+        setSuccess(true);
+      }
     } catch (err: unknown) {
       const message =
         err instanceof globalThis.Error ? err.message : String(err);
@@ -260,70 +303,102 @@ export function EnableBankingExternalMsgModal() {
       {({ state: { close } }) => (
         <>
           <ModalHeader
-            title={t('Link Your Bank (Enable Banking)')}
+            title={
+              reauth
+                ? t('Re-authorize Bank (Enable Banking)')
+                : t('Link Your Bank (Enable Banking)')
+            }
             rightContent={<ModalCloseButton onPress={close} />}
           />
           <View>
             <Paragraph style={{ fontSize: 15 }}>
-              <Trans>
-                To link your bank account, you will be redirected to a new page
-                where your bank will ask you to authorise access. Enable Banking
-                will not be able to withdraw funds from your accounts.
-              </Trans>
+              {reauth ? (
+                <Trans>
+                  To re-authorize your bank connection, you will be redirected
+                  to a new page where your bank will ask you to authorise access
+                  again. Your existing accounts and transaction history will not
+                  be affected.
+                </Trans>
+              ) : (
+                <Trans>
+                  To link your bank account, you will be redirected to a new
+                  page where your bank will ask you to authorise access. Enable
+                  Banking will not be able to withdraw funds from your accounts.
+                </Trans>
+              )}
             </Paragraph>
 
-            {error && renderError(error, t)}
-
-            {waiting || isConfigurationLoading ? (
-              <View style={{ alignItems: 'center', marginTop: 15 }}>
-                <AnimatedLoading
-                  color={theme.pageTextDark}
-                  style={{ width: 20, height: 20 }}
-                />
-                <View style={{ marginTop: 10, color: theme.pageText }}>
-                  {isConfigurationLoading
-                    ? t('Checking Enable Banking configuration...')
-                    : waiting === 'browser'
-                      ? t('Waiting for bank authorisation...')
-                      : null}
-                </View>
-
-                {waiting === 'browser' && (
-                  <Link
-                    variant="text"
-                    onClick={onJump}
-                    style={{ marginTop: 10 }}
-                  >
-                    (
-                    <Trans>
-                      Bank authorisation not opening in a new tab? Click here
-                    </Trans>
-                    )
-                  </Link>
-                )}
-              </View>
-            ) : success ? (
-              <Paragraph
-                style={{ marginTop: 10, color: theme.noticeTextLight }}
-              >
-                <Trans>
-                  Success! Your bank accounts are being linked. Please close
-                  this window.
-                </Trans>
-              </Paragraph>
-            ) : isConfigured ? (
-              renderLinkButton()
-            ) : (
+            {error && (
               <>
-                <Paragraph style={{ color: theme.errorText }}>
-                  <Trans>
-                    Enable Banking integration has not yet been configured.
-                    Please contact your server administrator to set up the
-                    Enable Banking API credentials.
-                  </Trans>
-                </Paragraph>
+                {renderError(error, t)}
+                {reauth && (
+                  <View style={{ alignItems: 'center', marginTop: 10 }}>
+                    <Button variant="primary" onPress={onJump}>
+                      <Trans>Try again</Trans>
+                    </Button>
+                  </View>
+                )}
               </>
             )}
+
+            {!error &&
+              (waiting || isConfigurationLoading ? (
+                <View style={{ alignItems: 'center', marginTop: 15 }}>
+                  <AnimatedLoading
+                    color={theme.pageTextDark}
+                    style={{ width: 20, height: 20 }}
+                  />
+                  <View style={{ marginTop: 10, color: theme.pageText }}>
+                    {isConfigurationLoading
+                      ? t('Checking Enable Banking configuration...')
+                      : waiting === 'browser'
+                        ? t('Waiting for bank authorisation...')
+                        : null}
+                  </View>
+
+                  {waiting === 'browser' && (
+                    <Link
+                      variant="text"
+                      onClick={onJump}
+                      style={{ marginTop: 10 }}
+                    >
+                      (
+                      <Trans>
+                        Bank authorisation not opening in a new tab? Click here
+                      </Trans>
+                      )
+                    </Link>
+                  )}
+                </View>
+              ) : success ? (
+                <Paragraph
+                  style={{ marginTop: 10, color: theme.noticeTextLight }}
+                >
+                  {reauth ? (
+                    <Trans>
+                      Success! Your bank connection has been re-authorized.
+                      Syncing fresh transactions now. Please close this window.
+                    </Trans>
+                  ) : (
+                    <Trans>
+                      Success! Your bank accounts are being linked. Please close
+                      this window.
+                    </Trans>
+                  )}
+                </Paragraph>
+              ) : isConfigured ? (
+                renderLinkButton()
+              ) : (
+                <>
+                  <Paragraph style={{ color: theme.errorText }}>
+                    <Trans>
+                      Enable Banking integration has not yet been configured.
+                      Please contact your server administrator to set up the
+                      Enable Banking API credentials.
+                    </Trans>
+                  </Paragraph>
+                </>
+              ))}
           </View>
         </>
       )}
