@@ -324,9 +324,16 @@ app.post(
   }),
 );
 
-// Returns the last sync log entry per requested account (by Actual UUID).
-// The UI has Actual UUIDs from the account entity - these match eb_sync_log
-// because /transactions logs actual_account_id (populated at link time).
+// Returns the last sync log entry per requested account (by Actual UUID),
+// extended with consent expiry and session identity from eb_sessions so
+// the client can display banner warnings and the per-account consent column.
+//
+// Never-synced accounts (null lastEntry) receive explicit defaults so the
+// client always sees all expected fields rather than undefined.
+//
+// Note: synced_at is stored as a Unix epoch INTEGER in eb_sync_log.
+// It is converted to an ISO string here so the client receives a consistent
+// format regardless of how the value was written.
 app.post(
   '/sync-status',
   handleError(async (req, res) => {
@@ -339,7 +346,39 @@ app.post(
         'SELECT * FROM eb_sync_log WHERE actual_account_id = ? ORDER BY id DESC LIMIT 1',
         [accountId],
       );
-      statuses[accountId] = lastEntry;
+
+      const mapRow = db.first(
+        'SELECT session_id FROM eb_account_map WHERE actual_account_id = ?',
+        [accountId],
+      );
+      const session = mapRow
+        ? db.first(
+            'SELECT valid_until, aspsp_name FROM eb_sessions WHERE id = ?',
+            [mapRow.session_id],
+          )
+        : null;
+
+      // Null-guard: when lastEntry is null (account linked but never synced),
+      // provide explicit defaults so the client always sees all expected fields.
+      const defaultEntry = {
+        synced_at: null,
+        status: null,
+        error_message: null,
+        transactions_added: 0,
+        transactions_updated: 0,
+        error_code: null,
+      };
+
+      statuses[accountId] = {
+        ...(lastEntry ?? defaultEntry),
+        // Convert synced_at from Unix epoch integer to ISO string for the client.
+        synced_at: lastEntry?.synced_at
+          ? new Date(Number(lastEntry.synced_at) * 1000).toISOString()
+          : null,
+        consent_valid_until: session?.valid_until ?? null,
+        session_id: mapRow?.session_id ?? null,
+        aspsp_name: session?.aspsp_name ?? null,
+      };
     }
 
     res.send({ status: 'ok', data: { statuses } });

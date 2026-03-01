@@ -470,13 +470,20 @@ describe('app-enablebanking routes', () => {
       expect(res.body.data.statuses.a1.status).toBe('error');
     });
 
-    it('returns null for accounts with no sync log', async () => {
+    it('returns explicit defaults for accounts with no sync log', async () => {
       const res = await request(app)
         .post('/sync-status')
         .set('x-actual-token', 'valid-token')
         .send({ accountIds: ['nonexistent'] });
 
-      expect(res.body.data.statuses.nonexistent).toBeNull();
+      // Never-synced accounts return explicit defaults (not null) so the client
+      // always sees all expected fields rather than undefined.
+      const entry = res.body.data.statuses.nonexistent;
+      expect(entry).not.toBeNull();
+      expect(entry.synced_at).toBeNull();
+      expect(entry.status).toBeNull();
+      expect(entry.consent_valid_until).toBeNull();
+      expect(entry.session_id).toBeNull();
     });
   });
 
