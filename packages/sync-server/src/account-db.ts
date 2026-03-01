@@ -19,6 +19,16 @@ export function getAccountDb(): WrappedDatabase {
   return _accountDb;
 }
 
+// Closes and resets the singleton database handle. Used in test teardown so
+// the SQLite file is not locked when migrations attempt to delete it (EBUSY
+// on Windows occurs when better-sqlite3 holds an open file handle during rm).
+export function closeAccountDb(): void {
+  if (_accountDb !== undefined) {
+    _accountDb.close();
+    _accountDb = undefined;
+  }
+}
+
 export function needsBootstrap(): boolean {
   const accountDb = getAccountDb();
   const rows = accountDb.all('SELECT * FROM auth');
