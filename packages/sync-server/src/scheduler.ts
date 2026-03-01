@@ -64,7 +64,7 @@ async function runScheduledSync(): Promise<void> {
 
   const db = getAccountDb();
 
-  const rows: AccountRow[] = db.all(
+  const rows = db.all(
     `SELECT m.actual_account_id, m.eb_account_uid, m.session_id,
             s.valid_until, s.aspsp_name
      FROM eb_account_map m
@@ -72,7 +72,7 @@ async function runScheduledSync(): Promise<void> {
      WHERE m.actual_account_id IS NOT NULL
      ORDER BY m.session_id`,
     [],
-  );
+  ) as unknown as AccountRow[];
 
   // Group accounts by session so consent expiry is checked once per bank
   // connection and one session's failure doesn't block other users.
