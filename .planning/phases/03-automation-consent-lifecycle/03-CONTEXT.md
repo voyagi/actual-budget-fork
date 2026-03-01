@@ -15,31 +15,48 @@ Transactions sync automatically four times per day without user action, consent 
 
 ### Scheduling
 - Server-side cron using node-cron on the sync-server, running every 6 hours (4x/day at fixed intervals)
-- When a scheduled sync fails for one account, continue syncing remaining accounts and log the error
+- When a scheduled sync fails for one account, retry once after a short delay, then continue syncing remaining accounts
 - Log sync runs to both console (visible in docker logs) and database (eb_sync_log entries)
+- Scheduler must be multi-user aware: group accounts by user/budget, sync each user's accounts independently
+- Scheduler is opt-in via `ENABLE_AUTO_SYNC=true/false` env var (off by default, good for development)
+- No overlap guard needed: trust that syncs finish quickly, EB API handles idempotently
+- Claude's discretion: whether to skip accounts with expired consent before attempting sync
 
 ### Consent Expiry UX
 - Graduated placement: global banner at top of app for urgent warnings (< 7 days), plus subtle indicator on account list page always
 - Banner is dismissible but re-appears daily until consent is renewed
 - Graduated urgency colors: 14-7 days informational/yellow, under 7 days warning/orange, expired error/red
 - When multiple banks have expiring consent, show a single grouped banner ("2 bank connections expiring soon") with a link to the account list
+- Banner shows specific details: bank name and exact expiry date (e.g. "ING Bank connection expires March 15")
+- When consent has fully expired: red error banner + disable automatic sync for that bank (don't waste API calls)
+- Account list shows a "Consent expires" date column per bank, always visible (not just when expiring)
+- Claude's discretion: how to fetch consent expiry data for the client (new endpoint vs extending sync-status)
 
 ### Re-authorization Flow
 - Reuse the existing OAuth popup flow (create-auth, bank redirect, callback) for re-authorization
 - After successful re-authorization, immediately trigger a sync so user sees fresh data confirming re-auth worked
 - Preserve existing account links automatically by matching EB account UIDs from the new session to existing eb_account_map rows (no re-linking needed)
-- On re-authorization failure (user cancels at bank or bank rejects), show a brief toast error and keep the consent warning banner visible
+- On re-authorization failure, show an error modal with a "Try again" button (more prominent than a toast)
+- Prefer extending/renewing the existing EB session if the API supports it, fall back to creating a new session if not
+- Re-auth button appears in both the global consent banner AND on individual account rows in the bank sync page
+- Re-authorization is per-session: one OAuth flow renews all accounts under that bank session
+- Consent expiry notifications are in-app only (no email/push notifications)
 
 ### Sync-on-Open
 - When app opens and last sync is 6+ hours old, run a background sync with a subtle indicator (small spinner or "Syncing..." text near account names), non-blocking so user can navigate freely
-- 6-hour threshold is hardcoded (not configurable in settings)
+- Sync all linked accounts in parallel on open (not just EB, all bank sync providers: GoCardless, SimpleFin, etc.)
+- 6-hour threshold is configurable in settings (default 6 hours)
 - If sync-on-open fails, show a non-blocking toast ("Sync failed - check your connection") and let user continue with stale data
+- Combined check on app open: check last sync age AND consent expiry in one pass, show both syncing indicator and consent banner if needed
+- Last-synced timestamp updates only after sync completes successfully (no "syncing now" replacement during)
+- Also trigger sync on window/tab focus if the stale threshold has passed (catches long idle sessions)
 
 ### Claude's Discretion
-- Whether sync-on-open syncs accounts in parallel or sequentially (consider EB API rate limits)
 - Loading skeleton/spinner design details
 - Exact banner component styling and animation
 - Console log format and verbosity level
+- Data flow for consent expiry to client (new endpoint vs extending sync-status)
+- Whether to skip expired-consent accounts in scheduler or let API error
 
 </decisions>
 
