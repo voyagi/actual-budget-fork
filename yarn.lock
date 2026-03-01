@@ -123,6 +123,7 @@ __metadata:
     jws: "npm:^4.0.1"
     loot-core: "workspace:^"
     migrate: "npm:^2.1.0"
+    node-cron: "npm:4.2.1"
     nodemon: "npm:^3.1.14"
     nordigen-node: "npm:^1.4.1"
     openid-client: "npm:^6.1.0"
@@ -21367,6 +21368,13 @@ __metadata:
   dependencies:
     semver: "npm:^7.3.5"
   checksum: 10/78a3056873a8a15c4b0f3ed1f64d294fe4e0ba4a4d08b5f9cfa06a8586ff9bc7c942ef17648171b000d7343d216b7e07dc4787d6ba98307f0a2de9ef13722f3a
+  languageName: node
+  linkType: hard
+
+"node-cron@npm:4.2.1":
+  version: 4.2.1
+  resolution: "node-cron@npm:4.2.1"
+  checksum: 10/7550b105e4aab772597383e24c4b31b6d5dc9604c96bcefb1a4b8a94a432b8835e3010a0dfc1d34492edfb64a2e55f334cf3ad0a76901b72de11ef506cbfd31a
   languageName: node
   linkType: hard
 

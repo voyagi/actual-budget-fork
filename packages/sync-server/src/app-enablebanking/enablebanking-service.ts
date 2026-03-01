@@ -87,15 +87,28 @@ export async function getAspsps(country) {
 // [eb] Initiates an OAuth authorization flow for the given bank.
 // Returns { url, state } where url is the bank's redirect URL and state is an
 // opaque token stored in eb_sessions for CSRF protection.
+//
+// Consent validity is read from the bank's maximum_consent_validity field
+// (returned by GET /aspsps) so each bank gets the longest allowed duration.
+// Falls back to 180 days when the field is absent or the ASPSP is not found.
 export async function createAuth({
   aspspName,
   aspspCountry,
   redirectUrl,
   state,
 }) {
-  const validUntil = new Date(
-    Date.now() + 90 * 24 * 60 * 60 * 1000,
-  ).toISOString();
+  // IMPORTANT: getAspsps() returns response.data (already unwrapped).
+  // Access pattern: (await getAspsps(country)).aspsps — NOT .data.aspsps.
+  const aspspsBody = await getAspsps(aspspCountry);
+  const aspsps = aspspsBody.aspsps || [];
+  const aspsp = aspsps.find(a => a.name === aspspName);
+  if (!aspsp) {
+    console.warn(
+      `[createAuth] ASPSP "${aspspName}" not found in ${aspspCountry} listing (${aspsps.length} entries). Falling back to 180-day consent validity.`,
+    );
+  }
+  const maxValiditySeconds = aspsp?.maximum_consent_validity ?? (180 * 24 * 3600);
+  const validUntil = new Date(Date.now() + maxValiditySeconds * 1000).toISOString();
 
   const response = await ebRequest('POST', '/auth', {
     aspsp: { name: aspspName, country: aspspCountry },

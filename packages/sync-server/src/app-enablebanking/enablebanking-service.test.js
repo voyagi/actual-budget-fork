@@ -169,6 +169,12 @@ describe('enablebanking-service', () => {
 
   describe('createAuth', () => {
     it('calls POST /auth with correct payload', async () => {
+      // createAuth now calls getAspsps() first (GET /aspsps) then POST /auth.
+      // Mock GET /aspsps response (first call - consumed by getAspsps() internally)
+      axios.mockResolvedValueOnce({
+        data: { aspsps: [{ name: 'Nordea', country: 'FI', maximum_consent_validity: 7776000 }] },
+      });
+      // Mock POST /auth response (second call)
       axios.mockResolvedValueOnce({
         data: { url: 'https://bank.example/auth', state: 'test-state' },
       });
@@ -180,7 +186,8 @@ describe('enablebanking-service', () => {
         state: 'test-state',
       });
 
-      expect(axios).toHaveBeenCalledWith(
+      expect(axios).toHaveBeenCalledTimes(2);
+      expect(axios.mock.calls[1][0]).toEqual(
         expect.objectContaining({
           method: 'POST',
           data: expect.objectContaining({
@@ -194,8 +201,12 @@ describe('enablebanking-service', () => {
       expect(result.url).toBe('https://bank.example/auth');
     });
 
-    it('sets valid_until to ~90 days in the future', async () => {
+    it('sets valid_until based on ASPSP maximum_consent_validity', async () => {
       const before = Date.now();
+      // 7776000 seconds = 90 days
+      axios.mockResolvedValueOnce({
+        data: { aspsps: [{ name: 'Test', country: 'FI', maximum_consent_validity: 7776000 }] },
+      });
       axios.mockResolvedValueOnce({ data: {} });
 
       await createAuth({
@@ -205,11 +216,51 @@ describe('enablebanking-service', () => {
         state: 's',
       });
 
-      const callData = axios.mock.calls[0][0].data;
+      const callData = axios.mock.calls[1][0].data;
       const validUntil = new Date(callData.access.valid_until).getTime();
       const ninetyDays = 90 * 24 * 60 * 60 * 1000;
       expect(validUntil).toBeGreaterThanOrEqual(before + ninetyDays - 1000);
       expect(validUntil).toBeLessThanOrEqual(before + ninetyDays + 5000);
+    });
+
+    it('falls back to 180-day validity when ASPSP has no maximum_consent_validity', async () => {
+      const before = Date.now();
+      axios.mockResolvedValueOnce({
+        data: { aspsps: [{ name: 'TestBank', country: 'FI' }] },
+      });
+      axios.mockResolvedValueOnce({ data: {} });
+
+      await createAuth({
+        aspspName: 'TestBank',
+        aspspCountry: 'FI',
+        redirectUrl: 'http://localhost/callback',
+        state: 's',
+      });
+
+      const callData = axios.mock.calls[1][0].data;
+      const validUntil = new Date(callData.access.valid_until).getTime();
+      const oneEightyDays = 180 * 24 * 60 * 60 * 1000;
+      expect(validUntil).toBeGreaterThanOrEqual(before + oneEightyDays - 5000);
+    });
+
+    it('warns when ASPSP name not found in listing', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      axios.mockResolvedValueOnce({
+        data: { aspsps: [{ name: 'OtherBank', country: 'FI' }] },
+      });
+      axios.mockResolvedValueOnce({ data: {} });
+
+      await createAuth({
+        aspspName: 'Nordea',
+        aspspCountry: 'FI',
+        redirectUrl: 'http://localhost/callback',
+        state: 's',
+      });
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('ASPSP "Nordea" not found'),
+      );
+      warnSpy.mockRestore();
     });
   });
 

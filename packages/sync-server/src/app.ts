@@ -9,6 +9,7 @@ import rateLimit from 'express-rate-limit';
 import { bootstrap } from './account-db';
 import * as accountApp from './app-account';
 import * as adminApp from './app-admin';
+import { startScheduler } from './scheduler.js';
 import * as corsApp from './app-cors-proxy';
 import * as enableBankingApp from './app-enablebanking/app-enablebanking.js';
 import * as goCardlessApp from './app-gocardless/app-gocardless';
@@ -210,4 +211,9 @@ export async function run() {
       sendServerStartedMessage();
     });
   }
+
+  // [eb] Start the 6-hour auto-sync scheduler. No-op when ENABLE_AUTO_SYNC != 'true'.
+  // EB database tables are ready because runMigrations() runs at module load time
+  // in app-enablebanking.ts (before any route or scheduler code).
+  startScheduler();
 }

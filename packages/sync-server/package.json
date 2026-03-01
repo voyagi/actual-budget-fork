@@ -45,6 +45,7 @@
     "jws": "^4.0.1",
     "loot-core": "workspace:^",
     "migrate": "^2.1.0",
+    "node-cron": "4.2.1",
     "nordigen-node": "^1.4.1",
     "openid-client": "^6.1.0",
     "pluggy-sdk": "^0.83.0",
