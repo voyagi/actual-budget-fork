@@ -9,10 +9,12 @@ import { View } from '@actual-app/components/view';
 import { css } from '@emotion/css';
 import { useQuery } from '@tanstack/react-query';
 
+import { send } from 'loot-core/platform/client/connection';
 import * as undo from 'loot-core/platform/client/undo';
 
 import { UserAccessPage } from './admin/UserAccess/UserAccessPage';
 import { BankSyncStatus } from './BankSyncStatus';
+import { ConsentExpiryBanner } from './ConsentExpiryBanner';
 import { CommandBar } from './CommandBar';
 import { GlobalKeys } from './GlobalKeys';
 import { MobileBankSyncAccountEditPage } from './mobile/banksync/MobileBankSyncAccountEditPage';
@@ -105,14 +107,74 @@ export function FinancesApp() {
   const [lastUsedVersion, setLastUsedVersion] = useLocalPref(
     'flags.updateNotificationShownForVersion',
   );
+  const [staleThresholdHours] = useLocalPref('bankSyncStaleThresholdHours');
 
   const multiuserEnabled = useMultiuserEnabled();
+
+  // Mutex for background bank sync triggered by visibility/focus changes.
+  // useRef persists across re-renders and effect re-creations (the effect
+  // depends on staleThresholdHours, so a closure-scoped let would reset to
+  // false whenever the pref changes, allowing concurrent syncs).
+  const isSyncingRef = useRef(false);
 
   const init = useEffectEvent(() => {
     // Wait a little bit to make sure the sync button will get the
     // sync start event. This can be improved later.
     setTimeout(async () => {
       await dispatch(sync());
+
+      // After CRDT sync completes, trigger background bank sync for accounts
+      // whose last sync is older than the configurable stale threshold.
+      // CRDT sync must finish first to avoid SQLite race conditions.
+      try {
+        const allAccounts = await send('accounts-get');
+        const linkedAccounts = (allAccounts || []).filter(
+          a => a.account_sync_source && a.account_id,
+        );
+        const effectiveThreshold = (staleThresholdHours ?? 6) * 60 * 60 * 1000;
+        const now = Date.now();
+
+        // Fetch consent status in one call to filter out expired-consent
+        // accounts before syncing (avoids wasted Enable Banking API calls).
+        const linkedIds = linkedAccounts.map(a => a.id);
+        // CRITICAL: send() returns { statuses } directly. post() already
+        // unwraps responseData.data, so there is NO extra .data layer.
+        const syncStatuses =
+          linkedIds.length > 0
+            ? ((await send('enablebanking-sync-status', { accountIds: linkedIds }))?.statuses ?? {})
+            : {};
+
+        const staleIds = linkedAccounts
+          .filter(a => {
+            const ebStatus = syncStatuses[a.id];
+            // Skip EB accounts with expired consent
+            if (
+              ebStatus?.consent_valid_until &&
+              new Date(ebStatus.consent_valid_until) <= new Date()
+            ) {
+              return false;
+            }
+            const lastSync = a.last_sync ? parseInt(a.last_sync, 10) : 0;
+            return now - lastSync > effectiveThreshold;
+          })
+          .map(a => a.id);
+
+        if (staleIds.length > 0) {
+          send('accounts-bank-sync', { ids: staleIds }).catch(() => {
+            dispatch(
+              addNotification({
+                notification: {
+                  id: 'sync-on-open-failed',
+                  type: 'warning',
+                  message: t('Background sync failed - check your connection'),
+                },
+              }),
+            );
+          });
+        }
+      } catch {
+        // Non-blocking: don't surface errors from the sync-on-open check
+      }
     }, 100);
 
     async function run() {
@@ -142,6 +204,63 @@ export function FinancesApp() {
   });
 
   useEffect(() => init(), []);
+
+  // Bank sync check on visibility/focus changes. Lives in FinancesApp (not
+  // App.tsx) because useLocalPref requires budget context - App.tsx renders
+  // before any budget is loaded, so useLocalPref there produces the wrong
+  // localStorage key ('undefined-bankSyncStaleThresholdHours').
+  useEffect(() => {
+    async function onVisibilityOrFocus() {
+      // App.tsx already fires dispatch(sync()) (CRDT sync) on visibilitychange.
+      // The two handlers run concurrently - this is acceptable because bank
+      // sync reads from the EB API (not local DB) and is idempotent.
+      if (document.hidden || isSyncingRef.current) return;
+      isSyncingRef.current = true;
+      try {
+        const allAccounts = await send('accounts-get');
+        const linkedAccounts = (allAccounts || []).filter(
+          a => a.account_sync_source && a.account_id,
+        );
+        const effectiveThreshold = (staleThresholdHours ?? 6) * 60 * 60 * 1000;
+        const now = Date.now();
+
+        const linkedIds = linkedAccounts.map(a => a.id);
+        const syncStatuses =
+          linkedIds.length > 0
+            ? ((await send('enablebanking-sync-status', { accountIds: linkedIds }))?.statuses ?? {})
+            : {};
+
+        const staleIds = linkedAccounts
+          .filter(a => {
+            const ebStatus = syncStatuses[a.id];
+            if (
+              ebStatus?.consent_valid_until &&
+              new Date(ebStatus.consent_valid_until) <= new Date()
+            ) {
+              return false;
+            }
+            const lastSync = a.last_sync ? parseInt(a.last_sync, 10) : 0;
+            return now - lastSync > effectiveThreshold;
+          })
+          .map(a => a.id);
+
+        if (staleIds.length > 0) {
+          send('accounts-bank-sync', { ids: staleIds }).catch(() => {});
+        }
+      } catch {
+        // Non-blocking: don't surface errors from background sync check
+      } finally {
+        isSyncingRef.current = false;
+      }
+    }
+
+    window.addEventListener('visibilitychange', onVisibilityOrFocus);
+    window.addEventListener('focus', onVisibilityOrFocus);
+    return () => {
+      window.removeEventListener('visibilitychange', onVisibilityOrFocus);
+      window.removeEventListener('focus', onVisibilityOrFocus);
+    };
+  }, [staleThresholdHours]);
 
   useEffect(() => {
     dispatch(getLatestAppVersion());
@@ -266,6 +385,7 @@ export function FinancesApp() {
                 }}
               />
               <Notifications />
+              <ConsentExpiryBanner />
               <BankSyncStatus />
 
               <RouteErrorBoundary>

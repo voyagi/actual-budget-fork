@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 
+import { useQuery } from '@tanstack/react-query';
+
 import { send } from 'loot-core/platform/client/connection';
+
+import { accountQueries } from '@desktop-client/accounts';
 
 import { useSyncServerStatus } from './useSyncServerStatus';
 
@@ -48,6 +52,7 @@ type SyncStatusEntry = {
   consent_valid_until: string | null; // NEW - ISO date from eb_sessions.valid_until
   session_id: string | null;          // NEW - for re-auth grouping
   aspsp_name: string | null;          // NEW - for banner display (e.g. "ING Bank connection expires March 15")
+  aspsp_country: string | null;       // NEW - for re-auth createAuth country param
 };
 
 /**
@@ -103,4 +108,99 @@ export function useEnableBankingSyncStatus(accountIds: string[]) {
     statuses,
     isLoading,
   };
+}
+
+export type ConsentUrgency = 'expired' | 'urgent' | 'soon' | 'ok';
+
+export type ConsentSession = {
+  sessionId: string;
+  aspspName: string | null;
+  aspspCountry: string | null;
+  validUntil: string | null;
+  urgency: ConsentUrgency;
+  accountIds: string[];
+};
+
+/**
+ * Self-contained hook that:
+ * - Fetches all accounts via accountQueries.list()
+ * - Filters to Enable Banking-linked accounts
+ * - Groups by session_id with urgency calculation
+ * - Returns sessions sorted by urgency (expired first)
+ *
+ * Urgency thresholds:
+ * - expired: consent_valid_until is in the past
+ * - urgent: within 7 days
+ * - soon: within 14 days
+ * - ok: more than 14 days away (not returned in sessions array)
+ */
+export function useConsentExpiry(): {
+  sessions: ConsentSession[];
+  worstUrgency: ConsentUrgency;
+} {
+  const { data: accounts } = useQuery(accountQueries.list());
+
+  const ebAccountIds = (accounts ?? [])
+    .filter(a => a.account_sync_source === 'enableBanking')
+    .map(a => a.id);
+
+  const { statuses } = useEnableBankingSyncStatus(ebAccountIds);
+
+  // Group accounts by session_id
+  const sessionMap = new Map<string, ConsentSession>();
+
+  for (const accountId of ebAccountIds) {
+    const entry = statuses[accountId];
+    if (!entry || !entry.session_id) continue;
+
+    const sessionId = entry.session_id;
+
+    if (!sessionMap.has(sessionId)) {
+      const validUntil = entry.consent_valid_until;
+      let urgency: ConsentUrgency = 'ok';
+
+      if (validUntil) {
+        const now = new Date();
+        const expiry = new Date(validUntil);
+        const msUntilExpiry = expiry.getTime() - now.getTime();
+        const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
+
+        if (daysUntilExpiry <= 0) {
+          urgency = 'expired';
+        } else if (daysUntilExpiry <= 7) {
+          urgency = 'urgent';
+        } else if (daysUntilExpiry <= 14) {
+          urgency = 'soon';
+        }
+      }
+
+      sessionMap.set(sessionId, {
+        sessionId,
+        aspspName: entry.aspsp_name,
+        aspspCountry: entry.aspsp_country,
+        validUntil: entry.consent_valid_until,
+        urgency,
+        accountIds: [],
+      });
+    }
+
+    sessionMap.get(sessionId)!.accountIds.push(accountId);
+  }
+
+  // Only surface sessions that need attention (not 'ok')
+  const urgencyOrder: Record<ConsentUrgency, number> = {
+    expired: 0,
+    urgent: 1,
+    soon: 2,
+    ok: 3,
+  };
+
+  const sessions = Array.from(sessionMap.values())
+    .filter(s => s.urgency !== 'ok')
+    .sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]);
+
+  const worstUrgency: ConsentUrgency =
+    sessions.length > 0 ? sessions[0].urgency : 'ok';
+
+  return { sessions, worstUrgency };
 }

@@ -127,6 +127,12 @@ export type Modal =
     }
   | {
       name: 'enablebanking-external-msg';
+      options?: {
+        sessionId?: string;
+        aspspName?: string;
+        aspspCountry?: string;
+        reauth?: boolean;
+      };
     }
   | {
       name: 'delete-budget';

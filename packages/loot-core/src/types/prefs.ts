@@ -86,6 +86,7 @@ export type LocalPrefs = Partial<{
   reportsViewLabel: boolean;
   sidebarWidth: number;
   'mobile.showSpentColumn': boolean;
+  bankSyncStaleThresholdHours: number;
 }>;
 
 export type Theme =
