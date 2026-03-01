@@ -1,7 +1,22 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: Between phases
+stopped_at: Phase 3 context gathered
+last_updated: "2026-03-01T12:21:46.301Z"
+progress:
+  total_phases: 3
+  completed_phases: 2
+  total_plans: 9
+  completed_plans: 9
+  percent: 85
+---
+
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-02-28
-**Session:** Non-GSD maintenance complete (tech debt, CI, upstream merge)
+**Last updated:** 2026-03-01
+**Session:** Phase 02 complete (E2E verification via browser automation)
 
 ## Project Reference
 
@@ -9,23 +24,23 @@
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 2 Plans 01-04 complete. Full Enable Banking UI and backend pipeline done. Scheduler (02-05) is the final plan in Phase 2.
+**Current Focus:** Phase 2 complete. All 5 plans verified (E2E browser automation). 3 transaction-dependent tests deferred to Phase 5 (sandbox returns 0 transactions). Ready for Phase 3.
 
 ## Current Position
 
-**Active Phase:** 02-bank-sync-pipeline
-**Active Plan:** 02-04 complete (desktop UI, OAuth flow, account linking, category rules)
-**Status:** In progress
+**Active Phase:** 03-automation-and-consent (next)
+**Active Plan:** None (Phase 3 not yet planned)
+**Status:** Between phases
 
 **Progress:**
-[████████░░] 82%
-Phase 1: Foundation and API Client [4/4] Awaiting human checkpoint
-Phase 2: Bank Sync Pipeline [4/5] In progress (02-01 through 02-04 complete)
+[████████░░] 85%
+Phase 1: Foundation and API Client [4/4] Complete
+Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [ ] Not started
 Phase 4: PWA Completion [ ] Not started
 Phase 5: Infrastructure and Production[ ] Not started
 
-Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
+Overall: 2/5 phases complete (10 plans complete across phases 1 and 2)
 
 ## Performance Metrics
 
@@ -33,9 +48,10 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 | ------------------------------- | ----- | ------- | -------- |
 | Phases total                    | 5     |
 | Requirements mapped             | 29/29 |
-| Plans complete                  | 9     |
-| Phases complete                 | 0     |
+| Plans complete                  | 10    |
+| Phases complete                 | 2     |
 | Phase 02-bank-sync-pipeline P04 | 45min | 3 tasks | 11 files |
+| Phase 02-bank-sync-pipeline P05 | 90min | 2 tasks | 0 files (verification only) |
 
 ## Key Decisions Recorded
 
@@ -169,18 +185,20 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Non-GSD maintenance complete
+**Stopped at:** Phase 3 context gathered
 
-**Next action:** Phase 2 Plan 02-05 (scheduler and background sync). GSD roadmap unchanged.
+**Next action:** Plan Phase 3 (Automation and Consent). Run `/gsd:plan-phase` when ready.
 
-**Phase 1 verification results (automated):**
+**Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
-- `GET /enablebanking/test-auth` returns `{"status":"ok","data":{"configured":true}}`
-- RSA key persists across `docker compose down && docker compose up -d`
-- Container logs clean, server healthy at http://localhost:5006
-- All 11 custom commits tagged `[eb]` (FOUND-04 fully satisfied after Plan 01-04 gap closure)
+- OAuth redirect chain: Actual -> EB consent -> Mock ASPSP sign-in (PASS)
+- Account linking: 2 accounts linked in eb_account_map (PASS)
+- Multi-session: 6 sessions across Mock ASPSP + OP (PASS)
+- Sync logging: eb_sync_log entries with ok status (PASS)
+- Balance display: UI shows 5,349.37 for MEIKÄLÄINEN MATTI (PASS)
+- Dedup/pending-booked/category rules: DEFERRED (sandbox returns 0 transactions, verified in code)
 
-**Sandbox credentials ready:**
+**Sandbox credentials:**
 
 - Application ID: `b619fe6c-ab92-4de5-a7c2-901c0e0ef580`
 - Private key: `secrets/eb_private.pem` (PKCS#8, RS256)
@@ -190,4 +208,4 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 ---
 
 _State initialized: 2026-02-18_
-_Last updated: 2026-02-19 - Plan 02-04 complete (Enable Banking desktop UI, OAuth flow, category rules)_
+_Last updated: 2026-03-01 - Phase 02 complete (E2E verification via browser automation, 5/8 tests PASS, 3 deferred to Phase 5)_
