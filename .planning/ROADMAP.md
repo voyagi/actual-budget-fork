@@ -100,7 +100,12 @@ Plans:
 5. User clicks the re-authorization banner, completes the OAuth redirect at their bank, and sync resumes without data loss
 6. The consent expiry date stored for each bank reflects the `maximum_consent_validity` from the Enable Banking session response - not a hardcoded 90 or 180 day value
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+
+- [ ] 03-01-PLAN.md - Server-side cron scheduler, createAuth consent ceiling fix, extended /sync-status with consent data
+- [ ] 03-02-PLAN.md - Client-side consent expiry banner, re-authorization flow, sync-on-open behavior
 
 ### Phase 4: PWA Completion
 
