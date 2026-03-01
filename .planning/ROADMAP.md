@@ -19,7 +19,7 @@
 | ----------------------------------- | -------------- | ------------------------- | --------- |
 | 1. Foundation and API Client        | 4/4            | Awaiting human checkpoint | -         |
 | 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
-| 3. Automation and Consent Lifecycle | 0/?            | Not started               | -         |
+| 3. Automation and Consent Lifecycle | 1/2 | In Progress|  |
 | 4. PWA Completion                   | 0/?            | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 
@@ -100,7 +100,7 @@ Plans:
 5. User clicks the re-authorization banner, completes the OAuth redirect at their bank, and sync resumes without data loss
 6. The consent expiry date stored for each bank reflects the `maximum_consent_validity` from the Enable Banking session response - not a hardcoded 90 or 180 day value
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 

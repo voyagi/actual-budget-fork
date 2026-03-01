@@ -28,12 +28,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Automation
 
-- [ ] **AUTO-01**: Transactions sync automatically 4x/day without manual intervention (node-cron scheduler)
-- [ ] **AUTO-02**: Consent expiry date is stored from Enable Banking session response (reads `maximum_consent_validity` per bank, not hardcoded)
+- [x] **AUTO-01**: Transactions sync automatically 4x/day without manual intervention (node-cron scheduler)
+- [x] **AUTO-02**: Consent expiry date is stored from Enable Banking session response (reads `maximum_consent_validity` per bank, not hardcoded)
 - [ ] **AUTO-03**: User sees an in-app banner when PSD2 consent is within 14 days of expiry
 - [ ] **AUTO-04**: User can re-authorize bank access through the consent renewal flow (reuses OAuth redirect)
 - [ ] **AUTO-05**: App triggers a sync on open if last sync was more than 6 hours ago
-- [ ] **AUTO-06**: User can see per-account last-synced timestamp in the account view
+- [x] **AUTO-06**: User can see per-account last-synced timestamp in the account view
 
 ### PWA
 
@@ -106,12 +106,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SYNC-07     | Phase 2 | Complete |
 | SYNC-08     | Phase 2 | Complete |
 | SYNC-09     | Phase 2 | Pending  |
-| AUTO-01     | Phase 3 | Pending  |
-| AUTO-02     | Phase 3 | Pending  |
+| AUTO-01     | Phase 3 | Complete |
+| AUTO-02     | Phase 3 | Complete |
 | AUTO-03     | Phase 3 | Pending  |
 | AUTO-04     | Phase 3 | Pending  |
 | AUTO-05     | Phase 3 | Pending  |
-| AUTO-06     | Phase 3 | Pending  |
+| AUTO-06     | Phase 3 | Complete |
 | PWA-01      | Phase 4 | Pending  |
 | PWA-02      | Phase 4 | Pending  |
 | PWA-03      | Phase 4 | Pending  |
