@@ -3,20 +3,20 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Between phases
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-01T16:43:00.322Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-01T18:00:00.000Z"
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 10
-  percent: 91
+  completed_plans: 11
+  percent: 100
 ---
 
 # Project State: Actual Budget Fork - Enable Banking Edition
 
 **Last updated:** 2026-03-01
-**Session:** Phase 03 Plan 01 complete (scheduler, consent fix, sync-status extension)
+**Session:** Phase 03 Plan 02 complete (ConsentExpiryBanner, re-auth flow, sync-on-open)
 
 ## Project Reference
 
@@ -24,35 +24,36 @@ progress:
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 3 active. Plan 03-01 complete (AUTO-01, AUTO-02, AUTO-06). Plan 03-02 next (consent expiry UI, ConsentExpiryBanner).
+**Current Focus:** Phase 3 complete. Plans 03-01 (AUTO-01, AUTO-02, AUTO-06) and 03-02 (AUTO-03, AUTO-04, AUTO-05) done. Phase 3 automation and consent lifecycle fully delivered.
 
 ## Current Position
 
 **Active Phase:** 03-automation-consent-lifecycle
-**Active Plan:** 03-02 (next)
-**Status:** In Progress
+**Active Plan:** Complete (all 2 plans done)
+**Status:** Phase Complete
 
 **Progress:**
-[█████████░] 91%
+[██████████] 100%
 Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
-Phase 3: Automation and Consent [1/2] In Progress
+Phase 3: Automation and Consent [2/2] Complete
 Phase 4: PWA Completion [ ] Not started
 Phase 5: Infrastructure and Production[ ] Not started
 
-Overall: 2/5 phases complete, Phase 3 in progress (11 plans complete across all phases)
+Overall: 3/5 phases complete (11 plans complete across all phases)
 
 ## Performance Metrics
 
-| Metric                          | Value |
-| ------------------------------- | ----- | ------- | -------- |
-| Phases total                    | 5     |
-| Requirements mapped             | 29/29 |
-| Plans complete                  | 10    |
-| Phases complete                 | 2     |
-| Phase 02-bank-sync-pipeline P04 | 45min | 3 tasks | 11 files |
-| Phase 02-bank-sync-pipeline P05 | 90min | 2 tasks | 0 files (verification only) |
-| Phase 03-automation-consent-lifecycle P01 | 70 | 2 tasks | 10 files |
+| Metric                                    | Value | Tasks   | Files    |
+| ----------------------------------------- | ----- | ------- | -------- |
+| Phases total                              | 5     |         |          |
+| Requirements mapped                       | 29/29 |         |          |
+| Plans complete                            | 11    |         |          |
+| Phases complete                           | 3     |         |          |
+| Phase 02-bank-sync-pipeline P04           | 45min | 3 tasks | 11 files |
+| Phase 02-bank-sync-pipeline P05           | 90min | 2 tasks | 0 files (verification only) |
+| Phase 03-automation-consent-lifecycle P01 | 70min | 2 tasks | 10 files |
+| Phase 03-automation-consent-lifecycle P02 | 65min | 2 tasks | 12 files |
 
 ## Key Decisions Recorded
 
@@ -90,6 +91,10 @@ Overall: 2/5 phases complete, Phase 3 in progress (11 plans complete across all 
 | Session-grouped sync loop: consent expiry checked once per bank connection              | One OAuth session = one bank connection = one group. Prevents per-account consent checks (wasteful) and ensures one session's failure doesn't block other users.                             | 2026-03-01 |
 | RateLimitError breaks session account loop without sleep                               | 429 applies to entire API connection. Sleeping 30s per account compounds to N*30s (e.g. 50 accounts = 25 minutes). Break immediately and continue to next session.                          | 2026-03-01 |
 | closeAccountDb() + EBUSY catch in vitest teardown                                     | Windows holds SQLite file handle during teardown rm. closeAccountDb() releases the singleton; EBUSY catch handles race where worker-held handle lingers. Test results recorded before teardown. | 2026-03-01 |
+| useConsentExpiry() hook encapsulates all data fetching and grouping; banner is pure render | Self-contained hook pattern avoids prop drilling: banner needs no props, just drop into JSX. Groups by session_id server-side concept makes sessions the unit of re-auth. | 2026-03-01 |
+| useRef mutex for isSyncingRef in FinancesApp visibility/focus handler (not closure-scoped let) | useRef survives effect re-creation when staleThresholdHours dep changes. Closure-scoped let would be reset on each re-creation, allowing concurrent syncs during dep-triggered effect restart. | 2026-03-01 |
+| Re-auth modal pre-fills country and bank from props to bypass picker and prevent silent abort | onJump() has guard: if (!selectedBankId || !country) return. In re-auth mode, user should not see the picker - pre-fill ensures the guard is satisfied immediately. | 2026-03-01 |
+| aspsp_country added as Plan 01 amendment to /sync-status (trivial JOIN column addition) | No schema change needed - eb_sessions already has aspsp_country column. Required for re-auth createAuth() country param from client side. | 2026-03-01 |
 
 ## Critical Pitfalls (from research)
 
@@ -190,9 +195,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Completed 03-01-PLAN.md
+**Stopped at:** Completed 03-02-PLAN.md
 
-**Next action:** Plan Phase 3 (Automation and Consent). Run `/gsd:plan-phase` when ready.
+**Next action:** Phase 3 complete. Phases 4 (PWA Completion) and 5 (Infrastructure and Production) remain. Run `/gsd:plan-phase` when ready to plan Phase 4.
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 

@@ -9,7 +9,7 @@
 
 - [-] **Phase 1: Foundation and API Client** - Fork is running, Enable Banking API client is sandbox-tested with RSA auth
 - [ ] **Phase 2: Bank Sync Pipeline** - Full manual sync works end-to-end: OAuth, account linking, transaction import, balance update
-- [ ] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI
+- [x] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI (completed 2026-03-01)
 - [ ] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support
 - [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and smoke-tested
 
@@ -19,7 +19,7 @@
 | ----------------------------------- | -------------- | ------------------------- | --------- |
 | 1. Foundation and API Client        | 4/4            | Awaiting human checkpoint | -         |
 | 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
-| 3. Automation and Consent Lifecycle | 1/2 | In Progress|  |
+| 3. Automation and Consent Lifecycle | 2/2 | Complete   | 2026-03-01 |
 | 4. PWA Completion                   | 0/?            | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 
@@ -100,7 +100,7 @@ Plans:
 5. User clicks the re-authorization banner, completes the OAuth redirect at their bank, and sync resumes without data loss
 6. The consent expiry date stored for each bank reflects the `maximum_consent_validity` from the Enable Banking session response - not a hardcoded 90 or 180 day value
 
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 
