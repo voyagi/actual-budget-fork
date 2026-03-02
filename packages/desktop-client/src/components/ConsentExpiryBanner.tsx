@@ -91,12 +91,13 @@ function SessionBanner({ session, onDismiss }: SessionBannerProps) {
     session.urgency === 'expired' ? (
       <span>
         <strong>{bankName}</strong>{' '}
-        <Trans>bank connection expired - re-authorize to resume automatic sync</Trans>
+        <Trans>
+          bank connection expired - re-authorize to resume automatic sync
+        </Trans>
       </span>
     ) : (
       <span>
-        <strong>{bankName}</strong>{' '}
-        <Trans>bank connection expires</Trans>{' '}
+        <strong>{bankName}</strong> <Trans>bank connection expires</Trans>{' '}
         <strong>{expiryDate}</strong>
       </span>
     );
@@ -188,13 +189,17 @@ function MultiSessionBanner({ sessions, onDismiss }: MultiSessionBannerProps) {
   const messageText =
     expiredCount > 0 ? (
       <span>
-        <strong>{count} <Trans>bank connections</Trans></strong>{' '}
-        <Trans>need re-authorization</Trans>
-        {' '}({expiredCount} <Trans>expired</Trans>)
+        <strong>
+          {count} <Trans>bank connections</Trans>
+        </strong>{' '}
+        <Trans>need re-authorization</Trans> ({expiredCount}{' '}
+        <Trans>expired</Trans>)
       </span>
     ) : (
       <span>
-        <strong>{count} <Trans>bank connections</Trans></strong>{' '}
+        <strong>
+          {count} <Trans>bank connections</Trans>
+        </strong>{' '}
         <Trans>are expiring soon</Trans>
       </span>
     );

@@ -10,8 +10,11 @@ import {
   getBalances,
   getTransactions,
 } from './app-enablebanking/enablebanking-service.js';
+import {
+  RateLimitError,
+  SessionExpiredError,
+} from './app-enablebanking/errors.js';
 import { normalizeTransaction } from './app-enablebanking/utils.js';
-import { RateLimitError, SessionExpiredError } from './app-enablebanking/errors.js';
 
 type AccountRow = {
   actual_account_id: string;

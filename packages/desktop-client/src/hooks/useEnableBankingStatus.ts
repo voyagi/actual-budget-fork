@@ -4,9 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 
 import { send } from 'loot-core/platform/client/connection';
 
-import { accountQueries } from '@desktop-client/accounts';
-
 import { useSyncServerStatus } from './useSyncServerStatus';
+
+import { accountQueries } from '@desktop-client/accounts';
 
 /**
  * Checks whether Enable Banking is configured on the sync-server
@@ -43,16 +43,16 @@ export function useEnableBankingStatus() {
 }
 
 type SyncStatusEntry = {
-  synced_at: string | null;           // ISO string (server converts from epoch integer)
+  synced_at: string | null; // ISO string (server converts from epoch integer)
   status: string;
   error_message: string | null;
-  transactions_added: number | null;  // from eb_sync_log
+  transactions_added: number | null; // from eb_sync_log
   transactions_updated: number | null; // from eb_sync_log
-  error_code: string | null;          // from eb_sync_log
+  error_code: string | null; // from eb_sync_log
   consent_valid_until: string | null; // NEW - ISO date from eb_sessions.valid_until
-  session_id: string | null;          // NEW - for re-auth grouping
-  aspsp_name: string | null;          // NEW - for banner display (e.g. "ING Bank connection expires March 15")
-  aspsp_country: string | null;       // NEW - for re-auth createAuth country param
+  session_id: string | null; // NEW - for re-auth grouping
+  aspsp_name: string | null; // NEW - for banner display (e.g. "ING Bank connection expires March 15")
+  aspsp_country: string | null; // NEW - for re-auth createAuth country param
 };
 
 /**

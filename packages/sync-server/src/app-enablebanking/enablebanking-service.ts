@@ -107,8 +107,10 @@ export async function createAuth({
       `[createAuth] ASPSP "${aspspName}" not found in ${aspspCountry} listing (${aspsps.length} entries). Falling back to 180-day consent validity.`,
     );
   }
-  const maxValiditySeconds = aspsp?.maximum_consent_validity ?? (180 * 24 * 3600);
-  const validUntil = new Date(Date.now() + maxValiditySeconds * 1000).toISOString();
+  const maxValiditySeconds = aspsp?.maximum_consent_validity ?? 180 * 24 * 3600;
+  const validUntil = new Date(
+    Date.now() + maxValiditySeconds * 1000,
+  ).toISOString();
 
   const response = await ebRequest('POST', '/auth', {
     aspsp: { name: aspspName, country: aspspCountry },

@@ -172,7 +172,15 @@ describe('enablebanking-service', () => {
       // createAuth now calls getAspsps() first (GET /aspsps) then POST /auth.
       // Mock GET /aspsps response (first call - consumed by getAspsps() internally)
       axios.mockResolvedValueOnce({
-        data: { aspsps: [{ name: 'Nordea', country: 'FI', maximum_consent_validity: 7776000 }] },
+        data: {
+          aspsps: [
+            {
+              name: 'Nordea',
+              country: 'FI',
+              maximum_consent_validity: 7776000,
+            },
+          ],
+        },
       });
       // Mock POST /auth response (second call)
       axios.mockResolvedValueOnce({
@@ -205,7 +213,11 @@ describe('enablebanking-service', () => {
       const before = Date.now();
       // 7776000 seconds = 90 days
       axios.mockResolvedValueOnce({
-        data: { aspsps: [{ name: 'Test', country: 'FI', maximum_consent_validity: 7776000 }] },
+        data: {
+          aspsps: [
+            { name: 'Test', country: 'FI', maximum_consent_validity: 7776000 },
+          ],
+        },
       });
       axios.mockResolvedValueOnce({ data: {} });
 

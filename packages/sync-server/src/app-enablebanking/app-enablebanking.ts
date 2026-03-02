@@ -399,12 +399,14 @@ app.post(
     const db = getAccountDb();
 
     // Update all account map rows from old session to new session
-    db.mutate(
-      'UPDATE eb_account_map SET session_id = ? WHERE session_id = ?',
-      [newSessionId, oldSessionId],
-    );
+    db.mutate('UPDATE eb_account_map SET session_id = ? WHERE session_id = ?', [
+      newSessionId,
+      oldSessionId,
+    ]);
 
-    console.log(`[eb] Re-auth complete: session ${oldSessionId} -> ${newSessionId}`);
+    console.log(
+      `[eb] Re-auth complete: session ${oldSessionId} -> ${newSessionId}`,
+    );
 
     res.send({ status: 'ok', data: {} });
   }),

@@ -14,8 +14,8 @@ import * as undo from 'loot-core/platform/client/undo';
 
 import { UserAccessPage } from './admin/UserAccess/UserAccessPage';
 import { BankSyncStatus } from './BankSyncStatus';
-import { ConsentExpiryBanner } from './ConsentExpiryBanner';
 import { CommandBar } from './CommandBar';
+import { ConsentExpiryBanner } from './ConsentExpiryBanner';
 import { GlobalKeys } from './GlobalKeys';
 import { MobileBankSyncAccountEditPage } from './mobile/banksync/MobileBankSyncAccountEditPage';
 import { MobileNavTabs } from './mobile/MobileNavTabs';
@@ -141,7 +141,11 @@ export function FinancesApp() {
         // unwraps responseData.data, so there is NO extra .data layer.
         const syncStatuses =
           linkedIds.length > 0
-            ? ((await send('enablebanking-sync-status', { accountIds: linkedIds }))?.statuses ?? {})
+            ? ((
+                await send('enablebanking-sync-status', {
+                  accountIds: linkedIds,
+                })
+              )?.statuses ?? {})
             : {};
 
         const staleIds = linkedAccounts
@@ -227,7 +231,11 @@ export function FinancesApp() {
         const linkedIds = linkedAccounts.map(a => a.id);
         const syncStatuses =
           linkedIds.length > 0
-            ? ((await send('enablebanking-sync-status', { accountIds: linkedIds }))?.statuses ?? {})
+            ? ((
+                await send('enablebanking-sync-status', {
+                  accountIds: linkedIds,
+                })
+              )?.statuses ?? {})
             : {};
 
         const staleIds = linkedAccounts

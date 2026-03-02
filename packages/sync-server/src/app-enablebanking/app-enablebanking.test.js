@@ -578,7 +578,11 @@ describe('app-enablebanking routes', () => {
         ],
       });
       // Seed the new session row (from the re-auth OAuth flow)
-      seedSession({ sessionId: 'new-session', state: 'csrf-new', accounts: [] });
+      seedSession({
+        sessionId: 'new-session',
+        state: 'csrf-new',
+        accounts: [],
+      });
 
       const res = await request(app)
         .post('/reauth-complete')
