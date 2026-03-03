@@ -11,7 +11,15 @@
 - [ ] **Phase 2: Bank Sync Pipeline** - Full manual sync works end-to-end: OAuth, account linking, transaction import, balance update
 - [x] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI (completed 2026-03-01)
 - [ ] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support
+- [ ] **Phase 4.1: Audit Quick Wins** - Small-effort fixes from project audit (security, a11y, perf, design) (INSERTED)
+- [ ] **Phase 4.2: Dependency Security Updates** - Update deps with known CVEs (INSERTED)
 - [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and smoke-tested
+- [ ] **Phase 5.1: Accessibility Overhaul** - Heading hierarchy, form ARIA, shared utilities (INSERTED)
+- [ ] **Phase 5.2: Security Hardening** - PBKDF2, OpenID, password strength, ReDoS (INSERTED)
+- [ ] **Phase 6: Design Refinement** - Alert surface consolidation, scheduler cleanup
+- [ ] **Phase 7: Observability and Monitoring** - Error tracking, alerting, audit logging, metrics
+- [ ] **Phase 8: Quality and Test Infrastructure** - Code splitting, sync failure UI, coverage, E2E
+- [ ] **Phase 9: Feature Expansion** - 2FA/TOTP, backup automation
 
 ## Progress
 
@@ -21,7 +29,15 @@
 | 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
 | 3. Automation and Consent Lifecycle | 2/2 | Complete   | 2026-03-01 |
 | 4. PWA Completion                   | 0/?            | Not started               | -         |
+| 4.1 Audit Quick Wins (INSERTED)     | 1/?            | In Progress               | -         |
+| 4.2 Dependency Security Updates (INSERTED) | 0/?     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
+| 5.1 Accessibility Overhaul (INSERTED) | 0/?          | Not started               | -         |
+| 5.2 Security Hardening (INSERTED)   | 0/?            | Not started               | -         |
+| 6. Design Refinement                | 0/?            | Not started               | -         |
+| 7. Observability and Monitoring     | 0/?            | Not started               | -         |
+| 8. Quality and Test Infrastructure  | 0/?            | Not started               | -         |
+| 9. Feature Expansion                | 0/?            | Not started               | -         |
 
 ## Phase Details
 
@@ -127,6 +143,26 @@ Plans:
 
 **Plans:** TBD
 
+### Phase 04.1: Audit Quick Wins (INSERTED)
+
+**Goal:** Fix all small-effort findings from the project audit: enable terser, restrict CORS, auth rate limiting, aria-live regions, skip-nav, HSTS, CSP, banner urgency icon, FIXME error codes, unused files, focus-visible, token expiration, Dockerfile USER, Content-Type headers, design system fixes, localStorage cleanup, spelling consistency.
+**Requirements**: Audit findings perf-1, cfg-2, sec-2, a11y-1, a11y-2, sec-6, sec-1, a11y-4, fq-5, dx-6, a11y-5, cfg-1, sec-15, sec-16, dsg-2, dsg-3, dsg-4, dsg-5
+**Depends on:** Phase 3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 04.1 to break down)
+
+### Phase 04.2: Dependency Security Updates (INSERTED)
+
+**Goal:** Update all dependencies with known CVEs: tar 7.5.8, rollup 4.59.0, serialize-javascript 7.0.3, storybook 10.2.10, jws 3.2.3, axios 1.13.5, lodash 4.17.23, minimatch overrides, glob 10.5.0, ajv 8.18.0. Verify build passes after each update.
+**Requirements**: Audit findings sec-8 through sec-14
+**Depends on:** Phase 3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 04.2 to break down)
+
 ### Phase 5: Infrastructure and Production
 
 **Goal:** A single `docker compose up` deploys the full stack with HTTPS that is trusted by both desktop Chrome and iOS Safari, data persists across restarts, multi-device sync works between phone and desktop, and production Enable Banking credentials are connected with at least one real bank account syncing successfully.
@@ -146,6 +182,66 @@ Plans:
 **Note:** Production Enable Banking credentials require a separate registration at enablebanking.com/cp. This is distinct from the sandbox credentials used in Phases 1-3. Plan a dedicated smoke test milestone before marking this phase complete.
 
 **Plans:** TBD
+
+### Phase 05.1: Accessibility Overhaul (INSERTED)
+
+**Goal:** Add semantic heading hierarchy throughout the app, form ARIA attributes (aria-required, aria-invalid, aria-describedby), and extract consent urgency color/threshold logic to shared utilities.
+**Requirements**: Audit findings a11y-3, a11y-6, dx-3
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 05.1 to break down)
+
+### Phase 05.2: Security Hardening (INSERTED)
+
+**Goal:** Increase PBKDF2 iterations to 100K+ with data migration strategy, restrict OpenID redirect from localhost in production, add password strength requirements, sanitize non-literal RegExp in handlebars-helpers.
+**Requirements**: Audit findings sec-4, sec-5, sec-7, sec-17
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 05.2 to break down)
+
+### Phase 6: Design Refinement
+
+**Goal:** Consolidate alert surfaces into unified notification system, flatten scheduler retry nesting, add exponential backoff for scheduler retry.
+**Requirements**: Audit findings dsg-1, dx-4, fq-4
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 6 to break down)
+
+### Phase 7: Observability and Monitoring
+
+**Goal:** Integrate error tracking service, add alerting mechanism, implement audit logging for auth operations, add request latency and sync duration metrics.
+**Requirements**: Audit findings obs-1, obs-2, obs-3, obs-4
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 7 to break down)
+
+### Phase 8: Quality and Test Infrastructure
+
+**Goal:** Implement route-level code splitting, surface sync failures in UI, configure code coverage, fix E2E tests in CI, add granular error boundaries.
+**Requirements**: Audit findings perf-2, fq-1, dx-2, dx-1, fq-2
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 8 to break down)
+
+### Phase 9: Feature Expansion
+
+**Goal:** Implement 2FA/TOTP authentication and automated database backup trigger.
+**Requirements**: Audit findings fc-1, fc-2
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 9 to break down)
 
 ## Coverage
 
@@ -186,4 +282,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-02-19 after Plan 02-01 complete (data layer, migrations, normalizer)_
+_Last updated: 2026-03-03 - 8 phases added from project audit (4 insert, 4 add)_

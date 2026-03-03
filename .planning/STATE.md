@@ -30,8 +30,8 @@ progress:
 
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-03-01
-**Session:** Phase 03 Plan 02 complete (ConsentExpiryBanner, re-auth flow, sync-on-open)
+**Last updated:** 2026-03-03
+**Session:** Phase 04.1 Plan 01 complete (security middleware, terser compression, Dockerfile non-root, Content-Type fix)
 
 ## Project Reference
 
@@ -39,21 +39,21 @@ progress:
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 3 complete. Plans 03-01 (AUTO-01, AUTO-02, AUTO-06) and 03-02 (AUTO-03, AUTO-04, AUTO-05) done. Phase 3 automation and consent lifecycle fully delivered.
+**Current Focus:** Phase 4.1 Plan 01 complete. Security middleware hardening, terser compression, non-root Dockerfile, and JSON Content-Type on file access errors delivered.
 
 ## Current Position
 
-**Active Phase:** 03-automation-consent-lifecycle
-**Active Plan:** Complete (all 2 plans done)
-**Status:** Milestone complete
+**Active Phase:** 04.1-audit-quick-wins
+**Active Plan:** Plan 02 (Plan 01 complete)
+**Status:** In progress
 
 **Progress:**
-[██████░░░░░░░░░░░░] 33%
+[████████░░░░░░░░░░] 33%
 Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [2/2] Complete
 Phase 4: PWA Completion [ ] Not started
-Phase 4.1: Audit Quick Wins [ ] Not started (INSERTED)
+Phase 4.1: Audit Quick Wins [1/?] In progress (INSERTED)
 Phase 4.2: Dependency Security Updates [ ] Not started (INSERTED)
 Phase 5: Infrastructure and Production [ ] Not started
 Phase 5.1: Accessibility Overhaul [ ] Not started (INSERTED)
@@ -63,7 +63,7 @@ Phase 7: Observability and Monitoring [ ] Not started
 Phase 8: Quality and Test Infrastructure [ ] Not started
 Phase 9: Feature Expansion [ ] Not started
 
-Overall: 3/13 phases complete (11 plans complete across all phases)
+Overall: 3/13 phases complete (12 plans complete across all phases)
 
 ## Performance Metrics
 
@@ -71,17 +71,23 @@ Overall: 3/13 phases complete (11 plans complete across all phases)
 | ----------------------------------------- | ----- | ------- | -------- |
 | Phases total                              | 5     |         |          |
 | Requirements mapped                       | 29/29 |         |          |
-| Plans complete                            | 11    |         |          |
+| Plans complete                            | 12    |         |          |
 | Phases complete                           | 3     |         |          |
 | Phase 02-bank-sync-pipeline P04           | 45min | 3 tasks | 11 files |
 | Phase 02-bank-sync-pipeline P05           | 90min | 2 tasks | 0 files (verification only) |
 | Phase 03-automation-consent-lifecycle P01 | 70min | 2 tasks | 10 files |
 | Phase 03-automation-consent-lifecycle P02 | 65min | 2 tasks | 12 files |
+| Phase 04.1-audit-quick-wins P01           | 21min | 3 tasks | 6 files  |
 
 ## Key Decisions Recorded
 
 | Decision                                                                               | Rationale                                                                                                                                                                                    | Date       |
 | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| CORS single-origin String format (not Array) via ACTUAL_CORS_ORIGIN                   | Single allowed origin per deployment simplifies configuration. Set to production domain; defaults to localhost:3001 for dev.                                                                  | 2026-03-03 |
+| CSP style-src includes unsafe-inline                                                   | Required because React uses inline style objects extensively throughout the frontend. Removing it would break UI.                                                                             | 2026-03-03 |
+| 404 FileNotFound deferred (kept as 400)                                                | Tests confirm frontend expects 400 for file-not-found; the original FIXME said "make sure frontend is ok with it" - it is not. Requires coordinated frontend + backend change.               | 2026-03-03 |
+| boolToInt to Boolean conversion deferred                                               | Tests confirm integer 0/1 values for deleted field are expected by test suite. Frontend code uses truthy/falsy, but changing without test suite update is unsafe.                            | 2026-03-03 |
+| res.json tests use res.body not res.text                                               | res.json('string') JSON-encodes string with quotes. res.body is the parsed JSON value (string without quotes). Tests updated to check res.body for semantic correctness.                     | 2026-03-03 |
 | 5-phase structure (not 6)                                                              | All 29 requirements fit cleanly into 5 delivery boundaries. Research's "Phase 6 production cutover" is absorbed into Phase 5 success criteria as an explicit production smoke test milestone | 2026-02-18 |
 | Phases 4 and 5 can run in parallel with Phase 3                                        | PWA and infrastructure work is independent of automation logic once Phase 2 (manual sync) is stable                                                                                          | 2026-02-18 |
 | Enable Banking over GoCardless                                                         | GoCardless stopped accepting EU users July 2025, Enable Banking is free for personal use and covers 4,709+ banks                                                                             | 2026-02-18 |
@@ -229,9 +235,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Phase 4.1 context gathered
+**Stopped at:** Completed 04.1-01-PLAN.md
 
-**Next action:** Run `/gsd:plan-phase 4.1` to create execution plans for Audit Quick Wins (17 items, cfg-1 dropped from scope).
+**Next action:** Execute Phase 04.1 Plan 02 (remaining audit quick wins).
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
