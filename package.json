@@ -89,7 +89,9 @@
   "resolutions": {
     "@codemirror/view": ">=6.39.15",
     "@isaacs/brace-expansion": ">=5.0.1",
+    "ajv": ">=8.18.0",
     "axios": ">=1.13.5",
+    "glob": ">=10.5.0",
     "jws": ">=3.2.3",
     "lodash": ">=4.17.23",
     "qs": ">=6.14.1",
