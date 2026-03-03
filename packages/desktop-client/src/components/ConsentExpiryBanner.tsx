@@ -3,6 +3,7 @@ import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { Button } from '@actual-app/components/button';
+import { SvgDelete } from '@actual-app/components/icons/v0';
 import {
   SvgExclamationOutline,
   SvgExclamationSolid,
@@ -156,13 +157,11 @@ function SessionBanner({ session, onDismiss }: SessionBannerProps) {
         onPress={handleDismiss}
         style={{
           color: colors.text,
-          fontSize: 16,
           padding: '0 4px',
-          lineHeight: 1,
         }}
         aria-label="Dismiss"
       >
-        &times;
+        <SvgDelete style={{ width: 10, height: 10 }} />
       </Button>
     </View>
   );
@@ -273,13 +272,11 @@ function MultiSessionBanner({ sessions, onDismiss }: MultiSessionBannerProps) {
         onPress={handleDismissAll}
         style={{
           color: colors.text,
-          fontSize: 16,
           padding: '0 4px',
-          lineHeight: 1,
         }}
         aria-label="Dismiss all"
       >
-        &times;
+        <SvgDelete style={{ width: 10, height: 10 }} />
       </Button>
     </View>
   );
@@ -302,6 +299,23 @@ function MultiSessionBanner({ sessions, onDismiss }: MultiSessionBannerProps) {
 export function ConsentExpiryBanner() {
   const { sessions } = useConsentExpiry();
   const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+
+  // Clean up old consent dismiss keys from localStorage on mount.
+  // Uses two-pass approach: collect keys first, then delete.
+  // Deleting during index iteration corrupts the index and skips keys.
+  React.useEffect(() => {
+    const today = new Date().toDateString();
+    const keysToDelete: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('consent-dismissed-') && !key.endsWith(today)) {
+        keysToDelete.push(key);
+      }
+    }
+    for (const key of keysToDelete) {
+      localStorage.removeItem(key);
+    }
+  }, []);
 
   // Filter out dismissed sessions
   const visibleSessions = sessions.filter(s => !isDismissed(s.sessionId));
