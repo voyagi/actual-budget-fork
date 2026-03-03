@@ -46,10 +46,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Docker Compose deploys sync-server + desktop-client + Caddy in a single `docker compose up`
-- [ ] **INFRA-02**: HTTPS termination via Caddy with automatic local CA (or Cloudflare Tunnel for phone access)
-- [ ] **INFRA-03**: Multi-device sync works (phone and desktop see the same budget data via sync-server)
-- [ ] **INFRA-04**: Docker volumes persist data across container restarts (verified explicitly)
+- [x] **INFRA-01**: Docker Compose deploys sync-server + desktop-client + Caddy in a single `docker compose up`
+- [x] **INFRA-02**: HTTPS termination via Caddy with automatic local CA (or Cloudflare Tunnel for phone access)
+- [x] **INFRA-03**: Multi-device sync works (phone and desktop see the same budget data via sync-server)
+- [x] **INFRA-04**: Docker volumes persist data across container restarts (verified explicitly)
 
 ## v2 Requirements
 
@@ -118,10 +118,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PWA-04      | Phase 4 | Pending  |
 | PWA-05      | Phase 4 | Pending  |
 | PWA-06      | Phase 4 | Pending  |
-| INFRA-01    | Phase 5 | Pending  |
-| INFRA-02    | Phase 5 | Pending  |
-| INFRA-03    | Phase 5 | Pending  |
-| INFRA-04    | Phase 5 | Pending  |
+| INFRA-01    | Phase 5 | Complete |
+| INFRA-02    | Phase 5 | Complete |
+| INFRA-03    | Phase 5 | Complete |
+| INFRA-04    | Phase 5 | Complete |
 
 **Coverage:**
 
