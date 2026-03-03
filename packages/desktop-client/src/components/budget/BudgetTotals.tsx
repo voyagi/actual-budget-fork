@@ -62,6 +62,7 @@ export const BudgetTotals = memo(function BudgetTotals({
   return (
     <View
       data-testid="budget-totals"
+      aria-live="polite"
       style={{
         backgroundColor: theme.budgetCurrentMonth, //use budget colors, not generic table colors
         flexDirection: 'row',

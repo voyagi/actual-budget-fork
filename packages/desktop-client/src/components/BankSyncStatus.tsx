@@ -27,6 +27,7 @@ export function BankSyncStatus() {
 
   return (
     <View
+      role="status"
       style={{
         position: 'absolute',
         top: 0,
@@ -40,7 +41,12 @@ export function BankSyncStatus() {
       {transitions(
         (style, item) =>
           item && (
-            <animated.div key={item} style={style}>
+            <animated.div
+              key={item}
+              style={style}
+              aria-live="polite"
+              aria-atomic="true"
+            >
               <View
                 style={{
                   borderRadius: 4,

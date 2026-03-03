@@ -3,6 +3,11 @@ import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
 import { Button } from '@actual-app/components/button';
+import {
+  SvgExclamationOutline,
+  SvgExclamationSolid,
+  SvgInformationOutline,
+} from '@actual-app/components/icons/v1';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
@@ -35,6 +40,13 @@ type SessionBannerProps = {
   session: ConsentSession;
   onDismiss: () => void;
 };
+
+const urgencyIcons = {
+  expired: SvgExclamationSolid,
+  urgent: SvgExclamationOutline,
+  soon: SvgInformationOutline,
+  ok: null,
+} as const;
 
 function SessionBanner({ session, onDismiss }: SessionBannerProps) {
   const dispatch = useDispatch();
@@ -102,8 +114,11 @@ function SessionBanner({ session, onDismiss }: SessionBannerProps) {
       </span>
     );
 
+  const UrgencyIcon = urgencyIcons[session.urgency];
+
   return (
     <View
+      aria-live="polite"
       style={{
         backgroundColor: colors.background,
         borderLeft: `4px solid ${colors.border}`,
@@ -115,6 +130,11 @@ function SessionBanner({ session, onDismiss }: SessionBannerProps) {
         fontSize: 13,
       }}
     >
+      {UrgencyIcon && (
+        <UrgencyIcon
+          style={{ width: 18, height: 18, color: colors.text, flexShrink: 0 }}
+        />
+      )}
       <View style={{ flex: 1 }}>{messageText}</View>
 
       <Button
@@ -211,8 +231,11 @@ function MultiSessionBanner({ sessions, onDismiss }: MultiSessionBannerProps) {
     onDismiss();
   }
 
+  const UrgencyIcon = urgencyIcons[worstUrgency];
+
   return (
     <View
+      aria-live="polite"
       style={{
         backgroundColor: colors.background,
         borderLeft: `4px solid ${colors.border}`,
@@ -224,6 +247,11 @@ function MultiSessionBanner({ sessions, onDismiss }: MultiSessionBannerProps) {
         fontSize: 13,
       }}
     >
+      {UrgencyIcon && (
+        <UrgencyIcon
+          style={{ width: 18, height: 18, color: colors.text, flexShrink: 0 }}
+        />
+      )}
       <View style={{ flex: 1 }}>{messageText}</View>
 
       <Button
