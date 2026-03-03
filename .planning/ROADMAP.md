@@ -161,7 +161,7 @@ Plans:
 **Goal:** Update all dependencies with known CVEs: tar 7.5.8, rollup 4.59.0, serialize-javascript 7.0.3, storybook 10.2.10, jws 3.2.3, axios 1.13.5, lodash 4.17.23, minimatch overrides, glob 10.5.0, ajv 8.18.0. Verify build passes after each update.
 **Requirements**: Audit findings sec-8 through sec-14
 **Depends on:** Phase 3
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 04.2-01-PLAN.md -- Lockfile refresh, HIGH severity resolution overrides (rollup, serialize-js, jws), MEDIUM severity overrides (glob, ajv), trivy final gate

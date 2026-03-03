@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04.1-03-PLAN.md (Phase 04.1 fully complete - 3/3 plans done)
-last_updated: "2026-03-03T17:12:42.559Z"
+stopped_at: Completed 04.2-01-PLAN.md (Phase 04.2 Plan 01 - CVE remediation complete)
+last_updated: "2026-03-03T20:59:47Z"
 progress:
   total_phases: 13
   completed_phases: 4
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 15
+  completed_plans: 15
   percent: 33
 ---
 
@@ -46,7 +46,7 @@ progress:
 # Project State: Actual Budget Fork - Enable Banking Edition
 
 **Last updated:** 2026-03-03
-**Session:** Phase 04.1 Plan 03 complete (SvgDelete dismiss icons, localStorage cleanup, design system Button for re-authorize, responsive modal width, American English spelling normalization, 2 unused hooks deleted)
+**Session:** Phase 04.2 Plan 01 complete (CVE remediation: rollup RCE, serialize-js RCE, jws HMAC bypass, axios DoS, lodash prototype pollution, tar symlink, storybook WebSocket RCE - all 7 sec-8 through sec-14 CVEs resolved)
 
 ## Project Reference
 
@@ -58,8 +58,8 @@ progress:
 
 ## Current Position
 
-**Active Phase:** 04.1-audit-quick-wins
-**Active Plan:** Plan 03 complete (Phase complete)
+**Active Phase:** 04.2-dependency-security-updates
+**Active Plan:** Plan 01 complete (Phase complete - 1/1 plans done)
 **Status:** Ready to plan
 
 **Progress:**
@@ -69,7 +69,7 @@ Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Ph
 Phase 3: Automation and Consent [2/2] Complete
 Phase 4: PWA Completion [ ] Not started
 Phase 4.1: Audit Quick Wins [3/3] Complete (INSERTED)
-Phase 4.2: Dependency Security Updates [ ] Not started (INSERTED)
+Phase 4.2: Dependency Security Updates [1/1] Complete (INSERTED)
 Phase 5: Infrastructure and Production [ ] Not started
 Phase 5.1: Accessibility Overhaul [ ] Not started (INSERTED)
 Phase 5.2: Security Hardening [ ] Not started (INSERTED)
@@ -95,11 +95,14 @@ Overall: 3/13 phases complete (14 plans complete across all phases)
 | Phase 04.1-audit-quick-wins P01           | 21min | 3 tasks | 6 files  |
 | Phase 04.1-audit-quick-wins P02           | 7min  | 2 tasks | 4 files  |
 | Phase 04.1-audit-quick-wins P03           | 12min | 3 tasks | 5 files  |
+| Phase 04.2-dependency-security-updates P01| 15min | 3 tasks | 2 files  |
 
 ## Key Decisions Recorded
 
 | Decision                                                                               | Rationale                                                                                                                                                                                    | Date       |
 | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Yarn resolutions >=X.Y.Z range form for CVE overrides                                  | Ranges allow Dependabot to auto-bump future security fixes; exact pins freeze forever. Upper bound added only for rollup (>=4.59.0 <5.0.0) to prevent 5.x breaking changes. | 2026-03-03 |
+| minimatch 3.x/5.x/9.x CVEs accepted as unfixable transitive risk                       | Fixing requires incompatible major API override (3.x API != 10.x API), breaks build toolchain. DoS requires attacker-controlled glob patterns that never occur in build config. | 2026-03-03 |
 | SvgDelete from @actual-app/components/icons/v0 for consent banner dismiss buttons              | v0 is the correct icon set for delete/close icons in Actual design system. Replaces HTML entity &times; (dsg-2). | 2026-03-03 |
 | Two-pass localStorage cleanup for consent-dismissed-* keys                                     | Collect stale keys into array first, then delete. Deleting during index iteration corrupts i and skips keys (dsg-5). | 2026-03-03 |
 | clamp(400px, 30vw, 600px) for EnableBankingExternalMsgModal width                             | 400px readable minimum, 30vw scales with viewport, 600px prevents over-stretching on large screens (dsg-4). | 2026-03-03 |
@@ -259,9 +262,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Completed 04.1-03-PLAN.md (Phase 04.1 fully complete - 3/3 plans done)
+**Stopped at:** Completed 04.2-01-PLAN.md (Phase 04.2 fully complete - 1/1 plans done)
 
-**Next action:** Execute Phase 04.2 - Dependency Security Updates (trivy CVE remediation).
+**Next action:** Execute Phase 05.1 Accessibility Overhaul or Phase 05.2 Security Hardening (both URGENT).
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
