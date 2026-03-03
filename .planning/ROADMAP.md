@@ -11,7 +11,7 @@
 - [ ] **Phase 2: Bank Sync Pipeline** - Full manual sync works end-to-end: OAuth, account linking, transaction import, balance update
 - [x] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI (completed 2026-03-01)
 - [ ] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support
-- [ ] **Phase 4.1: Audit Quick Wins** - Small-effort fixes from project audit (security, a11y, perf, design) (INSERTED)
+- [x] **Phase 4.1: Audit Quick Wins** - Small-effort fixes from project audit (security, a11y, perf, design) (INSERTED - completed 2026-03-03)
 - [ ] **Phase 4.2: Dependency Security Updates** - Update deps with known CVEs (INSERTED)
 - [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and smoke-tested
 - [ ] **Phase 5.1: Accessibility Overhaul** - Heading hierarchy, form ARIA, shared utilities (INSERTED)
@@ -29,7 +29,7 @@
 | 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
 | 3. Automation and Consent Lifecycle | 2/2 | Complete   | 2026-03-01 |
 | 4. PWA Completion                   | 0/?            | Not started               | -         |
-| 4.1 Audit Quick Wins (INSERTED)     | 1/?            | In Progress               | -         |
+| 4.1 Audit Quick Wins (INSERTED)     | 2/2            | Complete                  | 2026-03-03 |
 | 4.2 Dependency Security Updates (INSERTED) | 0/?     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 | 5.1 Accessibility Overhaul (INSERTED) | 0/?          | Not started               | -         |

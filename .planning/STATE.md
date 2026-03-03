@@ -31,7 +31,7 @@ progress:
 # Project State: Actual Budget Fork - Enable Banking Edition
 
 **Last updated:** 2026-03-03
-**Session:** Phase 04.1 Plan 01 complete (security middleware, terser compression, Dockerfile non-root, Content-Type fix)
+**Session:** Phase 04.1 Plan 02 complete (aria-live regions for screen readers, urgency icons on consent banners, focus-visible on DateSelect calendar)
 
 ## Project Reference
 
@@ -39,13 +39,13 @@ progress:
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 4.1 Plan 01 complete. Security middleware hardening, terser compression, non-root Dockerfile, and JSON Content-Type on file access errors delivered.
+**Current Focus:** Phase 4.1 Plan 02 complete. Screen reader accessibility (aria-live on BankSyncStatus, ConsentExpiryBanner, BudgetTotals), urgency icons (info/exclamation) on consent banners, and keyboard-visible focus ring on DateSelect calendar. Phase 04.1 complete (2/2 plans done).
 
 ## Current Position
 
 **Active Phase:** 04.1-audit-quick-wins
-**Active Plan:** Plan 02 (Plan 01 complete)
-**Status:** In progress
+**Active Plan:** Plan 02 complete (Phase complete)
+**Status:** Between phases
 
 **Progress:**
 [████████░░░░░░░░░░] 33%
@@ -53,7 +53,7 @@ Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [2/2] Complete
 Phase 4: PWA Completion [ ] Not started
-Phase 4.1: Audit Quick Wins [1/?] In progress (INSERTED)
+Phase 4.1: Audit Quick Wins [2/2] Complete (INSERTED)
 Phase 4.2: Dependency Security Updates [ ] Not started (INSERTED)
 Phase 5: Infrastructure and Production [ ] Not started
 Phase 5.1: Accessibility Overhaul [ ] Not started (INSERTED)
@@ -63,7 +63,7 @@ Phase 7: Observability and Monitoring [ ] Not started
 Phase 8: Quality and Test Infrastructure [ ] Not started
 Phase 9: Feature Expansion [ ] Not started
 
-Overall: 3/13 phases complete (12 plans complete across all phases)
+Overall: 3/13 phases complete (14 plans complete across all phases)
 
 ## Performance Metrics
 
@@ -78,11 +78,15 @@ Overall: 3/13 phases complete (12 plans complete across all phases)
 | Phase 03-automation-consent-lifecycle P01 | 70min | 2 tasks | 10 files |
 | Phase 03-automation-consent-lifecycle P02 | 65min | 2 tasks | 12 files |
 | Phase 04.1-audit-quick-wins P01           | 21min | 3 tasks | 6 files  |
+| Phase 04.1-audit-quick-wins P02           | 7min  | 2 tasks | 4 files  |
 
 ## Key Decisions Recorded
 
 | Decision                                                                               | Rationale                                                                                                                                                                                    | Date       |
 | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| aria-live="polite" on animated container (not nested text) for BankSyncStatus                  | Prevents double-announcements from nested aria-live regions. Outer role="status" provides semantic container. | 2026-03-03 |
+| urgencyIcons module-level const mapping urgency to SVG component                               | Module-level avoids recreation on render. Null for ok urgency renders no icon (non-alert state). Shared by SessionBanner and MultiSessionBanner. | 2026-03-03 |
+| :focus-visible + :focus:not(:focus-visible) pattern for DateSelect calendar buttons            | Removes blanket outline:none (which blocked keyboard focus ring). :focus-visible shows 2px boxShadow for keyboard users, :focus:not(:focus-visible) suppresses for mouse. | 2026-03-03 |
 | CORS single-origin String format (not Array) via ACTUAL_CORS_ORIGIN                   | Single allowed origin per deployment simplifies configuration. Set to production domain; defaults to localhost:3001 for dev.                                                                  | 2026-03-03 |
 | CSP style-src includes unsafe-inline                                                   | Required because React uses inline style objects extensively throughout the frontend. Removing it would break UI.                                                                             | 2026-03-03 |
 | 404 FileNotFound deferred (kept as 400)                                                | Tests confirm frontend expects 400 for file-not-found; the original FIXME said "make sure frontend is ok with it" - it is not. Requires coordinated frontend + backend change.               | 2026-03-03 |
@@ -235,9 +239,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Completed 04.1-01-PLAN.md
+**Stopped at:** Completed 04.1-02-PLAN.md (Phase 04.1 complete)
 
-**Next action:** Execute Phase 04.1 Plan 02 (remaining audit quick wins).
+**Next action:** Execute Phase 04.2 - Dependency Security Updates (trivy CVE remediation).
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
