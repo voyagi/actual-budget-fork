@@ -48,14 +48,22 @@ progress:
 **Status:** Milestone complete
 
 **Progress:**
-[██████████] 100%
+[██████░░░░░░░░░░░░] 33%
 Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [2/2] Complete
 Phase 4: PWA Completion [ ] Not started
-Phase 5: Infrastructure and Production[ ] Not started
+Phase 4.1: Audit Quick Wins [ ] Not started (INSERTED)
+Phase 4.2: Dependency Security Updates [ ] Not started (INSERTED)
+Phase 5: Infrastructure and Production [ ] Not started
+Phase 5.1: Accessibility Overhaul [ ] Not started (INSERTED)
+Phase 5.2: Security Hardening [ ] Not started (INSERTED)
+Phase 6: Design Refinement [ ] Not started
+Phase 7: Observability and Monitoring [ ] Not started
+Phase 8: Quality and Test Infrastructure [ ] Not started
+Phase 9: Feature Expansion [ ] Not started
 
-Overall: 3/5 phases complete (11 plans complete across all phases)
+Overall: 3/13 phases complete (11 plans complete across all phases)
 
 ## Performance Metrics
 
@@ -168,6 +176,17 @@ Overall: 3/5 phases complete (11 plans complete across all phases)
 - UK banks: 90 days
 - Read `maximum_consent_validity` from Enable Banking session response. Never hardcode either value.
 
+### Roadmap Evolution
+
+- Phase 04.1 inserted after Phase 4: Audit Quick Wins (URGENT) - from project audit 2026-03-03
+- Phase 04.2 inserted after Phase 4: Dependency Security Updates (URGENT) - trivy CVEs
+- Phase 05.1 inserted after Phase 5: Accessibility Overhaul (URGENT) - WCAG/EU Accessibility Act
+- Phase 05.2 inserted after Phase 5: Security Hardening (URGENT) - PBKDF2, OpenID, password strength
+- Phase 6 added: Design Refinement - alert surfaces, design system consistency
+- Phase 7 added: Observability and Monitoring - error tracking, alerting, audit logging
+- Phase 8 added: Quality and Test Infrastructure - code splitting, coverage, E2E
+- Phase 9 added: Feature Expansion - 2FA/TOTP, backup automation
+
 ## Open Questions
 
 - What is the exact reason the service worker build is disabled in `vite.config.mts`? (Determines Phase 4 approach)
@@ -210,9 +229,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Completed 03-02-PLAN.md
+**Stopped at:** Phase 4.1 context gathered
 
-**Next action:** Phase 3 complete. Phases 4 (PWA Completion) and 5 (Infrastructure and Production) remain. Run `/gsd:plan-phase` when ready to plan Phase 4.
+**Next action:** Run `/gsd:plan-phase 4.1` to create execution plans for Audit Quick Wins (17 items, cfg-1 dropped from scope).
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
