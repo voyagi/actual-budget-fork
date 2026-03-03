@@ -298,7 +298,7 @@ export function EnableBankingExternalMsgModal({
   return (
     <Modal
       name="enablebanking-external-msg"
-      containerProps={{ style: { width: '30vw' } }}
+      containerProps={{ style: { width: 'clamp(400px, 30vw, 600px)' } }}
     >
       {({ state: { close } }) => (
         <>
@@ -315,14 +315,14 @@ export function EnableBankingExternalMsgModal({
               {reauth ? (
                 <Trans>
                   To re-authorize your bank connection, you will be redirected
-                  to a new page where your bank will ask you to authorise access
+                  to a new page where your bank will ask you to authorize access
                   again. Your existing accounts and transaction history will not
                   be affected.
                 </Trans>
               ) : (
                 <Trans>
                   To link your bank account, you will be redirected to a new
-                  page where your bank will ask you to authorise access. Enable
+                  page where your bank will ask you to authorize access. Enable
                   Banking will not be able to withdraw funds from your accounts.
                 </Trans>
               )}
@@ -352,7 +352,7 @@ export function EnableBankingExternalMsgModal({
                     {isConfigurationLoading
                       ? t('Checking Enable Banking configuration...')
                       : waiting === 'browser'
-                        ? t('Waiting for bank authorisation...')
+                        ? t('Waiting for bank authorization...')
                         : null}
                   </View>
 
@@ -364,7 +364,7 @@ export function EnableBankingExternalMsgModal({
                     >
                       (
                       <Trans>
-                        Bank authorisation not opening in a new tab? Click here
+                        Bank authorization not opening in a new tab? Click here
                       </Trans>
                       )
                     </Link>

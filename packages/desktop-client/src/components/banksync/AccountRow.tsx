@@ -12,9 +12,7 @@ import { tsToRelativeTime } from 'loot-core/shared/util';
 import type { AccountEntity } from 'loot-core/types/models';
 
 import { Cell, Row } from '@desktop-client/components/table';
-import {
-  useEnableBankingSyncStatus,
-} from '@desktop-client/hooks/useEnableBankingStatus';
+import { useEnableBankingSyncStatus } from '@desktop-client/hooks/useEnableBankingStatus';
 import { pushModal } from '@desktop-client/modals/modalsSlice';
 import { useDispatch } from '@desktop-client/redux';
 
@@ -186,22 +184,19 @@ export const AccountRow = memo(
                       <Trans>Consent expired</Trans>
                     ) : (
                       <Trans>Consent expires {{ consentValidUntil }}</Trans>
-                    )}
-                    {' '}
-                    <button
-                      onClick={handleReauth}
+                    )}{' '}
+                    <Button
+                      variant="bare"
+                      onPress={handleReauth}
                       style={{
-                        background: 'none',
-                        border: 'none',
-                        padding: 0,
-                        cursor: 'pointer',
                         color: consentUrgencyColor.text,
                         fontSize: 11,
                         textDecoration: 'underline',
+                        padding: 0,
                       }}
                     >
                       <Trans>Re-authorize</Trans>
-                    </button>
+                    </Button>
                   </span>
                 ) : null}
               </div>
