@@ -89,8 +89,12 @@
   "resolutions": {
     "@codemirror/view": ">=6.39.15",
     "@isaacs/brace-expansion": ">=5.0.1",
+    "axios": ">=1.13.5",
+    "jws": ">=3.2.3",
+    "lodash": ">=4.17.23",
     "qs": ">=6.14.1",
-    "rollup": "4.40.1",
+    "rollup": ">=4.59.0 <5.0.0",
+    "serialize-javascript": ">=7.0.3",
     "socks": ">=2.8.3"
   },
   "lint-staged": {
