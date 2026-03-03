@@ -137,6 +137,9 @@ const calendarStyles: CSSProperties = {
     border: 'none',
     background: theme.calendarItemBackground,
     color: theme.calendarItemText,
+  },
+  // Suppress browser default outline for mouse clicks (non-keyboard focus)
+  '& td [role="button"]:focus:not(:focus-visible)': {
     outline: 'none',
   },
   // Today
@@ -151,6 +154,10 @@ const calendarStyles: CSSProperties = {
   },
   // Focused date (keyboard navigation highlight)
   '& td[data-focused] [role="button"]': {
+    boxShadow: `0 0 0 2px ${theme.calendarSelectedBackground}`,
+  },
+  // Keyboard focus ring via :focus-visible (for keyboard users only)
+  '& td [role="button"]:focus-visible': {
     boxShadow: `0 0 0 2px ${theme.calendarSelectedBackground}`,
   },
   // Outside-month dates
