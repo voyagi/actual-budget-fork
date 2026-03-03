@@ -29,7 +29,7 @@
 | 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
 | 3. Automation and Consent Lifecycle | 2/2 | Complete   | 2026-03-01 |
 | 4. PWA Completion                   | 0/?            | Not started               | -         |
-| 4.1 Audit Quick Wins (INSERTED)     | 2/2            | Complete                  | 2026-03-03 |
+| 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
 | 4.2 Dependency Security Updates (INSERTED) | 0/?     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 | 5.1 Accessibility Overhaul (INSERTED) | 0/?          | Not started               | -         |
@@ -148,10 +148,13 @@ Plans:
 **Goal:** Fix all small-effort findings from the project audit: enable terser, restrict CORS, auth rate limiting, aria-live regions, skip-nav, HSTS, CSP, banner urgency icon, FIXME error codes, unused files, focus-visible, token expiration, Dockerfile USER, Content-Type headers, design system fixes, localStorage cleanup, spelling consistency.
 **Requirements**: Audit findings perf-1, cfg-2, sec-2, a11y-1, a11y-2, sec-6, sec-1, a11y-4, fq-5, dx-6, a11y-5, cfg-1, sec-15, sec-16, dsg-2, dsg-3, dsg-4, dsg-5
 **Depends on:** Phase 3
-**Plans:** 0 plans
+**Plans:** 3/3 complete
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 04.1 to break down)
+
+- [x] 04.1-01-PLAN.md - Security headers (HSTS, CSP), CORS restriction, rate limiting, auth token expiration, Dockerfile USER
+- [x] 04.1-02-PLAN.md - Accessibility quick wins (aria-live, urgency icons, skip-nav, focus-visible)
+- [x] 04.1-03-PLAN.md - Design system compliance (SvgDelete, Button bare, modal width, spelling, dead code)
 
 ### Phase 04.2: Dependency Security Updates (INSERTED)
 
