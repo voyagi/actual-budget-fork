@@ -51,17 +51,12 @@ export { app as handlers };
 
 const OK_RESPONSE = { status: 'ok' };
 
-function boolToInt(deleted) {
-  return deleted ? 1 : 0;
-}
-
 const verifyFileExists = (fileId, filesService, res, errorObject) => {
   try {
     return filesService.get(fileId);
   } catch (e) {
     if (e instanceof FileNotFound) {
-      //FIXME: error code should be 404. Need to make sure frontend is ok with it.
-      res.status(400).send(errorObject);
+      res.status(404).send(errorObject);
       return;
     }
     throw e;
@@ -122,7 +117,7 @@ app.post('/sync', async (req, res): Promise<void> => {
   const fileAccessError = requireFileAccess(currentFile, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -160,7 +155,7 @@ app.post('/user-get-key', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -187,7 +182,7 @@ app.post('/user-create-key', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -221,7 +216,7 @@ app.post('/reset-user-file', async (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -282,7 +277,7 @@ app.post('/upload-user-file', async (req, res) => {
     : null;
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -365,7 +360,7 @@ app.get('/download-user-file', async (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -394,7 +389,7 @@ app.post('/update-user-filename', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -408,7 +403,7 @@ app.get('/list-user-files', (req, res) => {
   res.send({
     status: 'ok',
     data: rows.map(row => ({
-      deleted: boolToInt(row.deleted),
+      deleted: Boolean(row.deleted),
       fileId: row.id,
       groupId: row.groupId,
       name: row.name,
@@ -444,14 +439,14 @@ app.get('/get-user-file-info', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
   res.send({
     status: 'ok',
     data: {
-      deleted: boolToInt(file.deleted), //   FIXME: convert to boolean, make sure it works in the frontend
+      deleted: Boolean(file.deleted),
       fileId: file.id,
       groupId: file.groupId,
       name: file.name,
@@ -485,7 +480,7 @@ app.post('/delete-user-file', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 

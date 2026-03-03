@@ -8,4 +8,5 @@
 FROM node:22-bookworm as dev
 RUN apt-get update -y && apt-get upgrade -y && apt-get install -y openssl
 WORKDIR /app
+USER node
 CMD ["sh", "./bin/docker-start"]
