@@ -85,7 +85,7 @@ describe('/user-get-key', () => {
       .send({ fileId });
 
     expect(res.statusCode).toEqual(403);
-    expect(res.text).toEqual('file-access-not-allowed');
+    expect(res.body).toEqual('file-access-not-allowed');
   });
 
   it("allows an admin to get encryption key for another user's file", async () => {
@@ -155,7 +155,7 @@ describe('/user-create-key', () => {
       });
 
     expect(res.statusCode).toEqual(403);
-    expect(res.text).toEqual('file-access-not-allowed');
+    expect(res.body).toEqual('file-access-not-allowed');
   });
 
   it("allows an admin to create encryption key for another user's file", async () => {
@@ -304,7 +304,7 @@ describe('/reset-user-file', () => {
       .send({ fileId });
 
     expect(res.statusCode).toEqual(403);
-    expect(res.text).toEqual('file-access-not-allowed');
+    expect(res.body).toEqual('file-access-not-allowed');
   });
 
   it("allows an admin to reset another user's file", async () => {
@@ -581,7 +581,7 @@ describe('/upload-user-file', () => {
       .send(Buffer.from('overwrite content'));
 
     expect(res.statusCode).toEqual(403);
-    expect(res.text).toEqual('file-access-not-allowed');
+    expect(res.body).toEqual('file-access-not-allowed');
   });
 
   it("allows an admin to overwrite another user's file", async () => {
@@ -730,7 +730,7 @@ describe('/download-user-file', () => {
           .set('x-actual-file-id', fileId);
 
         expect(res.statusCode).toEqual(403);
-        expect(res.text).toEqual('file-access-not-allowed');
+        expect(res.body).toEqual('file-access-not-allowed');
       });
 
       it("allows an admin to download another user's file", async () => {
@@ -858,7 +858,7 @@ describe('/update-user-filename', () => {
       .send({ fileId, name: 'stolen' });
 
     expect(res.statusCode).toEqual(403);
-    expect(res.text).toEqual('file-access-not-allowed');
+    expect(res.body).toEqual('file-access-not-allowed');
   });
 
   it("allows an admin to rename another user's file", async () => {
@@ -1026,7 +1026,7 @@ describe('/get-user-file-info', () => {
       .set('x-actual-file-id', fileId);
 
     expect(res.statusCode).toEqual(403);
-    expect(res.text).toEqual('file-access-not-allowed');
+    expect(res.body).toEqual('file-access-not-allowed');
   });
 
   it("allows an admin to get another user's file info", async () => {
@@ -1137,7 +1137,7 @@ describe('/delete-user-file', () => {
       .send({ fileId });
 
     expect(res.statusCode).toEqual(403);
-    expect(res.text).toEqual('file-access-not-allowed');
+    expect(res.body).toEqual('file-access-not-allowed');
 
     // Verify that the file is NOT deleted
     const rows = accountDb.all('SELECT deleted FROM files WHERE id = ?', [
@@ -1353,7 +1353,7 @@ describe('/sync', () => {
     const res = await sendSyncRequest(syncRequest, 'valid-token-user');
 
     expect(res.statusCode).toEqual(403);
-    expect(res.text).toEqual('file-access-not-allowed');
+    expect(res.body).toEqual('file-access-not-allowed');
   });
 
   it("allows an admin to sync another user's file", async () => {
