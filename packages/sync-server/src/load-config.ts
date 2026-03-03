@@ -298,6 +298,12 @@ const configSchema = convict({
       env: 'ACTUAL_CORS_PROXY_ENABLED',
     },
   },
+  corsOrigin: {
+    doc: 'Allowed CORS origin for the web client. Set to your domain in production.',
+    format: String,
+    default: 'http://localhost:3001',
+    env: 'ACTUAL_CORS_ORIGIN',
+  },
 });
 
 let configPath: string | null = null;
