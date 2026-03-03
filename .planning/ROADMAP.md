@@ -9,7 +9,7 @@
 
 - [-] **Phase 1: Foundation and API Client** - Fork is running, Enable Banking API client is sandbox-tested with RSA auth
 - [ ] **Phase 2: Bank Sync Pipeline** - Full manual sync works end-to-end: OAuth, account linking, transaction import, balance update
-- [x] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI (completed 2026-03-01)
+- [x] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI (completed 2026-03-01)
 - [ ] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support
 - [x] **Phase 4.1: Audit Quick Wins** - Small-effort fixes from project audit (security, a11y, perf, design) (INSERTED - completed 2026-03-03)
 - [ ] **Phase 4.2: Dependency Security Updates** - Update deps with known CVEs (INSERTED)
@@ -30,7 +30,7 @@
 | 3. Automation and Consent Lifecycle | 2/2 | Complete   | 2026-03-01 |
 | 4. PWA Completion                   | 0/?            | Not started               | -         |
 | 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
-| 4.2 Dependency Security Updates (INSERTED) | 0/?     | Not started               | -         |
+| 4.2 Dependency Security Updates (INSERTED) | 0/1     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 | 5.1 Accessibility Overhaul (INSERTED) | 0/?          | Not started               | -         |
 | 5.2 Security Hardening (INSERTED)   | 0/?            | Not started               | -         |
@@ -161,10 +161,10 @@ Plans:
 **Goal:** Update all dependencies with known CVEs: tar 7.5.8, rollup 4.59.0, serialize-javascript 7.0.3, storybook 10.2.10, jws 3.2.3, axios 1.13.5, lodash 4.17.23, minimatch overrides, glob 10.5.0, ajv 8.18.0. Verify build passes after each update.
 **Requirements**: Audit findings sec-8 through sec-14
 **Depends on:** Phase 3
-**Plans:** 0 plans
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 04.2 to break down)
+- [ ] 04.2-01-PLAN.md -- Lockfile refresh, HIGH severity resolution overrides (rollup, serialize-js, jws), MEDIUM severity overrides (glob, ajv), trivy final gate
 
 ### Phase 5: Infrastructure and Production
 
@@ -285,4 +285,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-03 - 8 phases added from project audit (4 insert, 4 add)_
+_Last updated: 2026-03-03 - Phase 04.2 planned (1 plan)_
