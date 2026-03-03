@@ -9,7 +9,6 @@ import rateLimit from 'express-rate-limit';
 import { bootstrap } from './account-db';
 import * as accountApp from './app-account';
 import * as adminApp from './app-admin';
-import { startScheduler } from './scheduler.js';
 import * as corsApp from './app-cors-proxy';
 import * as enableBankingApp from './app-enablebanking/app-enablebanking.js';
 import * as goCardlessApp from './app-gocardless/app-gocardless';
@@ -19,6 +18,7 @@ import * as secretApp from './app-secrets';
 import * as simpleFinApp from './app-simplefin/app-simplefin';
 import * as syncApp from './app-sync';
 import { config } from './load-config';
+import { startScheduler } from './scheduler.js';
 
 const app = express();
 
@@ -27,9 +27,17 @@ process.on('unhandledRejection', reason => {
 });
 
 app.disable('x-powered-by');
-app.use(cors());
+app.use(cors({ origin: config.get('corsOrigin') }));
 app.set('trust proxy', config.get('trustedProxies'));
 if (process.env.NODE_ENV !== 'development') {
+  app.use((_req, res, next) => {
+    res.set('Strict-Transport-Security', 'max-age=31536000');
+    res.set(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+    );
+    next();
+  });
   app.use(
     rateLimit({
       windowMs: 60 * 1000,
@@ -39,6 +47,14 @@ if (process.env.NODE_ENV !== 'development') {
     }),
   );
 }
+
+const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  legacyHeaders: false,
+  standardHeaders: true,
+  message: { status: 'error', reason: 'too-many-requests' },
+});
 
 app.use(express.json({ limit: `${config.get('upload.fileSizeLimitMB')}mb` }));
 
@@ -57,6 +73,10 @@ app.use(
 );
 
 app.use('/sync', syncApp.handlers);
+app.use(
+  ['/account/login', '/account/bootstrap', '/openid/login'],
+  authRateLimit,
+);
 app.use('/account', accountApp.handlers);
 app.use('/enablebanking', enableBankingApp.handlers);
 app.use('/gocardless', goCardlessApp.handlers);
