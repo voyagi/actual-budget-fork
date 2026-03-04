@@ -61,7 +61,7 @@ progress:
 # Project State: Actual Budget Fork - Enable Banking Edition
 
 **Last updated:** 2026-03-04
-**Session:** Phase 05.1 Plan 01 complete (consent urgency utility extraction: getUrgencyLevel, urgencyColors, urgencyIcons, ConsentUrgency moved to shared utils/consent-urgency.ts)
+**Session:** Phase 05.1 Plan 02 complete (semantic h2/h3 headings on fork bank sync pages, FormError default role=alert, aria-label+aria-required on SelectLinkedAccountsModal date/amount inputs)
 
 ## Project Reference
 
@@ -69,16 +69,16 @@ progress:
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 05.1 Accessibility Overhaul - Plan 01 complete. Consent urgency deduplication (dx-3 audit finding) resolved. Single source of truth for urgency thresholds, colors, and icons.
+**Current Focus:** Phase 05.1 Accessibility Overhaul - ALL PLANS COMPLETE. Semantic headings, FormError role=alert, ARIA labels on form inputs. Phase 05.1 complete (2/2 plans done).
 
 ## Current Position
 
 **Active Phase:** 05.1-accessibility-overhaul
-**Active Plan:** Plan 01 complete (1/2 plans done in phase)
-**Status:** In progress
+**Active Plan:** Plan 02 complete (2/2 plans done - PHASE COMPLETE)
+**Status:** Ready to plan
 
 **Progress:**
-[█████████░] 94%
+[█████████░] 95%
 Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [2/2] Complete
@@ -86,14 +86,14 @@ Phase 4: PWA Completion [ ] Not started
 Phase 4.1: Audit Quick Wins [3/3] Complete (INSERTED)
 Phase 4.2: Dependency Security Updates [1/1] Complete (INSERTED)
 Phase 5: Infrastructure and Production [ ] Not started
-Phase 5.1: Accessibility Overhaul [1/2] In Progress (INSERTED)
+Phase 5.1: Accessibility Overhaul [2/2] Complete (INSERTED)
 Phase 5.2: Security Hardening [ ] Not started (INSERTED)
 Phase 6: Design Refinement [ ] Not started
 Phase 7: Observability and Monitoring [ ] Not started
 Phase 8: Quality and Test Infrastructure [ ] Not started
 Phase 9: Feature Expansion [ ] Not started
 
-Overall: 3/13 phases complete (16 plans complete across all phases)
+Overall: 4/13 phases complete (18 plans complete across all phases)
 
 ## Performance Metrics
 
@@ -112,6 +112,7 @@ Overall: 3/13 phases complete (16 plans complete across all phases)
 | Phase 04.1-audit-quick-wins P03           | 12min | 3 tasks | 5 files  |
 | Phase 04.2-dependency-security-updates P01| 15min | 3 tasks | 2 files  |
 | Phase 05.1-accessibility-overhaul P01 | 8min | 1 tasks | 4 files |
+| Phase 05.1-accessibility-overhaul P02 | 35min | 2 tasks | 7 files |
 
 ## Key Decisions Recorded
 
@@ -127,6 +128,9 @@ Overall: 3/13 phases complete (16 plans complete across all phases)
 | urgencyIcons module-level const mapping urgency to SVG component                               | Module-level avoids recreation on render. Null for ok urgency renders no icon (non-alert state). Shared by SessionBanner and MultiSessionBanner. | 2026-03-03 |
 | consent-urgency.ts placed in utils/ (not components/ or hooks/)                                | It is domain logic shared across multiple concerns, not tied to a component or hook lifecycle. utils/ is established as the canonical location. | 2026-03-04 |
 | ConsentUrgency type re-exported from hook for backward compat                                  | Any existing import of ConsentUrgency from useEnableBankingStatus still works without changes after extraction to shared utility. | 2026-03-04 |
+| h2/h3 inline styles reset browser defaults (margin:0, fontWeight:'inherit')                    | Browser h2/h3 default bold weight and top/bottom margin would change visual appearance. Inline reset preserves exact look of replaced styled Text elements. | 2026-03-04 |
+| AmountInput aria-label/aria-required forwarded to inner Input (not sign Button)                 | The sign toggle Button already has its own aria-label. Forwarding ARIA attrs to the data input gives screen readers the correct label for the numeric field. | 2026-03-04 |
+| aria-required on StartingOptionsFields inputs - both layout branches                            | StartingOptionsFields only renders when new account creation is active. Both date and amount are required fields when visible. Both inline and stacked branches need the attribute. | 2026-03-04 |
 | :focus-visible + :focus:not(:focus-visible) pattern for DateSelect calendar buttons            | Removes blanket outline:none (which blocked keyboard focus ring). :focus-visible shows 2px boxShadow for keyboard users, :focus:not(:focus-visible) suppresses for mouse. | 2026-03-03 |
 | CORS single-origin String format (not Array) via ACTUAL_CORS_ORIGIN                   | Single allowed origin per deployment simplifies configuration. Set to production domain; defaults to localhost:3001 for dev.                                                                  | 2026-03-03 |
 | CSP style-src includes unsafe-inline                                                   | Required because React uses inline style objects extensively throughout the frontend. Removing it would break UI.                                                                             | 2026-03-03 |
@@ -280,9 +284,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Completed 05.1-01-PLAN.md (Phase 05.1 Plan 01 - consent urgency utility extraction complete)
+**Stopped at:** Completed 05.1-02-PLAN.md (Phase 05.1 fully complete - 2/2 plans done)
 
-**Next action:** Execute Phase 05.1 Plan 02 (ARIA/semantic accessibility improvements).
+**Next action:** Execute Phase 05.2 Security Hardening or Phase 5 Infrastructure and Production.
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 

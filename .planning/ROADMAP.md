@@ -194,8 +194,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 05.1-01-PLAN.md - Extract consent urgency utility (colors, icons, thresholds) to shared module
-- [ ] 05.1-02-PLAN.md - Semantic heading hierarchy on fork pages, FormError default role, form ARIA labels
+- [x] 05.1-01-PLAN.md - Extract consent urgency utility (colors, icons, thresholds) to shared module
+- [x] 05.1-02-PLAN.md - Semantic heading hierarchy on fork pages, FormError default role, form ARIA labels
 
 ### Phase 05.2: Security Hardening (INSERTED)
 
@@ -286,4 +286,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-04 - Phase 05.1 planned (2 plans)_
+_Last updated: 2026-03-04 - Phase 05.1 complete (2/2 plans done)_
