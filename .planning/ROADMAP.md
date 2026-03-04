@@ -32,7 +32,7 @@
 | 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
 | 4.2 Dependency Security Updates (INSERTED) | 0/1     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
-| 5.1 Accessibility Overhaul (INSERTED) | 0/2          | Not started               | -         |
+| 5.1 Accessibility Overhaul (INSERTED) | 1/2 | In Progress|  |
 | 5.2 Security Hardening (INSERTED)   | 0/?            | Not started               | -         |
 | 6. Design Refinement                | 0/?            | Not started               | -         |
 | 7. Observability and Monitoring     | 0/?            | Not started               | -         |

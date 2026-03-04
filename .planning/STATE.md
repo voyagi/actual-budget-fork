@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04.2-01-PLAN.md (Phase 04.2 fully complete - 1/1 plans done)
-last_updated: "2026-03-03T21:11:45.866Z"
+stopped_at: Completed 05.1-01-PLAN.md (Phase 05.1 Plan 01 - consent urgency utility extraction complete)
+last_updated: "2026-03-04T16:47:10.589Z"
 progress:
   total_phases: 13
   completed_phases: 5
-  total_plans: 15
-  completed_plans: 15
-  percent: 33
+  total_plans: 17
+  completed_plans: 16
+  percent: 94
 ---
 
 ---
@@ -60,8 +60,8 @@ progress:
 
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-03-03
-**Session:** Phase 04.2 Plan 01 complete (CVE remediation: rollup RCE, serialize-js RCE, jws HMAC bypass, axios DoS, lodash prototype pollution, tar symlink, storybook WebSocket RCE - all 7 sec-8 through sec-14 CVEs resolved)
+**Last updated:** 2026-03-04
+**Session:** Phase 05.1 Plan 01 complete (consent urgency utility extraction: getUrgencyLevel, urgencyColors, urgencyIcons, ConsentUrgency moved to shared utils/consent-urgency.ts)
 
 ## Project Reference
 
@@ -69,16 +69,16 @@ progress:
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 04.1 Plans 01-03 complete. Design system compliance (SvgDelete dismiss, Button variant=bare, clamp() modal width), localStorage self-cleanup, American English normalization, 2 dead hook files deleted. Phase 04.1 fully complete (3/3 plans done).
+**Current Focus:** Phase 05.1 Accessibility Overhaul - Plan 01 complete. Consent urgency deduplication (dx-3 audit finding) resolved. Single source of truth for urgency thresholds, colors, and icons.
 
 ## Current Position
 
-**Active Phase:** 04.2-dependency-security-updates
-**Active Plan:** Plan 01 complete (Phase complete - 1/1 plans done)
-**Status:** Ready to plan
+**Active Phase:** 05.1-accessibility-overhaul
+**Active Plan:** Plan 01 complete (1/2 plans done in phase)
+**Status:** In progress
 
 **Progress:**
-[████████░░░░░░░░░░] 33%
+[█████████░] 94%
 Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [2/2] Complete
@@ -86,14 +86,14 @@ Phase 4: PWA Completion [ ] Not started
 Phase 4.1: Audit Quick Wins [3/3] Complete (INSERTED)
 Phase 4.2: Dependency Security Updates [1/1] Complete (INSERTED)
 Phase 5: Infrastructure and Production [ ] Not started
-Phase 5.1: Accessibility Overhaul [ ] Not started (INSERTED)
+Phase 5.1: Accessibility Overhaul [1/2] In Progress (INSERTED)
 Phase 5.2: Security Hardening [ ] Not started (INSERTED)
 Phase 6: Design Refinement [ ] Not started
 Phase 7: Observability and Monitoring [ ] Not started
 Phase 8: Quality and Test Infrastructure [ ] Not started
 Phase 9: Feature Expansion [ ] Not started
 
-Overall: 3/13 phases complete (14 plans complete across all phases)
+Overall: 3/13 phases complete (16 plans complete across all phases)
 
 ## Performance Metrics
 
@@ -111,6 +111,7 @@ Overall: 3/13 phases complete (14 plans complete across all phases)
 | Phase 04.1-audit-quick-wins P02           | 7min  | 2 tasks | 4 files  |
 | Phase 04.1-audit-quick-wins P03           | 12min | 3 tasks | 5 files  |
 | Phase 04.2-dependency-security-updates P01| 15min | 3 tasks | 2 files  |
+| Phase 05.1-accessibility-overhaul P01 | 8min | 1 tasks | 4 files |
 
 ## Key Decisions Recorded
 
@@ -124,6 +125,8 @@ Overall: 3/13 phases complete (14 plans complete across all phases)
 | Button variant='bare' replaces raw button element in AccountRow re-authorize link              | Design system Button provides background:none, border:none, cursor:pointer + hover/focus-visible/active automatically (dsg-3). | 2026-03-03 |
 | aria-live="polite" on animated container (not nested text) for BankSyncStatus                  | Prevents double-announcements from nested aria-live regions. Outer role="status" provides semantic container. | 2026-03-03 |
 | urgencyIcons module-level const mapping urgency to SVG component                               | Module-level avoids recreation on render. Null for ok urgency renders no icon (non-alert state). Shared by SessionBanner and MultiSessionBanner. | 2026-03-03 |
+| consent-urgency.ts placed in utils/ (not components/ or hooks/)                                | It is domain logic shared across multiple concerns, not tied to a component or hook lifecycle. utils/ is established as the canonical location. | 2026-03-04 |
+| ConsentUrgency type re-exported from hook for backward compat                                  | Any existing import of ConsentUrgency from useEnableBankingStatus still works without changes after extraction to shared utility. | 2026-03-04 |
 | :focus-visible + :focus:not(:focus-visible) pattern for DateSelect calendar buttons            | Removes blanket outline:none (which blocked keyboard focus ring). :focus-visible shows 2px boxShadow for keyboard users, :focus:not(:focus-visible) suppresses for mouse. | 2026-03-03 |
 | CORS single-origin String format (not Array) via ACTUAL_CORS_ORIGIN                   | Single allowed origin per deployment simplifies configuration. Set to production domain; defaults to localhost:3001 for dev.                                                                  | 2026-03-03 |
 | CSP style-src includes unsafe-inline                                                   | Required because React uses inline style objects extensively throughout the frontend. Removing it would break UI.                                                                             | 2026-03-03 |
@@ -277,9 +280,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Completed 04.2-01-PLAN.md (Phase 04.2 fully complete - 1/1 plans done)
+**Stopped at:** Completed 05.1-01-PLAN.md (Phase 05.1 Plan 01 - consent urgency utility extraction complete)
 
-**Next action:** Execute Phase 05.1 Accessibility Overhaul or Phase 05.2 Security Hardening (both URGENT).
+**Next action:** Execute Phase 05.1 Plan 02 (ARIA/semantic accessibility improvements).
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
@@ -300,4 +303,4 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 ---
 
 _State initialized: 2026-02-18_
-_Last updated: 2026-03-01 - Phase 02 complete (E2E verification via browser automation, 5/8 tests PASS, 3 deferred to Phase 5)_
+_Last updated: 2026-03-04 - Phase 05.1 Plan 01 complete (consent urgency utility extraction, dx-3 audit finding resolved)_
