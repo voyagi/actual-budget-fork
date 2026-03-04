@@ -32,8 +32,8 @@
 | 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
 | 4.2 Dependency Security Updates (INSERTED) | 0/1     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
-| 5.1 Accessibility Overhaul (INSERTED) | 1/2 | In Progress|  |
-| 5.2 Security Hardening (INSERTED)   | 0/?            | Not started               | -         |
+| 5.1 Accessibility Overhaul (INSERTED) | 2/2 | Complete |  |
+| 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
 | 6. Design Refinement                | 0/?            | Not started               | -         |
 | 7. Observability and Monitoring     | 0/?            | Not started               | -         |
 | 8. Quality and Test Infrastructure  | 0/?            | Not started               | -         |
@@ -202,10 +202,11 @@ Plans:
 **Goal:** Increase PBKDF2 iterations to 100K+ with data migration strategy, restrict OpenID redirect from localhost in production, add password strength requirements, sanitize non-literal RegExp in handlebars-helpers.
 **Requirements**: Audit findings sec-4, sec-5, sec-7, sec-17
 **Depends on:** Phase 5
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 05.2 to break down)
+- [ ] 05.2-01-PLAN.md - PBKDF2 iteration increase to 100K with backward-compatible metadata extension
+- [ ] 05.2-02-PLAN.md - Password strength validation, OpenID redirect restriction, ReDoS metacharacter escape
 
 ### Phase 6: Design Refinement
 
@@ -286,4 +287,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-04 - Phase 05.1 complete (2/2 plans done)_
+_Last updated: 2026-03-04 - Phase 05.2 planned (2 plans)_
