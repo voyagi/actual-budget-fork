@@ -3,7 +3,6 @@ import { Trans, useTranslation } from 'react-i18next';
 
 import { Button } from '@actual-app/components/button';
 import { SpaceBetween } from '@actual-app/components/space-between';
-import { Text } from '@actual-app/components/text';
 import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
@@ -204,9 +203,9 @@ export function EditSyncAccount({ account }: EditSyncAccountProps) {
             rightContent={<ModalCloseButton onPress={close} />}
           />
 
-          <Text style={{ fontSize: 15 }}>
+          <h3 style={{ fontSize: 15, margin: 0, fontWeight: 'inherit' }}>
             <Trans>Field mapping</Trans>
-          </Text>
+          </h3>
 
           <FieldMapping
             transactionDirection={transactionDirection}
@@ -216,9 +215,15 @@ export function EditSyncAccount({ account }: EditSyncAccountProps) {
             setMapping={setMapping}
           />
 
-          <Text style={{ fontSize: 15, margin: '1em 0 .5em 0' }}>
+          <h3
+            style={{
+              fontSize: 15,
+              margin: '1em 0 .5em 0',
+              fontWeight: 'inherit',
+            }}
+          >
             <Trans>Options</Trans>
-          </Text>
+          </h3>
 
           <BankSyncCheckboxOptions
             importPending={importPending}

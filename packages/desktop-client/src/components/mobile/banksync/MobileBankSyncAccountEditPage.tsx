@@ -127,9 +127,16 @@ export function MobileBankSyncAccountEditPage() {
           }}
         >
           <View style={{ padding: 16 }}>
-            <Text style={{ fontSize: 15, marginBottom: 10 }}>
+            <h2
+              style={{
+                fontSize: 15,
+                margin: 0,
+                marginBottom: 10,
+                fontWeight: 'inherit',
+              }}
+            >
               <Trans>Field mapping</Trans>
-            </Text>
+            </h2>
 
             <FieldMapping
               transactionDirection={transactionDirection}
@@ -140,9 +147,17 @@ export function MobileBankSyncAccountEditPage() {
               isMobile
             />
 
-            <Text style={{ fontSize: 15, marginTop: 20, marginBottom: 10 }}>
+            <h2
+              style={{
+                fontSize: 15,
+                margin: 0,
+                marginTop: 20,
+                marginBottom: 10,
+                fontWeight: 'inherit',
+              }}
+            >
               <Trans>Options</Trans>
-            </Text>
+            </h2>
 
             <BankSyncCheckboxOptions
               importPending={importPending}

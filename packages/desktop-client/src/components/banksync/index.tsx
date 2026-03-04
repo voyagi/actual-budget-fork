@@ -130,11 +130,9 @@ export function BankSync() {
           return (
             <View key={syncProvider} style={{ minHeight: 'initial' }}>
               {Object.keys(groupedAccounts).length > 1 && (
-                <Text
-                  style={{ fontWeight: 500, fontSize: 20, margin: '.5em 0' }}
-                >
+                <h2 style={{ fontWeight: 500, fontSize: 20, margin: '.5em 0' }}>
                   {syncSourceReadable[syncProvider as SyncProviders]}
-                </Text>
+                </h2>
               )}
               <View style={styles.tableContainer}>
                 <AccountsHeader unlinked={syncProvider === 'unlinked'} />
