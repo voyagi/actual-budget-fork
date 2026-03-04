@@ -788,6 +788,8 @@ function StartingOptionsFields({
         <Field width={120} truncate={false}>
           <Input
             type="date"
+            aria-label="Starting date"
+            aria-required
             value={customStartingDate.date}
             onChange={e =>
               onSetCustomStartingDate(accountId, {
@@ -802,6 +804,8 @@ function StartingOptionsFields({
         <Field width={120} truncate={false} style={{ textAlign: 'right' }}>
           <AmountInput
             value={customStartingDate.amount}
+            aria-label="Starting balance"
+            aria-required
             zeroSign={zeroSign}
             onUpdate={amount =>
               onSetCustomStartingDate(accountId, {
@@ -838,6 +842,8 @@ function StartingOptionsFields({
           </Text>
           <Input
             type="date"
+            aria-label="Starting date"
+            aria-required
             value={customStartingDate.date}
             onChange={e =>
               onSetCustomStartingDate(accountId, {
@@ -860,6 +866,8 @@ function StartingOptionsFields({
           </Text>
           <AmountInput
             value={customStartingDate.amount}
+            aria-label="Starting balance"
+            aria-required
             zeroSign={zeroSign}
             onUpdate={amount =>
               onSetCustomStartingDate(accountId, {

@@ -41,6 +41,8 @@ type AmountInputProps = {
   focused?: boolean;
   disabled?: boolean;
   autoDecimals?: boolean;
+  'aria-label'?: string;
+  'aria-required'?: boolean | 'true' | 'false';
 };
 
 export function AmountInput({
@@ -60,6 +62,8 @@ export function AmountInput({
   focused,
   disabled = false,
   autoDecimals = false,
+  'aria-label': ariaLabel,
+  'aria-required': ariaRequired,
 }: AmountInputProps) {
   const { t } = useTranslation();
   const format = useFormat();
@@ -204,6 +208,8 @@ export function AmountInput({
         inputMode="decimal"
         value={value}
         disabled={disabled}
+        aria-label={ariaLabel}
+        aria-required={ariaRequired}
         style={{ ...inputStyle, ...styles.tnum }}
         className={cx(
           css({
