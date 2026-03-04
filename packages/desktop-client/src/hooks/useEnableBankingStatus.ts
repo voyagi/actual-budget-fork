@@ -7,6 +7,12 @@ import { send } from 'loot-core/platform/client/connection';
 import { useSyncServerStatus } from './useSyncServerStatus';
 
 import { accountQueries } from '@desktop-client/accounts';
+import {
+  getUrgencyLevel,
+  type ConsentUrgency,
+} from '@desktop-client/utils/consent-urgency';
+
+export type { ConsentUrgency } from '@desktop-client/utils/consent-urgency';
 
 /**
  * Checks whether Enable Banking is configured on the sync-server
@@ -110,8 +116,6 @@ export function useEnableBankingSyncStatus(accountIds: string[]) {
   };
 }
 
-export type ConsentUrgency = 'expired' | 'urgent' | 'soon' | 'ok';
-
 export type ConsentSession = {
   sessionId: string;
   aspspName: string | null;
@@ -164,14 +168,7 @@ export function useConsentExpiry(): {
         const expiry = new Date(validUntil);
         const msUntilExpiry = expiry.getTime() - now.getTime();
         const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
-
-        if (daysUntilExpiry <= 0) {
-          urgency = 'expired';
-        } else if (daysUntilExpiry <= 7) {
-          urgency = 'urgent';
-        } else if (daysUntilExpiry <= 14) {
-          urgency = 'soon';
-        }
+        urgency = getUrgencyLevel(daysUntilExpiry);
       }
 
       sessionMap.set(sessionId, {
