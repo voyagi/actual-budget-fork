@@ -191,7 +191,7 @@ Plans:
 **Goal:** Add semantic heading hierarchy to fork pages, form ARIA attributes (aria-required, aria-invalid, aria-describedby), and extract consent urgency color/threshold logic to shared utilities.
 **Requirements**: Audit findings a11y-3, a11y-6, dx-3
 **Depends on:** Phase 5
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 05.1-01-PLAN.md - Extract consent urgency utility (colors, icons, thresholds) to shared module
