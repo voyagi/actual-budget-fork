@@ -15,6 +15,10 @@ import { Cell, Row } from '@desktop-client/components/table';
 import { useEnableBankingSyncStatus } from '@desktop-client/hooks/useEnableBankingStatus';
 import { pushModal } from '@desktop-client/modals/modalsSlice';
 import { useDispatch } from '@desktop-client/redux';
+import {
+  getUrgencyLevel,
+  urgencyColors,
+} from '@desktop-client/utils/consent-urgency';
 
 type AccountRowProps = {
   account: AccountEntity;
@@ -23,25 +27,6 @@ type AccountRowProps = {
   onAction: (account: AccountEntity, action: 'link' | 'edit') => void;
   locale: Locale;
 };
-
-function getConsentUrgencyColor(
-  validUntil: string | null,
-): { text: string; background?: string } | null {
-  if (!validUntil) return null;
-  const now = new Date();
-  const expiry = new Date(validUntil);
-  const msUntilExpiry = expiry.getTime() - now.getTime();
-  const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
-
-  if (daysUntilExpiry <= 0) {
-    return { text: theme.errorText };
-  } else if (daysUntilExpiry <= 7) {
-    return { text: theme.warningText };
-  } else if (daysUntilExpiry <= 14) {
-    return { text: theme.noticeText };
-  }
-  return null;
-}
 
 export const AccountRow = memo(
   ({ account, hovered, onHover, onAction, locale }: AccountRowProps) => {
@@ -64,9 +49,16 @@ export const AccountRow = memo(
       account.account_sync_source === 'enableBanking' ? [account.id] : [],
     );
     const ebStatus = ebStatuses?.[account.id];
-    const consentUrgencyColor = getConsentUrgencyColor(
-      ebStatus?.consent_valid_until ?? null,
-    );
+    const consentUrgencyColor = (() => {
+      const validUntil = ebStatus?.consent_valid_until;
+      if (!validUntil) return null;
+      const now = new Date();
+      const expiry = new Date(validUntil);
+      const daysUntilExpiry =
+        (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      const urgency = getUrgencyLevel(daysUntilExpiry);
+      return urgency !== 'ok' ? { text: urgencyColors[urgency].text } : null;
+    })();
     const consentValidUntil = ebStatus?.consent_valid_until
       ? new Date(ebStatus.consent_valid_until).toLocaleDateString(undefined, {
           month: 'short',

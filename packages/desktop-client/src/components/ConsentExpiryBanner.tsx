@@ -4,18 +4,16 @@ import { useNavigate } from 'react-router';
 
 import { Button } from '@actual-app/components/button';
 import { SvgDelete } from '@actual-app/components/icons/v0';
-import {
-  SvgExclamationOutline,
-  SvgExclamationSolid,
-  SvgInformationOutline,
-} from '@actual-app/components/icons/v1';
-import { theme } from '@actual-app/components/theme';
 import { View } from '@actual-app/components/view';
 
 import { useConsentExpiry } from '@desktop-client/hooks/useEnableBankingStatus';
 import type { ConsentSession } from '@desktop-client/hooks/useEnableBankingStatus';
 import { pushModal } from '@desktop-client/modals/modalsSlice';
 import { useDispatch } from '@desktop-client/redux';
+import {
+  urgencyColors,
+  urgencyIcons,
+} from '@desktop-client/utils/consent-urgency';
 
 function formatExpiryDate(validUntil: string | null): string {
   if (!validUntil) return 'Unknown date';
@@ -42,38 +40,8 @@ type SessionBannerProps = {
   onDismiss: () => void;
 };
 
-const urgencyIcons = {
-  expired: SvgExclamationSolid,
-  urgent: SvgExclamationOutline,
-  soon: SvgInformationOutline,
-  ok: null,
-} as const;
-
 function SessionBanner({ session, onDismiss }: SessionBannerProps) {
   const dispatch = useDispatch();
-
-  const urgencyColors = {
-    expired: {
-      text: theme.errorText,
-      background: theme.errorBackground,
-      border: theme.errorText,
-    },
-    urgent: {
-      text: theme.warningText,
-      background: theme.warningBackground,
-      border: theme.warningText,
-    },
-    soon: {
-      text: theme.noticeText,
-      background: theme.noticeBackground,
-      border: theme.noticeText,
-    },
-    ok: {
-      text: theme.pageText,
-      background: theme.pageBackground,
-      border: theme.pageTextSubdued,
-    },
-  };
 
   const colors = urgencyColors[session.urgency];
   const bankName = session.aspspName ?? 'Bank';
@@ -177,29 +145,6 @@ function MultiSessionBanner({ sessions, onDismiss }: MultiSessionBannerProps) {
 
   // Use the worst urgency for banner color
   const worstUrgency = sessions[0].urgency;
-
-  const urgencyColors = {
-    expired: {
-      text: theme.errorText,
-      background: theme.errorBackground,
-      border: theme.errorText,
-    },
-    urgent: {
-      text: theme.warningText,
-      background: theme.warningBackground,
-      border: theme.warningText,
-    },
-    soon: {
-      text: theme.noticeText,
-      background: theme.noticeBackground,
-      border: theme.noticeText,
-    },
-    ok: {
-      text: theme.pageText,
-      background: theme.pageBackground,
-      border: theme.pageTextSubdued,
-    },
-  };
 
   const colors = urgencyColors[worstUrgency];
   const count = sessions.length;
