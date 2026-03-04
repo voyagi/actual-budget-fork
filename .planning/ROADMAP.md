@@ -32,7 +32,7 @@
 | 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
 | 4.2 Dependency Security Updates (INSERTED) | 0/1     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
-| 5.1 Accessibility Overhaul (INSERTED) | 0/?          | Not started               | -         |
+| 5.1 Accessibility Overhaul (INSERTED) | 0/2          | Not started               | -         |
 | 5.2 Security Hardening (INSERTED)   | 0/?            | Not started               | -         |
 | 6. Design Refinement                | 0/?            | Not started               | -         |
 | 7. Observability and Monitoring     | 0/?            | Not started               | -         |
@@ -188,13 +188,14 @@ Plans:
 
 ### Phase 05.1: Accessibility Overhaul (INSERTED)
 
-**Goal:** Add semantic heading hierarchy throughout the app, form ARIA attributes (aria-required, aria-invalid, aria-describedby), and extract consent urgency color/threshold logic to shared utilities.
+**Goal:** Add semantic heading hierarchy to fork pages, form ARIA attributes (aria-required, aria-invalid, aria-describedby), and extract consent urgency color/threshold logic to shared utilities.
 **Requirements**: Audit findings a11y-3, a11y-6, dx-3
 **Depends on:** Phase 5
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 05.1 to break down)
+- [ ] 05.1-01-PLAN.md - Extract consent urgency utility (colors, icons, thresholds) to shared module
+- [ ] 05.1-02-PLAN.md - Semantic heading hierarchy on fork pages, FormError default role, form ARIA labels
 
 ### Phase 05.2: Security Hardening (INSERTED)
 
@@ -285,4 +286,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-03 - Phase 04.2 planned (1 plan)_
+_Last updated: 2026-03-04 - Phase 05.1 planned (2 plans)_
