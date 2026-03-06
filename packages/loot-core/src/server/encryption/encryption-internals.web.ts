@@ -1,5 +1,7 @@
 // @ts-strict-ignore
 const ENCRYPTION_ALGORITHM = 'aes-256-gcm';
+export const PBKDF2_ITERATIONS = 100_000;
+export const PBKDF2_ITERATIONS_LEGACY = 10_000;
 
 function browserAlgorithmName(name) {
   switch (name) {
@@ -40,6 +42,7 @@ export async function encrypt(masterKey, value) {
       algorithm: ENCRYPTION_ALGORITHM,
       iv: Buffer.from(iv).toString('base64'),
       authTag: authTag.toString('base64'),
+      iterations: PBKDF2_ITERATIONS,
     },
   };
 }
@@ -60,7 +63,16 @@ export async function decrypt(masterKey, encrypted, meta) {
   return Buffer.from(decrypted);
 }
 
-export async function createKey({ secret, salt }) {
+export async function createKey({
+  secret,
+  salt,
+  iterations,
+}: {
+  secret: string;
+  salt: string;
+  iterations?: number;
+}) {
+  const effectiveIterations = iterations ?? PBKDF2_ITERATIONS;
   const passwordBuffer = Buffer.from(secret);
   const saltBuffer = Buffer.from(salt);
 
@@ -77,7 +89,7 @@ export async function createKey({ secret, salt }) {
       name: 'PBKDF2',
       hash: 'SHA-512',
       salt: saltBuffer,
-      iterations: 10000,
+      iterations: effectiveIterations,
     },
     passwordKey,
     { name: 'AES-GCM', length: 256 },
@@ -90,6 +102,7 @@ export async function createKey({ secret, salt }) {
   return {
     raw: derivedKey,
     base64: Buffer.from(exported).toString('base64'),
+    iterations: effectiveIterations,
   };
 }
 
