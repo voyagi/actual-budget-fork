@@ -10,6 +10,10 @@ import { getServer } from '../server-config';
 import { makeTestMessage, resetSync } from '../sync';
 
 import * as encryption from '.';
+import {
+  PBKDF2_ITERATIONS,
+  PBKDF2_ITERATIONS_LEGACY,
+} from './encryption-internals';
 
 export type EncryptionHandlers = {
   'key-make': typeof keyMake;
@@ -101,10 +105,19 @@ async function keyTest({
       algorithm: string;
       iv: string;
       authTag: string;
+      iterations?: number;
     };
   } = JSON.parse(originalTest);
 
-  const key = await encryption.createKey({ id, password, salt });
+  // Use stored iterations from metadata, or fall back to legacy 10K for
+  // pre-migration files that lack the iterations field.
+  const storedIterations = test.meta.iterations || PBKDF2_ITERATIONS_LEGACY;
+  let key = await encryption.createKey({
+    id,
+    password,
+    salt,
+    iterations: storedIterations,
+  });
   encryption.loadKey(key);
 
   try {
@@ -115,6 +128,44 @@ async function keyTest({
     // Unload the key, it's invalid
     encryption.unloadKey(key);
     return { error: { reason: 'decrypt-failure' } };
+  }
+
+  // Silent re-encryption: if the test message was encrypted with fewer
+  // iterations than current default, re-encrypt with the stronger key.
+  if (storedIterations < PBKDF2_ITERATIONS) {
+    try {
+      // Create a new key with current (100K) iterations
+      const upgradedKey = await encryption.createKey({ id, password, salt });
+      encryption.loadKey(upgradedKey);
+
+      // Re-encrypt the test message with the upgraded key
+      const newTestContent = await makeTestMessage(upgradedKey.getId());
+
+      // Push the re-encrypted test content to the server
+      const serverConfig = getServer();
+      if (serverConfig) {
+        await post(serverConfig.SYNC_SERVER + '/user-create-key', {
+          token: userToken,
+          fileId: validCloudFileId,
+          keyId: id,
+          keySalt: salt,
+          testContent: JSON.stringify({
+            ...newTestContent,
+            value: newTestContent.value.toString('base64'),
+          }),
+        });
+      }
+
+      // Use the upgraded key going forward
+      key = upgradedKey;
+    } catch (e) {
+      // Re-encryption is best-effort. If it fails, the old key still works.
+      // Next file open will retry the migration.
+      logger.log(
+        '[encryption] Silent re-encryption failed, will retry on next access:',
+        e,
+      );
+    }
   }
 
   // Persist key in async storage
