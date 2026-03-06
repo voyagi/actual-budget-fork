@@ -202,7 +202,7 @@ Plans:
 **Goal:** Increase PBKDF2 iterations to 100K+ with data migration strategy, restrict OpenID redirect from localhost in production, add password strength requirements, sanitize non-literal RegExp in handlebars-helpers.
 **Requirements**: Audit findings sec-4, sec-5, sec-7, sec-17
 **Depends on:** Phase 5
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 05.2-01-PLAN.md - PBKDF2 iteration increase to 100K with backward-compatible metadata extension
