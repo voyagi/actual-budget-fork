@@ -439,14 +439,18 @@ export function isValidRedirectUrl(url) {
     const redirectUrl = new URL(url);
     const serverUrl = new URL(serverHostname);
 
-    if (
-      redirectUrl.hostname === serverUrl.hostname ||
-      redirectUrl.hostname === 'localhost'
-    ) {
+    const hostnamesMatch = redirectUrl.hostname === serverUrl.hostname;
+    const portsMatch = redirectUrl.port === serverUrl.port;
+    const schemesMatch = redirectUrl.protocol === serverUrl.protocol;
+
+    if (hostnamesMatch && portsMatch && schemesMatch) {
       return true;
-    } else {
-      return false;
     }
+
+    console.warn(
+      `[openid] Blocked redirect URL: ${url} (server: ${serverHostname})`,
+    );
+    return false;
   } catch {
     return false;
   }

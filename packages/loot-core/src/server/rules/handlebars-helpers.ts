@@ -14,6 +14,31 @@ import { addDays, format, parseDate, subDays } from '../../shared/months';
 export function registerHandlebarsHelpers() {
   const regexTest = /^\/(.*)\/([gimuy]*)$/;
 
+  /**
+   * Escape regex metacharacters in a string for safe use in RegExp constructor.
+   * Prevents ReDoS when payee names contain characters like . + * ? etc. (sec-17)
+   */
+  function escapeRegExp(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /**
+   * Detect potentially catastrophic regex patterns (nested quantifiers).
+   * Returns true if the pattern appears safe, false if it may cause ReDoS.
+   *
+   * Note: Handlebars helpers are called synchronously (action.ts line 150),
+   * so worker_threads timeout is not viable. This pre-check rejects the most
+   * dangerous patterns before execution. Combined with try/catch on all apply
+   * calls for graceful error handling.
+   */
+  function isRegexSafe(pattern: string): boolean {
+    // Reject nested quantifiers like (a+)+, (a*)+, (a{2,})+, etc.
+    // These are the primary cause of catastrophic backtracking.
+    const nestedQuantifier =
+      /([+*?]|\{[0-9]+,?\})\s*[)]\s*([+*?]|\{[0-9]+,?\})/;
+    return !nestedQuantifier.test(pattern);
+  }
+
   function mathHelper(fn: (a: number, b: number) => number) {
     return (a: unknown, ...b: unknown[]) => {
       return b.map(Number).reduce(fn, Number(a));
@@ -34,33 +59,53 @@ export function registerHandlebarsHelpers() {
         return '';
       }
 
-      let regexp: string | RegExp;
       const match = regexTest.exec(regex);
-      // Regex is in format /regex/flags
+      // Regex-literal branch: /regex/flags - apply safety checks
       if (match) {
-        regexp = mapRegex(match[1], match[2]);
-      } else {
-        regexp = mapNonRegex(regex);
+        if (!isRegexSafe(match[1])) {
+          logger.log(
+            `[handlebars] Blocked potentially catastrophic regex: ${regex}`,
+          );
+          return String(value);
+        }
+        const regexp = mapRegex(match[1], match[2]);
+        try {
+          return apply(String(value), regexp, String(replace));
+        } catch (e) {
+          logger.log(
+            `[handlebars] Regex operation failed: ${(e as Error).message}`,
+          );
+          return String(value);
+        }
       }
 
-      return apply(String(value), regexp, replace);
+      // Non-regex branch: escaped input, safe, runs synchronously
+      const regexp = mapNonRegex(String(regex));
+      try {
+        return apply(String(value), regexp, String(replace));
+      } catch (e) {
+        logger.log(
+          `[handlebars] Regex operation failed: ${(e as Error).message}`,
+        );
+        return String(value);
+      }
     };
   }
 
   const helpers = {
     regex: regexHelper(
       (regex, flags) => new RegExp(regex, flags),
-      value => new RegExp(value),
+      value => new RegExp(escapeRegExp(value)),
       (value, regex, replace) => value.replace(regex, replace),
     ),
     replace: regexHelper(
       (regex, flags) => new RegExp(regex, flags),
-      value => value,
+      value => escapeRegExp(value),
       (value, regex, replace) => value.replace(regex, replace),
     ),
     replaceAll: regexHelper(
       (regex, flags) => new RegExp(regex, flags),
-      value => value,
+      value => escapeRegExp(value),
       (value, regex, replace) => value.replaceAll(regex, replace),
     ),
     add: mathHelper((a, b) => a + b),
