@@ -12,22 +12,17 @@ import { useQuery } from '@tanstack/react-query';
 import { send } from 'loot-core/platform/client/connection';
 import * as undo from 'loot-core/platform/client/undo';
 
-import { UserAccessPage } from './admin/UserAccess/UserAccessPage';
 import { CommandBar } from './CommandBar';
 import { GlobalKeys } from './GlobalKeys';
 import { MobileBankSyncAccountEditPage } from './mobile/banksync/MobileBankSyncAccountEditPage';
 import { MobileNavTabs } from './mobile/MobileNavTabs';
 import { TransactionEdit } from './mobile/transactions/TransactionEdit';
 import { Notifications } from './Notifications';
-import { Reports } from './reports';
 import { LoadingIndicator } from './reports/LoadingIndicator';
 import { NarrowAlternate, WideComponent } from './responsive';
-import { UserDirectoryPage } from './responsive/wide';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { useMultiuserEnabled } from './ServerContext';
-import { Settings } from './settings';
 import { FloatableSidebar } from './sidebar';
-import { ManageTagsPage } from './tags/ManageTagsPage';
 import { Titlebar } from './Titlebar';
 
 import { accountQueries } from '@desktop-client/accounts';
@@ -46,6 +41,29 @@ import {
 import { ScrollProvider } from '@desktop-client/hooks/useScrollListener';
 import { addNotification } from '@desktop-client/notifications/notificationsSlice';
 import { useDispatch, useSelector } from '@desktop-client/redux';
+
+// Route-level code splitting: lazy-load heavy page components so they are
+// bundled as separate JS chunks and only fetched when the user visits each
+// route. App-shell components (Sidebar, Titlebar, Notifications, etc.) remain
+// eagerly loaded. NarrowAlternate/WideComponent already do internal lazy
+// loading and are also kept eager.
+const Reports = React.lazy(() =>
+  import('./reports').then(m => ({ default: m.Reports })),
+);
+const Settings = React.lazy(() =>
+  import('./settings').then(m => ({ default: m.Settings })),
+);
+const UserDirectoryPage = React.lazy(() =>
+  import('./responsive/wide').then(m => ({ default: m.UserDirectoryPage })),
+);
+const UserAccessPage = React.lazy(() =>
+  import('./admin/UserAccess/UserAccessPage').then(m => ({
+    default: m.UserAccessPage,
+  })),
+);
+const ManageTagsPage = React.lazy(() =>
+  import('./tags/ManageTagsPage').then(m => ({ default: m.ManageTagsPage })),
+);
 
 function NarrowNotSupported({
   redirectTo = '/budget',
@@ -401,8 +419,9 @@ export function FinancesApp() {
               />
               <Notifications />
 
-              <RouteErrorBoundary>
-                <Routes>
+              <React.Suspense fallback={<LoadingIndicator />}>
+                <RouteErrorBoundary>
+                  <Routes>
                   <Route
                     path="/"
                     element={
@@ -533,8 +552,9 @@ export function FinancesApp() {
                     path="/*"
                     element={<Navigate to="/budget" replace />}
                   />
-                </Routes>
-              </RouteErrorBoundary>
+                  </Routes>
+                </RouteErrorBoundary>
+              </React.Suspense>
             </View>
 
             <Routes>
