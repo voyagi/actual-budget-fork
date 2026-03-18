@@ -62,6 +62,61 @@ async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export type RetryPolicy = {
+  maxRetries: number;
+  initialDelay: number;
+  multiplier: number;
+  maxDelay: number;
+  jitterFraction: number;
+};
+
+export function applyJitter(delay: number, jitterFraction: number): number {
+  // jitter range: [-fraction, +fraction] of the delay
+  const jitter = (Math.random() * 2 - 1) * jitterFraction;
+  return Math.round(delay * (1 + jitter));
+}
+
+export async function syncAccountWithRetry(
+  syncFn: () => Promise<void>,
+  sleepFn: (ms: number) => Promise<void>,
+  policy: RetryPolicy,
+  accountLabel: string,
+): Promise<void> {
+  let delay = policy.initialDelay;
+
+  for (let attempt = 0; attempt <= policy.maxRetries; attempt++) {
+    try {
+      await syncFn();
+      return; // success
+    } catch (err) {
+      // RateLimitError and SessionExpiredError bypass retry - propagate immediately
+      if (err instanceof RateLimitError || err instanceof SessionExpiredError) {
+        throw err;
+      }
+      if (attempt === policy.maxRetries) {
+        // Final attempt exhausted - propagate to caller for eb_sync_log write
+        throw err;
+      }
+      // Cap base delay before applying jitter so jitter may slightly exceed maxDelay
+      const cappedDelay = Math.min(delay, policy.maxDelay);
+      const jitteredDelay = applyJitter(cappedDelay, policy.jitterFraction);
+      console.log(
+        `[scheduler] Retry ${attempt + 1}/${policy.maxRetries} for ${accountLabel} in ${jitteredDelay}ms`,
+      );
+      await sleepFn(jitteredDelay);
+      delay = Math.min(delay * policy.multiplier, policy.maxDelay);
+    }
+  }
+}
+
+const DEFAULT_RETRY_POLICY: RetryPolicy = {
+  maxRetries: 3,
+  initialDelay: 5000,
+  multiplier: 2,
+  maxDelay: 60000,
+  jitterFraction: 0.2,
+};
+
 async function runScheduledSync(): Promise<void> {
   console.log('[scheduler] Starting scheduled sync run');
 
@@ -107,7 +162,12 @@ async function runScheduledSync(): Promise<void> {
 
     for (const account of accounts) {
       try {
-        await syncOneAccount(account);
+        await syncAccountWithRetry(
+          () => syncOneAccount(account),
+          sleep,
+          DEFAULT_RETRY_POLICY,
+          account.actual_account_id,
+        );
         successCount++;
         totalSynced++;
       } catch (err) {
@@ -124,29 +184,22 @@ async function runScheduledSync(): Promise<void> {
           );
           break;
         }
-        // Transient error (network, 5xx): wait 30s and retry once.
-        await sleep(30000);
-        try {
-          await syncOneAccount(account);
-          successCount++;
-          totalSynced++;
-        } catch (retryErr) {
-          console.error(
-            `[scheduler] Failed to sync ${account.actual_account_id} after retry:`,
-            retryErr,
-          );
-          const retryDb = getAccountDb();
-          retryDb.mutate(
-            `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
-             VALUES (?, ?, 'error', ?)`,
-            [
-              account.actual_account_id,
-              account.eb_account_uid,
-              retryErr instanceof Error ? retryErr.message : String(retryErr),
-            ],
-          );
-          totalErrors++;
-        }
+        // All retries exhausted - log error to eb_sync_log
+        console.error(
+          `[scheduler] Failed to sync ${account.actual_account_id} after ${DEFAULT_RETRY_POLICY.maxRetries} retries:`,
+          err,
+        );
+        const retryDb = getAccountDb();
+        retryDb.mutate(
+          `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
+           VALUES (?, ?, 'error', ?)`,
+          [
+            account.actual_account_id,
+            account.eb_account_uid,
+            err instanceof Error ? err.message : String(err),
+          ],
+        );
+        totalErrors++;
       }
     }
 
