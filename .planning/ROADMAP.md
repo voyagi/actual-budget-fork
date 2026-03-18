@@ -34,7 +34,7 @@
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 | 5.1 Accessibility Overhaul (INSERTED) | 2/2 | Complete |  |
 | 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
-| 6. Design Refinement                | 0/?            | Not started               | -         |
+| 6. Design Refinement                | 0/2            | Planned                   | -         |
 | 7. Observability and Monitoring     | 0/?            | Not started               | -         |
 | 8. Quality and Test Infrastructure  | 0/?            | Not started               | -         |
 | 9. Feature Expansion                | 0/?            | Not started               | -         |
@@ -213,10 +213,11 @@ Plans:
 **Goal:** Consolidate alert surfaces into unified notification system, flatten scheduler retry nesting, add exponential backoff for scheduler retry.
 **Requirements**: Audit findings dsg-1, dx-4, fq-4
 **Depends on:** Phase 5
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 6 to break down)
+- [ ] 06-01-PLAN.md -- Alert surface consolidation: route ConsentExpiryBanner and BankSyncStatus through Notifications Redux system
+- [ ] 06-02-PLAN.md -- Scheduler retry extraction with exponential backoff and jitter (TDD)
 
 ### Phase 7: Observability and Monitoring
 
@@ -287,4 +288,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-04 - Phase 05.2 planned (2 plans)_
+_Last updated: 2026-03-18 - Phase 06 planned (2 plans)_
