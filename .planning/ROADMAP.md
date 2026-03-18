@@ -36,7 +36,7 @@
 | 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
 | 6. Design Refinement                | 2/2 | Complete   | 2026-03-18 |
 | 7. Observability and Monitoring     | 3/3 | Complete   | 2026-03-18 |
-| 8. Quality and Test Infrastructure  | 0/2            | Planned                   | -         |
+| 8. Quality and Test Infrastructure  | 1/2 | In Progress|  |
 | 9. Feature Expansion                | 0/?            | Not started               | -         |
 
 ## Phase Details
@@ -236,7 +236,7 @@ Plans:
 **Goal:** Implement route-level code splitting, surface sync failures in UI, configure code coverage, fix E2E tests in CI, add granular error boundaries.
 **Requirements**: Audit findings perf-2, fq-1, dx-2, dx-1, fq-2
 **Depends on:** Phase 7
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 08-01-PLAN.md -- E2E CI workflow fix (Playwright v1.58.2-jammy container) and Vitest v8 coverage config for fork files
