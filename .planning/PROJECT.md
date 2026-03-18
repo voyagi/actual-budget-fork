@@ -91,4 +91,4 @@ GoCardless (formerly Nordigen) stopped accepting new accounts for EU bank sync i
 
 ---
 
-_Last updated: 2026-02-18 after initialization_
+_Last updated: 2026-03-18 after Phase 7_
