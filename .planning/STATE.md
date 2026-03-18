@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.58
 milestone_name: milestone
 status: planning
-stopped_at: Completed 08-01-PLAN.md
-last_updated: "2026-03-18T23:28:41.554Z"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-18T23:32:11.552Z"
 progress:
   total_phases: 13
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 26
-  completed_plans: 25
-  percent: 96
+  completed_plans: 26
+  percent: 100
 ---
 
 ---
@@ -195,8 +195,8 @@ progress:
 
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-03-18
-**Session:** Phase 07 complete (3/3 plans: observability foundation, server-side integration wiring, client alert bridge). Auto-advancing to Phase 08.
+**Last updated:** 2026-03-19
+**Session:** Phase 08 Plan 02 complete (React.lazy code splitting + ErrorBoundary for EB modal + fq-1 sync failure audit). Phase 08 complete (2/2 plans done).
 
 ## Project Reference
 
@@ -204,7 +204,7 @@ progress:
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 08 Quality and Test Infrastructure - Ready to plan.
+**Current Focus:** Phase 08 complete. Ready for Phase 09 Feature Expansion.
 
 ## Current Position
 
@@ -213,7 +213,7 @@ progress:
 **Status:** Ready to plan
 
 **Progress:**
-[██████████] 96%
+[██████████] 100%
 Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [2/2] Complete
@@ -257,6 +257,7 @@ Overall: 10/13 phases complete (24 plans complete across all phases)
 | Phase 07-observability-and-monitoring P02 | 35min | 3 tasks | 9 files |
 | Phase 07-observability-and-monitoring P03 | 25min | 2 tasks | 5 files |
 | Phase 08-quality-and-test-infrastructure P01 | 8min | 2 tasks | 4 files |
+| Phase 08-quality-and-test-infrastructure P02 | 12min | 3 tasks | 2 files |
 
 ## Key Decisions Recorded
 
@@ -271,6 +272,9 @@ Overall: 10/13 phases complete (24 plans complete across all phases)
 | Consent/sync alert hooks: useEffect deps [sessionCount, sessionIdsKey] and wasActive ref | Avoids re-dispatch on referential churn; wasActive prevents orphan removeNotification on mount before any sync has started | 2026-03-18 |
 | fetchOperationalAlerts uses get() not post() to match GET /alerts server endpoint | Plan template showed post() but server exposes GET /alerts; get() returns text so JSON.parse applied manually | 2026-03-18 |
 | knownAlertIds via useRef<Set<string>> in useOperationalAlerts | Prevents re-dispatching alerts already shown this session; Set persists across re-renders and poll intervals without triggering re-render | 2026-03-18 |
+| React.Suspense wraps RouteErrorBoundary (not inside it) for code-split routes | Chunk load errors propagate as render errors to RouteErrorBoundary, enabling recoverable Try again button. Suspense inside boundary would swallow chunk errors. | 2026-03-19 |
+| 5 route components lazy-loaded: Reports, Settings, UserDirectoryPage, UserAccessPage, ManageTagsPage | NarrowAlternate/WideComponent kept eager (already do internal lazy loading). App shell kept eager. Named exports use .then(m => ({ default: m.X })) pattern. | 2026-03-19 |
+| fq-1 audit: Phase 7 useOperationalAlerts confirmed to cover all 3 alert event types | sync_failure (scheduler.ts), consent_expiry (scheduler.ts x2), auth_failure_burst (app-account.ts). Client maps all 3 in formatAlertTitle with 60s polling and server-side ack. | 2026-03-19 |
 | Synchronous regex pre-check instead of worker_threads for Handlebars ReDoS protection  | Handlebars templates called synchronously (action.ts line 150), Promise return renders as [object Promise]. isRegexSafe + try/catch used instead. | 2026-03-06 |
 | keyTest uses stored iterations from metadata with 10K legacy fallback                  | PBKDF2 default changed from 10K to 100K. Without reading stored iterations, old files would fail to decrypt. Fallback to PBKDF2_ITERATIONS_LEGACY ensures backward compat. | 2026-03-06 |
 | Re-encryption best-effort via /user-create-key                                         | After successful decrypt with old iterations, re-encrypt test message with 100K key and push to server. Failure logs but does not block. Retries on next access. | 2026-03-06 |
@@ -441,7 +445,7 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Completed 08-01-PLAN.md
+**Stopped at:** Completed 08-02-PLAN.md
 
 **Next action:** Plan Phase 08 Quality and Test Infrastructure (no CONTEXT.md exists, discuss first).
 
