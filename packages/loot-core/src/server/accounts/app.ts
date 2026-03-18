@@ -30,6 +30,7 @@ import {
 } from './link-accounts';
 import { getStartingBalancePayee } from './payees';
 import {
+  acknowledgeOperationalAlert,
   checkSecret,
   createGoCardlessWebToken,
   enableBankingCreateAuth,
@@ -38,6 +39,7 @@ import {
   enableBankingReauthComplete,
   enableBankingStatus,
   enableBankingSyncStatus,
+  fetchOperationalAlerts,
   getGoCardlessBanks,
   goCardlessStatus,
   pluggyAiAccounts,
@@ -91,6 +93,8 @@ export type AccountHandlers = {
   'enablebanking-accounts-link': typeof linkEnableBankingAccount;
   'enablebanking-sync-status': typeof enableBankingSyncStatus;
   'enablebanking-reauth-complete': typeof enableBankingReauthComplete;
+  'operational-alerts': typeof fetchOperationalAlerts;
+  'operational-alerts-acknowledge': typeof acknowledgeOperationalAlert;
 };
 
 async function updateAccount({
@@ -589,3 +593,5 @@ app.method('enablebanking-poll-session', enableBankingPollSession);
 app.method('enablebanking-accounts-link', linkEnableBankingAccount);
 app.method('enablebanking-sync-status', enableBankingSyncStatus);
 app.method('enablebanking-reauth-complete', enableBankingReauthComplete);
+app.method('operational-alerts', fetchOperationalAlerts);
+app.method('operational-alerts-acknowledge', acknowledgeOperationalAlert);

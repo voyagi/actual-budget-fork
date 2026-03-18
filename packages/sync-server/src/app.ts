@@ -19,6 +19,7 @@ import * as simpleFinApp from './app-simplefin/app-simplefin';
 import * as syncApp from './app-sync';
 import { config } from './load-config';
 import { startScheduler } from './scheduler.js';
+import { getRecentAlerts, acknowledgeAlert } from './util/alerter.js';
 
 const app = express();
 
@@ -145,6 +146,20 @@ app.get('/metrics', (_req, res) => {
     mem: process.memoryUsage(),
     uptime: process.uptime(),
   });
+});
+
+app.get('/alerts', (_req, res) => {
+  res.status(200).json({ alerts: getRecentAlerts() });
+});
+
+app.post('/alerts/acknowledge', (req, res) => {
+  const { alertId } = req.body;
+  if (!alertId || typeof alertId !== 'string') {
+    res.status(400).json({ status: 'error', reason: 'missing-alert-id' });
+    return;
+  }
+  const found = acknowledgeAlert(alertId);
+  res.status(found ? 200 : 404).json({ status: found ? 'ok' : 'not-found' });
 });
 
 // The web frontend

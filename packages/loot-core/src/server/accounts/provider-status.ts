@@ -464,3 +464,42 @@ export async function enableBankingReauthComplete({
     },
   );
 }
+
+// ---------------------------------------------------------------------------
+// Operational alerts IPC handlers
+// ---------------------------------------------------------------------------
+
+export async function fetchOperationalAlerts() {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) return { error: 'unauthorized' };
+
+  const serverConfig = getServer();
+  if (!serverConfig) throw new Error('Failed to get server config.');
+
+  const text = await get(serverConfig.BASE_SERVER + '/alerts', {
+    headers: { 'X-ACTUAL-TOKEN': userToken },
+  });
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { error: 'parse-error' };
+  }
+}
+
+export async function acknowledgeOperationalAlert({
+  alertId,
+}: {
+  alertId: string;
+}) {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) return { error: 'unauthorized' };
+
+  const serverConfig = getServer();
+  if (!serverConfig) throw new Error('Failed to get server config.');
+
+  return post(
+    serverConfig.BASE_SERVER + '/alerts/acknowledge',
+    { alertId },
+    { 'X-ACTUAL-TOKEN': userToken },
+  );
+}
