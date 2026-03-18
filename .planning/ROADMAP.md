@@ -36,7 +36,7 @@
 | 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
 | 6. Design Refinement                | 2/2 | Complete   | 2026-03-18 |
 | 7. Observability and Monitoring     | 3/3 | Complete   | 2026-03-18 |
-| 8. Quality and Test Infrastructure  | 0/?            | Not started               | -         |
+| 8. Quality and Test Infrastructure  | 0/2            | Planned                   | -         |
 | 9. Feature Expansion                | 0/?            | Not started               | -         |
 
 ## Phase Details
@@ -236,10 +236,11 @@ Plans:
 **Goal:** Implement route-level code splitting, surface sync failures in UI, configure code coverage, fix E2E tests in CI, add granular error boundaries.
 **Requirements**: Audit findings perf-2, fq-1, dx-2, dx-1, fq-2
 **Depends on:** Phase 7
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 8 to break down)
+- [ ] 08-01-PLAN.md -- E2E CI workflow fix (Playwright v1.58.2-jammy container) and Vitest v8 coverage config for fork files
+- [ ] 08-02-PLAN.md -- Route-level code splitting (React.lazy + Suspense), EnableBanking error boundary, sync failure UI audit
 
 ### Phase 9: Feature Expansion
 
@@ -290,4 +291,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-18 - Phase 07 revised (3 plans, added in-app notifications plan)_
+_Last updated: 2026-03-19 - Phase 08 planned (2 plans: CI/coverage config, code splitting/error boundaries)_
