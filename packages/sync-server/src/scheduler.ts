@@ -6,6 +6,9 @@
 import cron from 'node-cron';
 
 import { getAccountDb } from './account-db.js';
+import { triggerAlert } from './util/alerter.js';
+import logger from './util/logger.js';
+import { recordSyncRun } from './util/metrics.js';
 import {
   getBalances,
   getTransactions,
@@ -53,9 +56,10 @@ async function syncOneAccount(account: AccountRow): Promise<void> {
     [account.actual_account_id, account.eb_account_uid, allNormalized.length],
   );
 
-  console.log(
-    `[scheduler] Synced ${account.actual_account_id}: ${allNormalized.length} transactions`,
-  );
+  logger.info('Synced account', {
+    accountId: account.actual_account_id,
+    transactions: allNormalized.length,
+  });
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -100,9 +104,12 @@ export async function syncAccountWithRetry(
       // Cap base delay before applying jitter so jitter may slightly exceed maxDelay
       const cappedDelay = Math.min(delay, policy.maxDelay);
       const jitteredDelay = applyJitter(cappedDelay, policy.jitterFraction);
-      console.log(
-        `[scheduler] Retry ${attempt + 1}/${policy.maxRetries} for ${accountLabel} in ${jitteredDelay}ms`,
-      );
+      logger.info('Retrying sync', {
+        attempt: attempt + 1,
+        maxRetries: policy.maxRetries,
+        accountLabel,
+        delayMs: jitteredDelay,
+      });
       await sleepFn(jitteredDelay);
       delay = Math.min(delay * policy.multiplier, policy.maxDelay);
     }
@@ -118,7 +125,7 @@ const DEFAULT_RETRY_POLICY: RetryPolicy = {
 };
 
 async function runScheduledSync(): Promise<void> {
-  console.log('[scheduler] Starting scheduled sync run');
+  logger.info('Starting scheduled sync run');
 
   const db = getAccountDb();
 
@@ -151,11 +158,38 @@ async function runScheduledSync(): Promise<void> {
     const validUntil = accounts[0]?.valid_until;
 
     // Check consent expiry once per session group.
-    if (validUntil && new Date(validUntil) < new Date()) {
-      console.log(
-        `[scheduler] Skipping session ${sessionId} (${aspspName}): consent expired (${accounts.length} accounts)`,
-      );
-      continue;
+    if (validUntil) {
+      const expiryDate = new Date(validUntil);
+      const now = new Date();
+      const daysUntilExpiry =
+        (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (expiryDate < now) {
+        // Already expired - skip this session
+        logger.warn('Skipping expired session', {
+          sessionId,
+          aspspName,
+          accounts: accounts.length,
+        });
+        triggerAlert({
+          event_type: 'consent_expiry',
+          message: `Consent expired for ${aspspName} (session ${sessionId}, ${accounts.length} accounts)`,
+          severity: 'error',
+        }).catch(() => {});
+        continue;
+      } else if (daysUntilExpiry <= 14) {
+        // Expiring within 14 days - alert but continue syncing
+        logger.warn('Consent expiring soon', {
+          sessionId,
+          aspspName,
+          daysUntilExpiry: Math.round(daysUntilExpiry),
+        });
+        triggerAlert({
+          event_type: 'consent_expiry',
+          message: `Consent for ${aspspName} expires in ${Math.round(daysUntilExpiry)} days (session ${sessionId})`,
+          severity: 'warning',
+        }).catch(() => {});
+      }
     }
 
     let successCount = 0;
@@ -173,22 +207,24 @@ async function runScheduledSync(): Promise<void> {
       } catch (err) {
         if (err instanceof RateLimitError) {
           // A 429 applies to the entire API connection - don't sleep or retry.
-          console.log(
-            `[scheduler] Rate limited on session ${sessionId} (${aspspName}), skipping remaining accounts in session`,
-          );
+          logger.warn('Rate limited, skipping session', { sessionId, aspspName });
           break;
         }
         if (err instanceof SessionExpiredError) {
-          console.log(
-            `[scheduler] Session ${sessionId} expired mid-sync, skipping remaining accounts`,
-          );
+          logger.warn('Session expired mid-sync', { sessionId });
           break;
         }
         // All retries exhausted - log error to eb_sync_log
-        console.error(
-          `[scheduler] Failed to sync ${account.actual_account_id} after ${DEFAULT_RETRY_POLICY.maxRetries} retries:`,
-          err,
-        );
+        logger.error('Sync failed after retries exhausted', {
+          accountId: account.actual_account_id,
+          maxRetries: DEFAULT_RETRY_POLICY.maxRetries,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        triggerAlert({
+          event_type: 'sync_failure',
+          message: `Sync failed for account ${account.actual_account_id} after ${DEFAULT_RETRY_POLICY.maxRetries} retries: ${err instanceof Error ? err.message : String(err)}`,
+          severity: 'error',
+        }).catch(() => {});
         const retryDb = getAccountDb();
         retryDb.mutate(
           `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
@@ -203,31 +239,37 @@ async function runScheduledSync(): Promise<void> {
       }
     }
 
-    console.log(
-      `[scheduler] Session ${sessionId} (${aspspName}): synced ${successCount}/${accounts.length} accounts`,
-    );
+    logger.info('Session sync complete', {
+      sessionId,
+      aspspName,
+      synced: successCount,
+      total: accounts.length,
+    });
   }
 
-  console.log(
-    `[scheduler] Sync run complete. ${totalSessions} sessions, ${totalSynced} accounts synced, ${totalErrors} errors.`,
-  );
+  logger.info('Sync run complete', {
+    sessions: totalSessions,
+    synced: totalSynced,
+    errors: totalErrors,
+  });
+  recordSyncRun(totalSynced, totalErrors);
 }
 
 // [eb] Registers the 6-hour cron job. No-op when ENABLE_AUTO_SYNC is not 'true'.
 export function startScheduler(): void {
   if (process.env.ENABLE_AUTO_SYNC !== 'true') {
-    console.log(
-      '[scheduler] Auto-sync disabled (ENABLE_AUTO_SYNC not set to true)',
-    );
+    logger.info('Auto-sync disabled (ENABLE_AUTO_SYNC not set to true)');
     return;
   }
 
   // 5-field cron: at minute 0, hours 0/6/12/18 every day
   cron.schedule('0 0,6,12,18 * * *', () => {
     runScheduledSync().catch(err => {
-      console.error('[scheduler] Unhandled error in sync run:', err);
+      logger.error('Unhandled error in sync run', {
+        error: err instanceof Error ? err.message : String(err),
+      });
     });
   });
 
-  console.log('[scheduler] Auto-sync scheduled (every 6 hours)');
+  logger.info('Auto-sync scheduled (every 6 hours)');
 }

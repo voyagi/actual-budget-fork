@@ -140,29 +140,35 @@ describe('syncAccountWithRetry', () => {
   });
 
   it('logs each retry attempt with attempt number and delay', async () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // logger.info replaced console.log - spy on it to verify structured retry logs
+    const loggerModule = await import('./util/logger.js');
+    const loggerSpy = vi
+      .spyOn(loggerModule.default, 'info')
+      .mockImplementation(() => loggerModule.default);
     syncFn.mockRejectedValue(new Error('fail'));
 
     await expect(
       syncAccountWithRetry(syncFn, sleepFn, testPolicy, 'test-account'),
     ).rejects.toThrow();
 
-    const logCalls = consoleSpy.mock.calls.map((args: unknown[]) =>
-      String(args[0]),
+    // Each call is (message, metadata) - filter for 'Retrying sync' calls
+    const retryCalls = loggerSpy.mock.calls.filter(
+      (args: unknown[]) => args[0] === 'Retrying sync',
     );
-    const retryLogs = logCalls.filter(msg => msg.includes('Retry'));
 
     // Should have 3 retry log entries (one per retry attempt)
-    expect(retryLogs).toHaveLength(3);
-    expect(retryLogs[0]).toMatch(/Retry 1\/3/);
-    expect(retryLogs[1]).toMatch(/Retry 2\/3/);
-    expect(retryLogs[2]).toMatch(/Retry 3\/3/);
+    expect(retryCalls).toHaveLength(3);
+    expect((retryCalls[0][1] as Record<string, unknown>).attempt).toBe(1);
+    expect((retryCalls[1][1] as Record<string, unknown>).attempt).toBe(2);
+    expect((retryCalls[2][1] as Record<string, unknown>).attempt).toBe(3);
 
-    // Each log should mention the delay in ms
-    for (const log of retryLogs) {
-      expect(log).toMatch(/\d+ms/);
+    // Each log should include a numeric delayMs
+    for (const call of retryCalls) {
+      expect(
+        typeof (call[1] as Record<string, unknown>).delayMs,
+      ).toBe('number');
     }
 
-    consoleSpy.mockRestore();
+    loggerSpy.mockRestore();
   });
 });
