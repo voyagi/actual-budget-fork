@@ -1,9 +1,8 @@
 // @ts-strict-ignore
 import React, { useEffect, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
-
 import { ErrorBoundary } from 'react-error-boundary';
 import type { FallbackProps } from 'react-error-boundary';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { Button } from '@actual-app/components/button';
 import { AnimatedLoading } from '@actual-app/components/icons/AnimatedLoading';
@@ -108,12 +107,13 @@ function renderError(
 
 // Error fallback shown when the OAuth flow or bank-fetch renders throw.
 // Catches errors from useAvailableBanks, sendCatch calls, and authorizeEnableBank.
-function EBModalErrorFallback({ error: rawError, resetErrorBoundary }: FallbackProps) {
+function EBModalErrorFallback({
+  error: rawError,
+  resetErrorBoundary,
+}: FallbackProps) {
   const { t } = useTranslation();
   const errorMessage =
-    rawError instanceof globalThis.Error
-      ? rawError.message
-      : String(rawError);
+    rawError instanceof globalThis.Error ? rawError.message : String(rawError);
 
   return (
     <View style={{ padding: 20, alignItems: 'center' }}>
@@ -345,15 +345,16 @@ export function EnableBankingExternalMsgModal({
                 {reauth ? (
                   <Trans>
                     To re-authorize your bank connection, you will be redirected
-                    to a new page where your bank will ask you to authorize access
-                    again. Your existing accounts and transaction history will not
-                    be affected.
+                    to a new page where your bank will ask you to authorize
+                    access again. Your existing accounts and transaction history
+                    will not be affected.
                   </Trans>
                 ) : (
                   <Trans>
                     To link your bank account, you will be redirected to a new
-                    page where your bank will ask you to authorize access. Enable
-                    Banking will not be able to withdraw funds from your accounts.
+                    page where your bank will ask you to authorize access.
+                    Enable Banking will not be able to withdraw funds from your
+                    accounts.
                   </Trans>
                 )}
               </Paragraph>
@@ -394,7 +395,8 @@ export function EnableBankingExternalMsgModal({
                       >
                         (
                         <Trans>
-                          Bank authorization not opening in a new tab? Click here
+                          Bank authorization not opening in a new tab? Click
+                          here
                         </Trans>
                         )
                       </Link>
@@ -407,12 +409,13 @@ export function EnableBankingExternalMsgModal({
                     {reauth ? (
                       <Trans>
                         Success! Your bank connection has been re-authorized.
-                        Syncing fresh transactions now. Please close this window.
+                        Syncing fresh transactions now. Please close this
+                        window.
                       </Trans>
                     ) : (
                       <Trans>
-                        Success! Your bank accounts are being linked. Please close
-                        this window.
+                        Success! Your bank accounts are being linked. Please
+                        close this window.
                       </Trans>
                     )}
                   </Paragraph>
