@@ -2,6 +2,8 @@
 import express from 'express';
 
 import { getAccountDb } from '../account-db.js';
+import { writeAuditLog } from '../util/audit.js';
+import logger from '../util/logger.js';
 import {
   requestLoggerMiddleware,
   validateSessionMiddleware,
@@ -95,6 +97,14 @@ app.get(
         [ebAccountUid, session_id],
       );
     }
+
+    writeAuditLog({
+      event_type: 'eb_consent_auth',
+      actor: 'system',
+      ip_address: req.ip,
+      outcome: 'success',
+      details: { sessionId: session_id, accountCount: accounts.length },
+    });
 
     // Redirect to the link page which auto-closes the popup.
     res.redirect('/enablebanking/link?state=' + encodeURIComponent(state));
@@ -404,9 +414,14 @@ app.post(
       oldSessionId,
     ]);
 
-    console.log(
-      `[eb] Re-auth complete: session ${oldSessionId} -> ${newSessionId}`,
-    );
+    logger.info('Re-auth complete', { oldSessionId, newSessionId });
+    writeAuditLog({
+      event_type: 'eb_consent_renewal',
+      actor: (req.headers['x-actual-token'] as string) ?? 'system',
+      ip_address: req.ip,
+      outcome: 'success',
+      details: { oldSessionId, newSessionId },
+    });
 
     res.send({ status: 'ok', data: {} });
   }),
@@ -454,6 +469,13 @@ app.post(
       'UPDATE eb_account_map SET actual_account_id = ? WHERE eb_account_uid = ?',
       [actualAccountId, ebAccountUid],
     );
+    writeAuditLog({
+      event_type: 'eb_account_link',
+      actor: (req.headers['x-actual-token'] as string) ?? 'system',
+      ip_address: req.ip,
+      outcome: 'success',
+      details: { ebAccountUid, actualAccountId },
+    });
     res.send({ status: 'ok' });
   }),
 );

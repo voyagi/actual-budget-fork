@@ -96,7 +96,10 @@ app.post('/config', async (req: Request, res: Response) => {
 });
 
 app.get('/callback', async (req: Request, res: Response) => {
-  const { error, url } = await loginWithOpenIdFinalize(req.query);
+  const { error, url } = await loginWithOpenIdFinalize({
+    ...req.query,
+    ip_address: req.ip,
+  });
 
   if (error) {
     res.status(400).send({ status: 'error', reason: error });

@@ -18,6 +18,7 @@ import {
   getAccountDb,
   listLoginMethods,
 } from '../account-db';
+import { writeAuditLog } from '../util/audit.js';
 import { config } from '../load-config';
 import {
   getUserByUsername,
@@ -405,9 +406,24 @@ export async function loginWithOpenIdFinalize(body) {
 
     clearExpiredSessions();
 
+    writeAuditLog({
+      event_type: 'openid_auth',
+      actor: token,
+      ip_address: body.ip_address,
+      outcome: 'success',
+      details: { identity, userId },
+    });
+
     return { url: `${return_url}/openid-cb?token=${token}` };
   } catch (err) {
     console.error('OpenID grant failed:', err);
+    writeAuditLog({
+      event_type: 'openid_auth',
+      actor: 'unauthenticated',
+      ip_address: body.ip_address,
+      outcome: 'fail',
+      details: { error: err instanceof Error ? err.message : String(err) },
+    });
     return { error: 'openid-grant-failed' };
   }
 }
