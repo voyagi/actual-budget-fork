@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
+import { ErrorBoundary } from 'react-error-boundary';
+import type { FallbackProps } from 'react-error-boundary';
+
 import { Button } from '@actual-app/components/button';
 import { AnimatedLoading } from '@actual-app/components/icons/AnimatedLoading';
 import { Paragraph } from '@actual-app/components/paragraph';
@@ -100,6 +103,32 @@ function renderError(
             { message: error.message },
           )}
     </Error>
+  );
+}
+
+// Error fallback shown when the OAuth flow or bank-fetch renders throw.
+// Catches errors from useAvailableBanks, sendCatch calls, and authorizeEnableBank.
+function EBModalErrorFallback({ error: rawError, resetErrorBoundary }: FallbackProps) {
+  const { t } = useTranslation();
+  const errorMessage =
+    rawError instanceof globalThis.Error
+      ? rawError.message
+      : String(rawError);
+
+  return (
+    <View style={{ padding: 20, alignItems: 'center' }}>
+      <Paragraph style={{ color: theme.errorText, marginBottom: 10 }}>
+        {t('Something went wrong with the bank connection flow.')}
+      </Paragraph>
+      <Paragraph
+        style={{ fontSize: 12, color: theme.pageTextLight, marginBottom: 15 }}
+      >
+        {errorMessage}
+      </Paragraph>
+      <Button variant="primary" onPress={resetErrorBoundary}>
+        {t('Try again')}
+      </Button>
+    </View>
   );
 }
 
@@ -310,96 +339,98 @@ export function EnableBankingExternalMsgModal({
             }
             rightContent={<ModalCloseButton onPress={close} />}
           />
-          <View>
-            <Paragraph style={{ fontSize: 15 }}>
-              {reauth ? (
-                <Trans>
-                  To re-authorize your bank connection, you will be redirected
-                  to a new page where your bank will ask you to authorize access
-                  again. Your existing accounts and transaction history will not
-                  be affected.
-                </Trans>
-              ) : (
-                <Trans>
-                  To link your bank account, you will be redirected to a new
-                  page where your bank will ask you to authorize access. Enable
-                  Banking will not be able to withdraw funds from your accounts.
-                </Trans>
-              )}
-            </Paragraph>
-
-            {error && (
-              <>
-                {renderError(error, t)}
-                {reauth && (
-                  <View style={{ alignItems: 'center', marginTop: 10 }}>
-                    <Button variant="primary" onPress={onJump}>
-                      <Trans>Try again</Trans>
-                    </Button>
-                  </View>
+          <ErrorBoundary FallbackComponent={EBModalErrorFallback}>
+            <View>
+              <Paragraph style={{ fontSize: 15 }}>
+                {reauth ? (
+                  <Trans>
+                    To re-authorize your bank connection, you will be redirected
+                    to a new page where your bank will ask you to authorize access
+                    again. Your existing accounts and transaction history will not
+                    be affected.
+                  </Trans>
+                ) : (
+                  <Trans>
+                    To link your bank account, you will be redirected to a new
+                    page where your bank will ask you to authorize access. Enable
+                    Banking will not be able to withdraw funds from your accounts.
+                  </Trans>
                 )}
-              </>
-            )}
+              </Paragraph>
 
-            {!error &&
-              (waiting || isConfigurationLoading ? (
-                <View style={{ alignItems: 'center', marginTop: 15 }}>
-                  <AnimatedLoading
-                    color={theme.pageTextDark}
-                    style={{ width: 20, height: 20 }}
-                  />
-                  <View style={{ marginTop: 10, color: theme.pageText }}>
-                    {isConfigurationLoading
-                      ? t('Checking Enable Banking configuration...')
-                      : waiting === 'browser'
-                        ? t('Waiting for bank authorization...')
-                        : null}
-                  </View>
-
-                  {waiting === 'browser' && (
-                    <Link
-                      variant="text"
-                      onClick={onJump}
-                      style={{ marginTop: 10 }}
-                    >
-                      (
-                      <Trans>
-                        Bank authorization not opening in a new tab? Click here
-                      </Trans>
-                      )
-                    </Link>
-                  )}
-                </View>
-              ) : success ? (
-                <Paragraph
-                  style={{ marginTop: 10, color: theme.noticeTextLight }}
-                >
-                  {reauth ? (
-                    <Trans>
-                      Success! Your bank connection has been re-authorized.
-                      Syncing fresh transactions now. Please close this window.
-                    </Trans>
-                  ) : (
-                    <Trans>
-                      Success! Your bank accounts are being linked. Please close
-                      this window.
-                    </Trans>
-                  )}
-                </Paragraph>
-              ) : isConfigured ? (
-                renderLinkButton()
-              ) : (
+              {error && (
                 <>
-                  <Paragraph style={{ color: theme.errorText }}>
-                    <Trans>
-                      Enable Banking integration has not yet been configured.
-                      Please contact your server administrator to set up the
-                      Enable Banking API credentials.
-                    </Trans>
-                  </Paragraph>
+                  {renderError(error, t)}
+                  {reauth && (
+                    <View style={{ alignItems: 'center', marginTop: 10 }}>
+                      <Button variant="primary" onPress={onJump}>
+                        <Trans>Try again</Trans>
+                      </Button>
+                    </View>
+                  )}
                 </>
-              ))}
-          </View>
+              )}
+
+              {!error &&
+                (waiting || isConfigurationLoading ? (
+                  <View style={{ alignItems: 'center', marginTop: 15 }}>
+                    <AnimatedLoading
+                      color={theme.pageTextDark}
+                      style={{ width: 20, height: 20 }}
+                    />
+                    <View style={{ marginTop: 10, color: theme.pageText }}>
+                      {isConfigurationLoading
+                        ? t('Checking Enable Banking configuration...')
+                        : waiting === 'browser'
+                          ? t('Waiting for bank authorization...')
+                          : null}
+                    </View>
+
+                    {waiting === 'browser' && (
+                      <Link
+                        variant="text"
+                        onClick={onJump}
+                        style={{ marginTop: 10 }}
+                      >
+                        (
+                        <Trans>
+                          Bank authorization not opening in a new tab? Click here
+                        </Trans>
+                        )
+                      </Link>
+                    )}
+                  </View>
+                ) : success ? (
+                  <Paragraph
+                    style={{ marginTop: 10, color: theme.noticeTextLight }}
+                  >
+                    {reauth ? (
+                      <Trans>
+                        Success! Your bank connection has been re-authorized.
+                        Syncing fresh transactions now. Please close this window.
+                      </Trans>
+                    ) : (
+                      <Trans>
+                        Success! Your bank accounts are being linked. Please close
+                        this window.
+                      </Trans>
+                    )}
+                  </Paragraph>
+                ) : isConfigured ? (
+                  renderLinkButton()
+                ) : (
+                  <>
+                    <Paragraph style={{ color: theme.errorText }}>
+                      <Trans>
+                        Enable Banking integration has not yet been configured.
+                        Please contact your server administrator to set up the
+                        Enable Banking API credentials.
+                      </Trans>
+                    </Paragraph>
+                  </>
+                ))}
+            </View>
+          </ErrorBoundary>
         </>
       )}
     </Modal>
