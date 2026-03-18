@@ -6,7 +6,7 @@ import cors from 'cors';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 
-import { bootstrap } from './account-db';
+import { bootstrap, getAccountDb } from './account-db';
 import * as accountApp from './app-account';
 import * as adminApp from './app-admin';
 import * as corsApp from './app-cors-proxy';
@@ -20,6 +20,9 @@ import * as syncApp from './app-sync';
 import { config } from './load-config';
 import { startScheduler } from './scheduler.js';
 import { getRecentAlerts, acknowledgeAlert } from './util/alerter.js';
+import { runAuditMigrations } from './util/audit-migrations.js';
+import { latencyMiddleware } from './util/middlewares.js';
+import { getLatencyPercentiles, getSyncStats } from './util/metrics.js';
 
 const app = express();
 
@@ -58,6 +61,7 @@ const authRateLimit = rateLimit({
 });
 
 app.use(express.json({ limit: `${config.get('upload.fileSizeLimitMB')}mb` }));
+app.use(latencyMiddleware);
 
 app.use(
   express.raw({
@@ -142,9 +146,30 @@ app.get('/health', (_req, res) => {
 });
 
 app.get('/metrics', (_req, res) => {
+  let sessions = null;
+  try {
+    const db = getAccountDb();
+    const now = new Date().toISOString();
+    const in14Days = new Date(Date.now() + 14 * 86400000).toISOString();
+    const activeCount = (db.first(
+      'SELECT COUNT(*) as cnt FROM eb_sessions WHERE valid_until > ?',
+      [now],
+    ) as { cnt: number } | null)?.cnt ?? 0;
+    const expiringCount = (db.first(
+      'SELECT COUNT(*) as cnt FROM eb_sessions WHERE valid_until > ? AND valid_until < ?',
+      [now, in14Days],
+    ) as { cnt: number } | null)?.cnt ?? 0;
+    sessions = { active: activeCount, expiringWithin14Days: expiringCount };
+  } catch {
+    // DB not yet bootstrapped - sessions remains null
+  }
+
   res.status(200).json({
     mem: process.memoryUsage(),
     uptime: process.uptime(),
+    latency: getLatencyPercentiles(),
+    sync: getSyncStats(),
+    sessions,
   });
 });
 
@@ -245,6 +270,15 @@ export async function run() {
     app.listen(port, hostname, () => {
       sendServerStartedMessage();
     });
+  }
+
+  // Create audit_log table if it doesn't exist.
+  // Wrapped in try/catch because on first startup before bootstrap, the account DB may not exist yet.
+  // The CREATE TABLE IF NOT EXISTS is idempotent so running it again later is fine.
+  try {
+    runAuditMigrations();
+  } catch {
+    // DB not bootstrapped yet - migrations will run on first request via getAccountDb()
   }
 
   // [eb] Start the 6-hour auto-sync scheduler. No-op when ENABLE_AUTO_SYNC != 'true'.

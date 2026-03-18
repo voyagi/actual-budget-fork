@@ -151,10 +151,10 @@ describe('syncAccountWithRetry', () => {
       syncAccountWithRetry(syncFn, sleepFn, testPolicy, 'test-account'),
     ).rejects.toThrow();
 
-    // Each call is (message, metadata) - filter for 'Retrying sync' calls
-    const retryCalls = loggerSpy.mock.calls.filter(
-      (args: unknown[]) => args[0] === 'Retrying sync',
-    );
+    // Each call is (message, metadata) - filter for 'Retrying sync' calls.
+    // Cast to unknown[][] to work around Winston's narrow spy type overloads.
+    const allCalls = loggerSpy.mock.calls as unknown[][];
+    const retryCalls = allCalls.filter(args => args[0] === 'Retrying sync');
 
     // Should have 3 retry log entries (one per retry attempt)
     expect(retryCalls).toHaveLength(3);

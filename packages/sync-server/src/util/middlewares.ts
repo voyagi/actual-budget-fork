@@ -3,6 +3,7 @@ import * as expressWinston from 'express-winston';
 import * as winston from 'winston';
 
 import logger from './logger';
+import { recordLatency } from './metrics.js';
 import { validateSession } from './validate-user';
 
 async function errorMiddleware(
@@ -25,8 +26,10 @@ async function errorMiddleware(
   }
 
   logger.error('Error on endpoint', {
-    requestUrl: req.url,
-    stacktrace: err.stack,
+    url: req.url,
+    hasSession: !!req.headers['x-actual-token'],
+    errorClass: err.constructor.name,
+    stack: err.stack,
   });
   res.status(500).send({ status: 'error', reason: 'internal-error' });
 }
@@ -68,4 +71,10 @@ const requestLoggerMiddleware = expressWinston.logger({
   ),
 });
 
-export { validateSessionMiddleware, errorMiddleware, requestLoggerMiddleware };
+function latencyMiddleware(req: Request, res: Response, next: NextFunction): void {
+  const start = Date.now();
+  res.on('finish', () => recordLatency(Date.now() - start));
+  next();
+}
+
+export { validateSessionMiddleware, errorMiddleware, requestLoggerMiddleware, latencyMiddleware };

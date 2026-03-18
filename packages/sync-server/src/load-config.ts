@@ -304,6 +304,12 @@ const configSchema = convict({
     default: 'http://localhost:3001',
     env: 'ACTUAL_CORS_ORIGIN',
   },
+  alertWebhookUrl: {
+    doc: 'Optional webhook URL for operational alerts (sync failures, auth anomalies). Receives JSON POST.',
+    format: String,
+    default: '',
+    env: 'ALERT_WEBHOOK_URL',
+  },
 });
 
 let configPath: string | null = null;
