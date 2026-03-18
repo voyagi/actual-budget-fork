@@ -41,6 +41,7 @@ import { useNavigate } from '@desktop-client/hooks/useNavigate';
 import {
   useConsentExpiryNotifications,
   useBankSyncNotification,
+  useOperationalAlerts,
 } from '@desktop-client/hooks/useEnableBankingStatus';
 import { ScrollProvider } from '@desktop-client/hooks/useScrollListener';
 import { addNotification } from '@desktop-client/notifications/notificationsSlice';
@@ -324,6 +325,7 @@ export function FinancesApp() {
 
   useConsentExpiryNotifications();
   useBankSyncNotification();
+  useOperationalAlerts();
 
   const scrollableRef = useRef<HTMLDivElement>(null);
 

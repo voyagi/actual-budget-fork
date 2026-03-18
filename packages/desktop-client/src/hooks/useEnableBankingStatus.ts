@@ -358,6 +358,104 @@ export function useConsentExpiryNotifications(): void {
 }
 
 // ---------------------------------------------------------------------------
+// useOperationalAlerts
+// ---------------------------------------------------------------------------
+
+type ServerAlert = {
+  id: string;
+  event_type: string;
+  message: string;
+  timestamp: string;
+  severity: 'info' | 'warning' | 'error';
+};
+
+/**
+ * Side-effect hook that polls the sync-server for operational alerts
+ * (sync failures, consent expiry warnings, auth failure bursts) and
+ * surfaces them as in-app notifications via the Redux Notifications system.
+ *
+ * Polls every 60 seconds. Acknowledges alerts on the server when the
+ * user dismisses the notification (onClose callback).
+ *
+ * Per user decision obs-2: "Extend the existing in-app Notifications
+ * system (from Phase 6 migration) for user-visible alerts."
+ */
+export function useOperationalAlerts(): void {
+  const dispatch = useDispatch();
+  const status = useSyncServerStatus();
+  const knownAlertIds = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (status !== 'online') return;
+
+    let active = true;
+
+    async function poll() {
+      try {
+        const result = await send('operational-alerts');
+        if (!active || !result?.alerts) return;
+
+        const alerts: ServerAlert[] = result.alerts;
+
+        for (const alert of alerts) {
+          if (knownAlertIds.current.has(alert.id)) continue;
+          knownAlertIds.current.add(alert.id);
+
+          const notificationType: 'error' | 'warning' | 'message' =
+            alert.severity === 'error'
+              ? 'error'
+              : alert.severity === 'warning'
+                ? 'warning'
+                : 'message';
+
+          dispatch(
+            addNotification({
+              notification: {
+                id: `op-alert-${alert.id}`,
+                type: notificationType,
+                sticky: true,
+                title: formatAlertTitle(alert.event_type),
+                message: alert.message,
+                onClose: () => {
+                  // Acknowledge on server so it doesn't re-appear
+                  send('operational-alerts-acknowledge', {
+                    alertId: alert.id,
+                  }).catch(() => {});
+                },
+              },
+            }),
+          );
+        }
+      } catch {
+        // Server unreachable - ignore, will retry next interval
+      }
+    }
+
+    // Poll immediately, then every 60 seconds
+    poll();
+    const interval = setInterval(poll, 60_000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [status, dispatch]);
+}
+
+function formatAlertTitle(eventType: string): string {
+  switch (eventType) {
+    case 'sync_failure':
+      return 'Sync failed';
+    case 'consent_expiry':
+      return 'Bank connection expiring';
+    case 'auth_failure_burst':
+      return 'Repeated login failures';
+    default:
+      return 'Operational alert';
+  }
+}
+
+// ---------------------------------------------------------------------------
 // useBankSyncNotification
 // ---------------------------------------------------------------------------
 
