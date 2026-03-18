@@ -1,12 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
 import { send } from 'loot-core/platform/client/connection';
 
 import { useSyncServerStatus } from './useSyncServerStatus';
+import { useNavigate } from './useNavigate';
 
 import { accountQueries } from '@desktop-client/accounts';
+import { pushModal } from '@desktop-client/modals/modalsSlice';
+import {
+  addNotification,
+  removeNotification,
+} from '@desktop-client/notifications/notificationsSlice';
+import { useDispatch, useSelector } from '@desktop-client/redux';
 import {
   getUrgencyLevel,
   type ConsentUrgency,
@@ -200,4 +207,193 @@ export function useConsentExpiry(): {
     sessions.length > 0 ? sessions[0].urgency : 'ok';
 
   return { sessions, worstUrgency };
+}
+
+// ---------------------------------------------------------------------------
+// Helper functions (moved from ConsentExpiryBanner.tsx)
+// ---------------------------------------------------------------------------
+
+function formatExpiryDate(validUntil: string | null): string {
+  if (!validUntil) return 'Unknown date';
+  const date = new Date(validUntil);
+  return date.toLocaleDateString(undefined, {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function isDismissed(sessionId: string): boolean {
+  const key = `consent-dismissed-${sessionId}-${new Date().toDateString()}`;
+  return localStorage.getItem(key) === 'true';
+}
+
+function dismiss(sessionId: string): void {
+  const key = `consent-dismissed-${sessionId}-${new Date().toDateString()}`;
+  localStorage.setItem(key, 'true');
+}
+
+// ---------------------------------------------------------------------------
+// useConsentExpiryNotifications
+// ---------------------------------------------------------------------------
+
+/**
+ * Side-effect hook that routes consent expiry warnings through the Redux
+ * Notifications system as sticky warnings. Call from FinancesApp.
+ *
+ * Replaces the ConsentExpiryBanner standalone component:
+ * - Single session  → per-session notification with Re-authorize button
+ * - Multiple sessions → aggregated notification with Manage bank sync button
+ * - Daily-dismiss via localStorage preserved (isDismissed / dismiss helpers)
+ * - Two-pass localStorage cleanup on each sessions change
+ */
+export function useConsentExpiryNotifications(): void {
+  const { sessions } = useConsentExpiry();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Stable deps: re-run only when session count or IDs change, not on
+  // referential array identity changes.
+  const sessionCount = sessions.length;
+  const sessionIdsKey = sessions.map(s => s.sessionId).join(',');
+
+  useEffect(() => {
+    // Two-pass localStorage cleanup: collect stale keys first, then delete.
+    // Deleting during index iteration corrupts i and skips keys.
+    const today = new Date().toDateString();
+    const keysToDelete: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('consent-dismissed-') && !key.endsWith(today)) {
+        keysToDelete.push(key);
+      }
+    }
+    for (const key of keysToDelete) {
+      localStorage.removeItem(key);
+    }
+
+    if (sessionCount === 0) return;
+
+    const visibleSessions = sessions.filter(s => !isDismissed(s.sessionId));
+
+    if (visibleSessions.length === 0) return;
+
+    if (visibleSessions.length === 1) {
+      const session = visibleSessions[0];
+      const bankName = session.aspspName ?? 'Bank';
+      const isExpired = session.urgency === 'expired';
+
+      dispatch(
+        addNotification({
+          notification: {
+            id: `consent-expiry-${session.sessionId}`,
+            type: 'warning',
+            sticky: true,
+            title: isExpired
+              ? 'Bank connection expired'
+              : 'Bank connection expiring',
+            message: isExpired
+              ? `${bankName} bank connection expired - re-authorize to resume automatic sync`
+              : `${bankName} bank connection expires ${formatExpiryDate(session.validUntil)}`,
+            button: {
+              title: 'Re-authorize',
+              action: () => {
+                dispatch(
+                  pushModal({
+                    modal: {
+                      name: 'enablebanking-external-msg',
+                      options: {
+                        sessionId: session.sessionId,
+                        aspspName: session.aspspName ?? undefined,
+                        aspspCountry: session.aspspCountry ?? undefined,
+                        reauth: true,
+                      },
+                    },
+                  }),
+                );
+              },
+            },
+            onClose: () => {
+              dismiss(session.sessionId);
+            },
+          },
+        }),
+      );
+    } else {
+      // Multiple sessions: single aggregated notification
+      const expiredCount = visibleSessions.filter(
+        s => s.urgency === 'expired',
+      ).length;
+      const baseMessage = `${visibleSessions.length} bank connections need re-authorization`;
+      const message =
+        expiredCount > 0
+          ? `${baseMessage} (${expiredCount} expired)`
+          : baseMessage;
+
+      dispatch(
+        addNotification({
+          notification: {
+            id: 'consent-expiry-multi',
+            type: 'warning',
+            sticky: true,
+            title: 'Bank connections expiring',
+            message,
+            button: {
+              title: 'Manage bank sync',
+              action: () => {
+                navigate('/bank-sync');
+              },
+            },
+            onClose: () => {
+              for (const s of visibleSessions) {
+                dismiss(s.sessionId);
+              }
+            },
+          },
+        }),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionCount, sessionIdsKey]);
+}
+
+// ---------------------------------------------------------------------------
+// useBankSyncNotification
+// ---------------------------------------------------------------------------
+
+/**
+ * Side-effect hook that routes bank-sync-in-progress status through the Redux
+ * Notifications system. Dispatches a sticky message while accounts are syncing
+ * and removes it when sync completes. Call from FinancesApp.
+ *
+ * Replaces the BankSyncStatus standalone component.
+ */
+export function useBankSyncNotification(): void {
+  const accountsSyncing = useSelector(
+    (state: { account: { accountsSyncing: string[] } }) =>
+      state.account.accountsSyncing,
+  );
+  const dispatch = useDispatch();
+  // Track whether a sync notification is currently active to avoid orphaning
+  // the notification if the component re-renders between sync start and end.
+  const wasActive = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (accountsSyncing.length > 0) {
+      dispatch(
+        addNotification({
+          notification: {
+            id: 'bank-sync-in-progress',
+            type: 'message',
+            sticky: true,
+            message: `Syncing... ${accountsSyncing.length} accounts remaining`,
+          },
+        }),
+      );
+      wasActive.current = true;
+    } else if (wasActive.current === true) {
+      dispatch(removeNotification({ id: 'bank-sync-in-progress' }));
+      wasActive.current = false;
+    }
+  }, [accountsSyncing.length, dispatch]);
 }
