@@ -31,12 +31,12 @@ describe('applyJitter', () => {
 });
 
 describe('syncAccountWithRetry', () => {
-  let syncFn: ReturnType<typeof vi.fn>;
-  let sleepFn: ReturnType<typeof vi.fn>;
+  let syncFn: ReturnType<typeof vi.fn<() => Promise<void>>>;
+  let sleepFn: ReturnType<typeof vi.fn<(ms: number) => Promise<void>>>;
 
   beforeEach(() => {
-    syncFn = vi.fn();
-    sleepFn = vi.fn().mockResolvedValue(undefined);
+    syncFn = vi.fn<() => Promise<void>>();
+    sleepFn = vi.fn<(ms: number) => Promise<void>>().mockResolvedValue(undefined);
   });
 
   it('succeeds on first attempt without retry', async () => {
