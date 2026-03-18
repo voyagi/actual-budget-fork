@@ -16,7 +16,7 @@
 - [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and smoke-tested
 - [ ] **Phase 5.1: Accessibility Overhaul** - Heading hierarchy, form ARIA, shared utilities (INSERTED)
 - [ ] **Phase 5.2: Security Hardening** - PBKDF2, OpenID, password strength, ReDoS (INSERTED)
-- [ ] **Phase 6: Design Refinement** - Alert surface consolidation, scheduler cleanup
+- [x] **Phase 6: Design Refinement** - Alert surface consolidation, scheduler cleanup (completed 2026-03-18)
 - [ ] **Phase 7: Observability and Monitoring** - Error tracking, alerting, audit logging, metrics
 - [ ] **Phase 8: Quality and Test Infrastructure** - Code splitting, sync failure UI, coverage, E2E
 - [ ] **Phase 9: Feature Expansion** - 2FA/TOTP, backup automation
@@ -34,7 +34,7 @@
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 | 5.1 Accessibility Overhaul (INSERTED) | 2/2 | Complete |  |
 | 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
-| 6. Design Refinement                | 1/2 | In Progress|  |
+| 6. Design Refinement                | 2/2 | Complete   | 2026-03-18 |
 | 7. Observability and Monitoring     | 0/?            | Not started               | -         |
 | 8. Quality and Test Infrastructure  | 0/?            | Not started               | -         |
 | 9. Feature Expansion                | 0/?            | Not started               | -         |
@@ -213,7 +213,7 @@ Plans:
 **Goal:** Consolidate alert surfaces into unified notification system, flatten scheduler retry nesting, add exponential backoff for scheduler retry.
 **Requirements**: Audit findings dsg-1, dx-4, fq-4
 **Depends on:** Phase 5
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 06-01-PLAN.md -- Alert surface consolidation: route ConsentExpiryBanner and BankSyncStatus through Notifications Redux system
