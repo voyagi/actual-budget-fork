@@ -225,7 +225,7 @@ Overall: 5/13 phases complete (21 plans complete across all phases)
 | Phase 07-observability-and-monitoring P01 | 20min | 3 tasks | 8 files |
 | Phase 07-observability-and-monitoring P01 | 20min | 3 tasks | 8 files |
 | Phase 07-observability-and-monitoring P02 | 35min | 3 tasks | 9 files |
-| Phase 07-observability-and-monitoring P07-03 | 25min | 2 tasks | 5 files |
+| Phase 07-observability-and-monitoring P03 | 25min | 2 tasks | 5 files |
 
 ## Key Decisions Recorded
 
@@ -238,6 +238,8 @@ Overall: 5/13 phases complete (21 plans complete across all phases)
 | syncAccountWithRetry uses dependency injection (syncFn, sleepFn params) for pure unit testing without DB or API calls | Enables vi.fn() stub-based unit tests with no real DB/API setup required; function exported for testability | 2026-03-18 |
 | Base delay capped before jitter in exponential backoff: applyJitter(Math.min(delay, maxDelay), jitterFraction) | Allows jitter to slightly exceed maxDelay per standard pattern; base delay capped so compounding stays bounded | 2026-03-18 |
 | Consent/sync alert hooks: useEffect deps [sessionCount, sessionIdsKey] and wasActive ref | Avoids re-dispatch on referential churn; wasActive prevents orphan removeNotification on mount before any sync has started | 2026-03-18 |
+| fetchOperationalAlerts uses get() not post() to match GET /alerts server endpoint | Plan template showed post() but server exposes GET /alerts; get() returns text so JSON.parse applied manually | 2026-03-18 |
+| knownAlertIds via useRef<Set<string>> in useOperationalAlerts | Prevents re-dispatching alerts already shown this session; Set persists across re-renders and poll intervals without triggering re-render | 2026-03-18 |
 | Synchronous regex pre-check instead of worker_threads for Handlebars ReDoS protection  | Handlebars templates called synchronously (action.ts line 150), Promise return renders as [object Promise]. isRegexSafe + try/catch used instead. | 2026-03-06 |
 | keyTest uses stored iterations from metadata with 10K legacy fallback                  | PBKDF2 default changed from 10K to 100K. Without reading stored iterations, old files would fail to decrypt. Fallback to PBKDF2_ITERATIONS_LEGACY ensures backward compat. | 2026-03-06 |
 | Re-encryption best-effort via /user-create-key                                         | After successful decrypt with old iterations, re-encrypt test message with 100K key and push to server. Failure logs but does not block. Retries on next access. | 2026-03-06 |
@@ -410,7 +412,7 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 **Stopped at:** Completed 07-03-PLAN.md
 
-**Next action:** Phase 07 Plan 01 complete. Execute Phase 07 Plan 02 (instrument callsites with audit, metrics, alerter) next.
+**Next action:** Phase 07 complete (all 3 plans done: observability foundation, callsite instrumentation, client alert bridge). Execute Phase 08 Quality and Test Infrastructure next.
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
