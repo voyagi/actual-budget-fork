@@ -13,9 +13,7 @@ import { send } from 'loot-core/platform/client/connection';
 import * as undo from 'loot-core/platform/client/undo';
 
 import { UserAccessPage } from './admin/UserAccess/UserAccessPage';
-import { BankSyncStatus } from './BankSyncStatus';
 import { CommandBar } from './CommandBar';
-import { ConsentExpiryBanner } from './ConsentExpiryBanner';
 import { GlobalKeys } from './GlobalKeys';
 import { MobileBankSyncAccountEditPage } from './mobile/banksync/MobileBankSyncAccountEditPage';
 import { MobileNavTabs } from './mobile/MobileNavTabs';
@@ -40,6 +38,10 @@ import { useGlobalPref } from '@desktop-client/hooks/useGlobalPref';
 import { useLocalPref } from '@desktop-client/hooks/useLocalPref';
 import { useMetaThemeColor } from '@desktop-client/hooks/useMetaThemeColor';
 import { useNavigate } from '@desktop-client/hooks/useNavigate';
+import {
+  useConsentExpiryNotifications,
+  useBankSyncNotification,
+} from '@desktop-client/hooks/useEnableBankingStatus';
 import { ScrollProvider } from '@desktop-client/hooks/useScrollListener';
 import { addNotification } from '@desktop-client/notifications/notificationsSlice';
 import { useDispatch, useSelector } from '@desktop-client/redux';
@@ -320,6 +322,9 @@ export function FinancesApp() {
     versionInfo,
   ]);
 
+  useConsentExpiryNotifications();
+  useBankSyncNotification();
+
   const scrollableRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -393,8 +398,6 @@ export function FinancesApp() {
                 }}
               />
               <Notifications />
-              <ConsentExpiryBanner />
-              <BankSyncStatus />
 
               <RouteErrorBoundary>
                 <Routes>
