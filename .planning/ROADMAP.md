@@ -35,7 +35,7 @@
 | 5.1 Accessibility Overhaul (INSERTED) | 2/2 | Complete |  |
 | 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
 | 6. Design Refinement                | 2/2 | Complete   | 2026-03-18 |
-| 7. Observability and Monitoring     | 0/?            | Not started               | -         |
+| 7. Observability and Monitoring     | 0/2            | Planned                   | -         |
 | 8. Quality and Test Infrastructure  | 0/?            | Not started               | -         |
 | 9. Feature Expansion                | 0/?            | Not started               | -         |
 
@@ -221,13 +221,14 @@ Plans:
 
 ### Phase 7: Observability and Monitoring
 
-**Goal:** Integrate error tracking service, add alerting mechanism, implement audit logging for auth operations, add request latency and sync duration metrics.
+**Goal:** Structured error tracking via Winston file logs, webhook alerting for operational events, audit logging for auth and EB operations, request latency and sync duration metrics.
 **Requirements**: Audit findings obs-1, obs-2, obs-3, obs-4
 **Depends on:** Phase 6
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 7 to break down)
+- [ ] 07-01-PLAN.md -- Observability utility modules: Winston file transport, audit migration/helper, metrics collector, webhook alerter
+- [ ] 07-02-PLAN.md -- Integration: console.log migration, audit callsites, latency middleware, /metrics enrichment, alerter wiring
 
 ### Phase 8: Quality and Test Infrastructure
 
@@ -288,4 +289,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-18 - Phase 06 planned (2 plans)_
+_Last updated: 2026-03-18 - Phase 07 planned (2 plans)_
