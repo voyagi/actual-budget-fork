@@ -34,7 +34,7 @@
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
 | 5.1 Accessibility Overhaul (INSERTED) | 2/2 | Complete |  |
 | 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
-| 6. Design Refinement                | 0/2            | Planned                   | -         |
+| 6. Design Refinement                | 1/2 | In Progress|  |
 | 7. Observability and Monitoring     | 0/?            | Not started               | -         |
 | 8. Quality and Test Infrastructure  | 0/?            | Not started               | -         |
 | 9. Feature Expansion                | 0/?            | Not started               | -         |
@@ -213,7 +213,7 @@ Plans:
 **Goal:** Consolidate alert surfaces into unified notification system, flatten scheduler retry nesting, add exponential backoff for scheduler retry.
 **Requirements**: Audit findings dsg-1, dx-4, fq-4
 **Depends on:** Phase 5
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md -- Alert surface consolidation: route ConsentExpiryBanner and BankSyncStatus through Notifications Redux system

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 06 context gathered
-last_updated: "2026-03-18T01:11:33.265Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-18T01:33:00.265Z"
 progress:
   total_phases: 13
   completed_phases: 7
-  total_plans: 19
-  completed_plans: 19
-  percent: 100
+  total_plans: 21
+  completed_plans: 20
+  percent: 95
 ---
 
 ---
@@ -120,8 +120,8 @@ progress:
 
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-03-06
-**Session:** Phase 05.2 Plan 01 complete (PBKDF2 iterations 10K to 100K, metadata-driven backward compat, transparent re-encryption on next file access)
+**Last updated:** 2026-03-18
+**Session:** Phase 06 Plan 01 complete (consent/sync alerts consolidated into Redux Notifications system via useConsentExpiryNotifications and useBankSyncNotification hooks)
 
 ## Project Reference
 
@@ -129,16 +129,16 @@ progress:
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 05.2 Security Hardening - ALL PLANS COMPLETE. Plan 01 (PBKDF2 100K iterations, re-encryption) and Plan 02 (input validation, ReDoS protection) both done.
+**Current Focus:** Phase 06 Design Refinement - Plan 01 complete (1/2 plans done). Plan 02 remaining.
 
 ## Current Position
 
-**Active Phase:** 05.2-security-hardening
-**Active Plan:** Plan 02 complete (2/2 plans done - PHASE COMPLETE)
-**Status:** Ready to plan
+**Active Phase:** 06-design-refinement
+**Active Plan:** Plan 01 complete (1/2 plans done)
+**Status:** Executing
 
 **Progress:**
-[██████████] 100%
+[██████████] 95%
 Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [2/2] Complete
@@ -148,12 +148,12 @@ Phase 4.2: Dependency Security Updates [1/1] Complete (INSERTED)
 Phase 5: Infrastructure and Production [ ] Not started
 Phase 5.1: Accessibility Overhaul [2/2] Complete (INSERTED)
 Phase 5.2: Security Hardening [2/2] Complete (INSERTED)
-Phase 6: Design Refinement [ ] Not started
+Phase 6: Design Refinement [1/2] In Progress
 Phase 7: Observability and Monitoring [ ] Not started
 Phase 8: Quality and Test Infrastructure [ ] Not started
 Phase 9: Feature Expansion [ ] Not started
 
-Overall: 5/13 phases complete (20 plans complete across all phases)
+Overall: 5/13 phases complete (21 plans complete across all phases)
 
 ## Performance Metrics
 
@@ -175,11 +175,13 @@ Overall: 5/13 phases complete (20 plans complete across all phases)
 | Phase 05.1-accessibility-overhaul P02 | 35min | 2 tasks | 7 files |
 | Phase 05.2-security-hardening P02     | 6min  | 2 tasks | 6 files |
 | Phase 05.2-security-hardening P01 | 7min | 2 tasks | 5 files |
+| Phase 06-design-refinement P01 | 5min | 2 tasks | 4 files |
 
 ## Key Decisions Recorded
 
 | Decision                                                                               | Rationale                                                                                                                                                                                    | Date       |
 | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Consent/sync alert hooks: useEffect deps [sessionCount, sessionIdsKey] and wasActive ref | Avoids re-dispatch on referential churn; wasActive prevents orphan removeNotification on mount before any sync has started | 2026-03-18 |
 | Synchronous regex pre-check instead of worker_threads for Handlebars ReDoS protection  | Handlebars templates called synchronously (action.ts line 150), Promise return renders as [object Promise]. isRegexSafe + try/catch used instead. | 2026-03-06 |
 | keyTest uses stored iterations from metadata with 10K legacy fallback                  | PBKDF2 default changed from 10K to 100K. Without reading stored iterations, old files would fail to decrypt. Fallback to PBKDF2_ITERATIONS_LEGACY ensures backward compat. | 2026-03-06 |
 | Re-encryption best-effort via /user-create-key                                         | After successful decrypt with old iterations, re-encrypt test message with 100K key and push to server. Failure logs but does not block. Retries on next access. | 2026-03-06 |
@@ -350,9 +352,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Phase 06 context gathered
+**Stopped at:** Completed 06-01-PLAN.md
 
-**Next action:** Phase 05.2 complete. Continue to next phase.
+**Next action:** Phase 06 Plan 01 complete. Execute 06-02-PLAN.md next.
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
