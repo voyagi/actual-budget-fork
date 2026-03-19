@@ -28,7 +28,7 @@
 | 1. Foundation and API Client        | 4/4            | Awaiting human checkpoint | -         |
 | 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
 | 3. Automation and Consent Lifecycle | 2/2 | Complete   | 2026-03-01 |
-| 4. PWA Completion                   | 0/?            | Not started               | -         |
+| 4. PWA Completion                   | 0/2            | Planned                   | -         |
 | 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
 | 4.2 Dependency Security Updates (INSERTED) | 0/1     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
@@ -125,7 +125,7 @@ Plans:
 
 ### Phase 4: PWA Completion
 
-**Goal:** The app is installable as a standalone PWA on both Android and iOS home screens, and previously loaded budget data is readable offline - resolving the existing service worker blockage in vite.config.mts rather than rebuilding from scratch.
+**Goal:** The app is installable as a standalone PWA on both Android and iOS home screens, and previously loaded budget data is readable offline. The existing PWA infrastructure (VitePWA generateSW, manifest, SW registration) is verified and gap-filled rather than rebuilt from scratch.
 
 **Depends on:** Phase 1 (can be developed in parallel with Phase 3)
 
@@ -141,7 +141,11 @@ Plans:
 
 **Research flag:** Read `packages/desktop-client/vite.config.mts` before planning this phase. The service worker build is known to be disabled - the reason for the disable determines the fix approach.
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md -- Build audit: verify SW and manifest generation, fix EnableBanking modal responsive width for 375px
+- [ ] 04-02-PLAN.md -- Chrome DevTools PWA audit, Android install checkpoint, iOS deferral to Phase 5
 
 ### Phase 04.1: Audit Quick Wins (INSERTED)
 
@@ -293,4 +297,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-19 - Phase 09 planned (3 plans: TOTP server, backup server, client integration)_
+_Last updated: 2026-03-19 - Phase 04 planned (2 plans: build audit + responsive fix, Android install checkpoint + iOS deferral)_
