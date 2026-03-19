@@ -20,6 +20,13 @@ export type AuthHandlers = {
   'enable-openid': typeof enableOpenId;
   'get-openid-config': typeof getOpenIdConfig;
   'enable-password': typeof enablePassword;
+  'verify-totp': typeof verifyTotp;
+  'totp-setup': typeof totpSetup;
+  'totp-verify-setup': typeof totpVerifySetup;
+  'totp-disable': typeof totpDisable;
+  'totp-status': typeof totpStatus;
+  'backup-status': typeof backupStatus;
+  'backup-trigger': typeof backupTrigger;
 };
 
 export const app = createApp<AuthHandlers>();
@@ -35,6 +42,13 @@ app.method('subscribe-set-token', setToken);
 app.method('enable-openid', enableOpenId);
 app.method('get-openid-config', getOpenIdConfig);
 app.method('enable-password', enablePassword);
+app.method('verify-totp', verifyTotp);
+app.method('totp-setup', totpSetup);
+app.method('totp-verify-setup', totpVerifySetup);
+app.method('totp-disable', totpDisable);
+app.method('totp-status', totpStatus);
+app.method('backup-status', backupStatus);
+app.method('backup-trigger', backupTrigger);
 
 async function didBootstrap() {
   return Boolean(await asyncStorage.getItem('did-bootstrap'));
@@ -252,6 +266,8 @@ async function signIn(
   let res: {
     token?: string;
     returnUrl?: string;
+    needsTotp?: boolean;
+    totpNonce?: string;
   };
 
   try {
@@ -268,6 +284,14 @@ async function signIn(
     }
 
     throw err;
+  }
+
+  // Check for TOTP challenge (server returns needsTotp when 2FA is enrolled)
+  if (res.needsTotp && res.totpNonce) {
+    return {
+      needsTotp: true as const,
+      totpNonce: res.totpNonce,
+    };
   }
 
   if (res.returnUrl) {
@@ -384,4 +408,174 @@ async function enablePassword(passwordConfig: { password: string }) {
     throw err;
   }
   return {};
+}
+
+// verifyTotp exchanges a totpNonce + code for a session token.
+// This is called BEFORE the user is authenticated, so no X-ACTUAL-TOKEN is sent.
+async function verifyTotp({
+  totpNonce,
+  code,
+}: {
+  totpNonce: string;
+  code: string;
+}) {
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('No sync server configured.');
+  }
+  try {
+    const res = await post(serverConfig.SIGNUP_SERVER + '/totp/challenge', {
+      totpNonce,
+      code,
+    });
+    if (!res.token) {
+      return { error: 'invalid-totp-code' };
+    }
+    await asyncStorage.setItem('user-token', res.token);
+    return {};
+  } catch (err) {
+    if (err instanceof PostError) {
+      return { error: err.reason || 'invalid-totp-code' };
+    }
+    throw err;
+  }
+}
+
+async function totpSetup() {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('No sync server configured.');
+  }
+  try {
+    const res = await post(
+      serverConfig.SIGNUP_SERVER + '/totp/setup',
+      {},
+      { 'X-ACTUAL-TOKEN': userToken },
+    );
+    return res; // { qrCodeUri, secret, recoveryCodes }
+  } catch (err) {
+    if (err instanceof PostError) {
+      return { error: err.reason };
+    }
+    throw err;
+  }
+}
+
+async function totpVerifySetup({ code }: { code: string }) {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('No sync server configured.');
+  }
+  try {
+    await post(
+      serverConfig.SIGNUP_SERVER + '/totp/verify-setup',
+      { code },
+      { 'X-ACTUAL-TOKEN': userToken },
+    );
+    return {};
+  } catch (err) {
+    if (err instanceof PostError) {
+      return { error: err.reason };
+    }
+    throw err;
+  }
+}
+
+async function totpDisable({ password }: { password: string }) {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('No sync server configured.');
+  }
+  try {
+    await post(
+      serverConfig.SIGNUP_SERVER + '/totp/disable',
+      { password },
+      { 'X-ACTUAL-TOKEN': userToken },
+    );
+    return {};
+  } catch (err) {
+    if (err instanceof PostError) {
+      return { error: err.reason };
+    }
+    throw err;
+  }
+}
+
+async function totpStatus() {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('No sync server configured.');
+  }
+  try {
+    const text = await get(serverConfig.SIGNUP_SERVER + '/totp/status', {
+      headers: { 'X-ACTUAL-TOKEN': userToken },
+    });
+    return JSON.parse(text);
+  } catch (err) {
+    if (err instanceof PostError) {
+      return { error: err.reason };
+    }
+    throw err;
+  }
+}
+
+async function backupStatus() {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('No sync server configured.');
+  }
+  try {
+    const text = await get(serverConfig.SIGNUP_SERVER + '/backup/status', {
+      headers: { 'X-ACTUAL-TOKEN': userToken },
+    });
+    return JSON.parse(text);
+  } catch (err) {
+    if (err instanceof PostError) {
+      return { error: err.reason };
+    }
+    throw err;
+  }
+}
+
+async function backupTrigger() {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) {
+    return { error: 'unauthorized' };
+  }
+  const serverConfig = getServer();
+  if (!serverConfig) {
+    throw new Error('No sync server configured.');
+  }
+  try {
+    return await post(
+      serverConfig.SIGNUP_SERVER + '/backup/trigger',
+      {},
+      { 'X-ACTUAL-TOKEN': userToken },
+    );
+  } catch (err) {
+    if (err instanceof PostError) {
+      return { error: err.reason };
+    }
+    throw err;
+  }
 }
