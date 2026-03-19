@@ -34,6 +34,8 @@ import { loggedIn } from '@desktop-client/users/usersSlice';
 function PasswordLogin({ setError, dispatch }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [totpNonce, setTotpNonce] = useState<string | null>(null);
+  const [totpCode, setTotpCode] = useState('');
   const { t } = useTranslation();
   const { isNarrowWidth } = useResponsive();
 
@@ -44,9 +46,30 @@ function PasswordLogin({ setError, dispatch }) {
 
     setError(null);
     setLoading(true);
-    const { error } = await send('subscribe-sign-in', {
+    const result = await send('subscribe-sign-in', {
       password,
       loginMethod: 'password',
+    });
+    setLoading(false);
+
+    if (result.error) {
+      setError(result.error);
+    } else if (result.needsTotp) {
+      setTotpNonce(result.totpNonce);
+    } else {
+      dispatch(loggedIn());
+    }
+  }
+
+  async function onSubmitTotp() {
+    if (totpCode === '' || loading) {
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    const { error } = await send('verify-totp', {
+      totpNonce,
+      code: totpCode,
     });
     setLoading(false);
 
@@ -55,6 +78,58 @@ function PasswordLogin({ setError, dispatch }) {
     } else {
       dispatch(loggedIn());
     }
+  }
+
+  if (totpNonce) {
+    return (
+      <View style={{ flexDirection: 'column', marginTop: 5, gap: '1rem' }}>
+        <Text style={{ fontSize: 15, color: theme.pageText }}>
+          {t(
+            'Enter the 6-digit code from your authenticator app, or a recovery code.',
+          )}
+        </Text>
+        <BigInput
+          autoFocus
+          aria-label={t('Authentication code')}
+          placeholder={t('6-digit code or recovery code')}
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          onChangeValue={setTotpCode}
+          style={{ flex: 1 }}
+          onEnter={onSubmitTotp}
+          required
+        />
+        <View
+          style={{
+            flexDirection: isNarrowWidth ? 'column' : 'row',
+            gap: '0.5rem',
+          }}
+        >
+          <ButtonWithLoading
+            variant="primary"
+            isLoading={loading}
+            style={{
+              fontSize: 15,
+              width: isNarrowWidth ? '100%' : 170,
+            }}
+            onPress={onSubmitTotp}
+          >
+            <Trans>Verify</Trans>
+          </ButtonWithLoading>
+          <Button
+            variant="bare"
+            onPress={() => {
+              setTotpNonce(null);
+              setTotpCode('');
+              setError(null);
+            }}
+          >
+            <Trans>Back</Trans>
+          </Button>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -350,6 +425,10 @@ export function Login() {
         return t('Unable to contact the server');
       case 'internal-error':
         return t('Internal error');
+      case 'invalid-totp-code':
+        return t('Invalid authentication code');
+      case 'invalid-totp-nonce':
+        return t('Session expired, please sign in again');
       default:
         return t(`An unknown error occurred: {{error}}`, { error });
     }
