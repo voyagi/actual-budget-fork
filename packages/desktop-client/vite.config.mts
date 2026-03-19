@@ -158,23 +158,11 @@ export default defineConfig(async ({ mode }) => {
         ? undefined
         : VitePWA({
             registerType: 'prompt',
-            // TODO:  The plugin worker build is currently disabled due to issues with offline support. Fix this
-            // strategies: 'injectManifest',
-            // srcDir: 'service-worker',
-            // filename: 'plugin-sw.js',
-            // manifest: {
-            //   name: 'Actual',
-            //   short_name: 'Actual',
-            //   description: 'A local-first personal finance tool',
-            //   theme_color: '#5c3dbb',
-            //   background_color: '#5c3dbb',
-            //   display: 'standalone',
-            //   start_url: './',
-            // },
-            // injectManifest: {
-            //   maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10MB
-            //   swSrc: `service-worker/plugin-sw.js`,
-            // },
+            // Use public/site.webmanifest as-is; do not auto-generate a manifest.
+            // The existing manifest has correct name, icons, theme_color, shortcuts,
+            // and screenshots that VitePWA's auto-generator would overwrite with
+            // package.json defaults (wrong name, no icons, wrong theme_color).
+            manifest: false,
             devOptions: {
               enabled: true, // We need service worker in dev mode to work with plugins
               type: 'module',
