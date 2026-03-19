@@ -1,6 +1,11 @@
 ###################################################
 # Enable Banking fork - Docker Compose
-# Supports both dev and prod via environment variables.
+# 3-service production topology: sync-server + caddy + cloudflared
+#
+# sync-server: Actual Budget server with Enable Banking integration
+# caddy: LAN/desktop HTTPS reverse proxy (tls internal)
+# cloudflared: Cloudflare Tunnel for phone/iOS HTTPS access
+#
 # Copy .env.example to .env and fill in values before running.
 #
 # Required for bank sync (Plan 02+):
@@ -22,12 +27,57 @@ services:
       - ENABLE_BANKING_APP_ID=${ENABLE_BANKING_APP_ID:-}
       - ENABLE_BANKING_KEY_PATH=/run/secrets/eb_private.pem
       - ENABLE_BANKING_BASE_URL=${ENABLE_BANKING_BASE_URL:-https://api.enablebanking.com}
-    ports:
-      - '${SYNC_PORT:-5006}:5006'
+      - ACTUAL_CORS_ORIGIN=${ACTUAL_CORS_ORIGIN:-http://localhost:3001}
+    # No host port exposure in production — Caddy and cloudflared use Docker network
+    # ports:
+    #   - '${SYNC_PORT:-5006}:5006'
     volumes:
       - actual_data:/data
       - ./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'node src/scripts/health-check.js']
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     restart: unless-stopped
+    networks:
+      - actual_net
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      sync-server:
+        condition: service_healthy
+    networks:
+      - actual_net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      sync-server:
+        condition: service_healthy
+    networks:
+      - actual_net
+
+networks:
+  actual_net:
+    driver: bridge
 
 volumes:
   actual_data:
+  caddy_data:
+  caddy_config:
