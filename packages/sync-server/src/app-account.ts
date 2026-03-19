@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   bootstrap,
@@ -13,7 +14,20 @@ import {
   setServerPrefs,
 } from './account-db';
 import { isValidRedirectUrl, loginWithOpenIdSetup } from './accounts/openid';
-import { changePassword, loginWithPassword } from './accounts/password';
+import { changePassword, checkPassword, loginWithPassword } from './accounts/password';
+import {
+  isTotpEnrolled,
+  enrollTotp,
+  disableTotp,
+  getTotpStatus,
+  generateTotpSecret,
+  verifyTotpCode,
+  getStoredTotpSecret,
+  updateTotpLastUsed,
+  generateRecoveryCodes,
+  verifyRecoveryCode,
+  consumeRecoveryCode,
+} from './accounts/totp.js';
 import { getBackupStatus, runBackup } from './util/backup.js';
 import { writeAuditLog } from './util/audit.js';
 import { triggerAlert } from './util/alerter.js';
@@ -26,6 +40,13 @@ import { validateAuthHeader, validateSession } from './util/validate-user';
 const authFailureTracker = new Map<string, { count: number; windowStart: number }>();
 const AUTH_FAILURE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 const AUTH_FAILURE_THRESHOLD = 3;
+
+// In-memory TOTP nonce store for two-step login.
+// After a successful password check with TOTP enrolled, the session token is
+// parked here behind a short-lived nonce. The client redeems the nonce by
+// calling POST /totp/challenge with the TOTP code.
+const totpNonces = new Map<string, { expiresAt: number; token: string }>();
+const TOTP_NONCE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 function trackAuthFailure(ip: string): void {
   const now = Date.now();
@@ -143,9 +164,29 @@ app.post('/login', async (req: Request, res: Response) => {
       return;
     }
 
-    default:
+    default: {
       tokenRes = loginWithPassword(req.body.password);
+      // TOTP intercept: if password succeeded and TOTP is enrolled, return an
+      // intermediate nonce instead of the real session token. The client must
+      // complete the TOTP challenge via POST /totp/challenge.
+      if (!tokenRes.error && tokenRes.token && isTotpEnrolled()) {
+        const nonce = uuidv4();
+        totpNonces.set(nonce, {
+          expiresAt: Date.now() + TOTP_NONCE_TTL_MS,
+          token: tokenRes.token,
+        });
+        writeAuditLog({
+          event_type: 'login_success',
+          actor: tokenRes.token,
+          ip_address: req.ip,
+          outcome: 'success',
+          details: { method: 'password', totp_pending: true },
+        });
+        res.send({ status: 'ok', data: { needsTotp: true, totpNonce: nonce } });
+        return;
+      }
       break;
+    }
   }
   const { error, token } = tokenRes!;
 
@@ -246,6 +287,181 @@ app.get('/validate', (req: Request, res: Response) => {
       },
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// TOTP endpoints
+// ---------------------------------------------------------------------------
+
+// POST /totp/challenge — unauthenticated, completes two-step login.
+// Accepts { totpNonce, code } and redeems the nonce for a real session token.
+app.post('/totp/challenge', async (req: Request, res: Response) => {
+  const { totpNonce, code } = req.body || {};
+
+  // Clean expired nonces on each access
+  const now = Date.now();
+  for (const [k, v] of totpNonces) {
+    if (v.expiresAt < now) totpNonces.delete(k);
+  }
+
+  const nonceEntry = totpNonce ? totpNonces.get(totpNonce) : undefined;
+  if (!nonceEntry) {
+    trackAuthFailure(req.ip ?? 'unknown');
+    res.status(400).send({ status: 'error', reason: 'invalid-totp-nonce' });
+    return;
+  }
+
+  const stored = getStoredTotpSecret();
+  if (!stored) {
+    res.status(400).send({ status: 'error', reason: 'totp-not-configured' });
+    return;
+  }
+
+  // Try TOTP code first
+  const totpResult = verifyTotpCode(stored.secret, code, stored.lastUsedAt);
+  if (totpResult.valid) {
+    updateTotpLastUsed(totpResult.usedAt);
+    totpNonces.delete(totpNonce);
+    writeAuditLog({
+      event_type: 'totp_verify_success',
+      actor: nonceEntry.token,
+      ip_address: req.ip,
+      outcome: 'success',
+      details: { method: 'totp' },
+    });
+    res.send({ status: 'ok', data: { token: nonceEntry.token } });
+    return;
+  }
+
+  // Try recovery code as fallback
+  const statusRow = getTotpStatus();
+  if (statusRow.enrolled) {
+    const db = (await import('./account-db.js')).getAccountDb();
+    const row = db.first('SELECT recovery_codes FROM totp LIMIT 1') as {
+      recovery_codes: string;
+    } | null;
+    if (row) {
+      const hashes = JSON.parse(row.recovery_codes) as string[];
+      const recoveryResult = verifyRecoveryCode(code, hashes);
+      if (recoveryResult.valid) {
+        consumeRecoveryCode(recoveryResult.remaining);
+        totpNonces.delete(totpNonce);
+        writeAuditLog({
+          event_type: 'totp_recovery_used',
+          actor: nonceEntry.token,
+          ip_address: req.ip,
+          outcome: 'success',
+          details: { remaining: recoveryResult.remaining.length },
+        });
+        res.send({ status: 'ok', data: { token: nonceEntry.token } });
+        return;
+      }
+    }
+  }
+
+  // Both TOTP and recovery code failed
+  writeAuditLog({
+    event_type: 'totp_verify_failure',
+    actor: 'unauthenticated',
+    ip_address: req.ip,
+    outcome: 'fail',
+  });
+  trackAuthFailure(req.ip ?? 'unknown');
+  res.status(400).send({ status: 'error', reason: 'invalid-totp-code' });
+});
+
+// POST /totp/setup — authenticated, initiates TOTP enrollment.
+// Returns QR code data URI, plaintext secret, and one-time recovery codes.
+// Recovery codes are shown only once.
+app.post('/totp/setup', async (req: Request, res: Response) => {
+  const session = validateSession(req, res);
+  if (!session) return;
+
+  if (isTotpEnrolled()) {
+    res.status(400).send({ status: 'error', reason: 'totp-already-enrolled' });
+    return;
+  }
+
+  const secret = generateTotpSecret('Actual Budget', 'user');
+  const recoveryCodes = generateRecoveryCodes();
+
+  enrollTotp('default-user', secret.secret, recoveryCodes.hashes);
+
+  let qrCodeUri: string;
+  try {
+    const QRCode = await import('qrcode');
+    qrCodeUri = await QRCode.toDataURL(secret.uri, {
+      errorCorrectionLevel: 'M',
+    });
+  } catch {
+    qrCodeUri = '';
+  }
+
+  writeAuditLog({
+    event_type: 'totp_enrolled',
+    actor: (req.headers['x-actual-token'] as string) ?? 'unknown',
+    ip_address: req.ip,
+    outcome: 'success',
+  });
+
+  res.send({
+    status: 'ok',
+    data: {
+      qrCodeUri,
+      secret: secret.secret,
+      recoveryCodes: recoveryCodes.codes,
+    },
+  });
+});
+
+// POST /totp/verify-setup — authenticated, confirms enrollment by verifying a code.
+app.post('/totp/verify-setup', (req: Request, res: Response) => {
+  const session = validateSession(req, res);
+  if (!session) return;
+
+  const { code } = req.body || {};
+  const stored = getStoredTotpSecret();
+  if (!stored) {
+    res.status(400).send({ status: 'error', reason: 'totp-not-configured' });
+    return;
+  }
+
+  const result = verifyTotpCode(stored.secret, code, stored.lastUsedAt);
+  if (!result.valid) {
+    res.status(400).send({ status: 'error', reason: 'invalid-totp-code' });
+    return;
+  }
+
+  updateTotpLastUsed(result.usedAt);
+  res.send({ status: 'ok', data: {} });
+});
+
+// POST /totp/disable — authenticated, disables TOTP after password confirmation.
+app.post('/totp/disable', (req: Request, res: Response) => {
+  const session = validateSession(req, res);
+  if (!session) return;
+
+  const { password } = req.body || {};
+  if (!checkPassword(password)) {
+    res.status(400).send({ status: 'error', reason: 'invalid-password' });
+    return;
+  }
+
+  disableTotp();
+  writeAuditLog({
+    event_type: 'totp_disabled',
+    actor: (req.headers['x-actual-token'] as string) ?? 'unknown',
+    ip_address: req.ip,
+    outcome: 'success',
+  });
+  res.send({ status: 'ok', data: {} });
+});
+
+// GET /totp/status — authenticated, returns TOTP enrollment state.
+app.get('/totp/status', (req: Request, res: Response) => {
+  const session = validateSession(req, res);
+  if (!session) return;
+  res.send({ status: 'ok', data: getTotpStatus() });
 });
 
 // [eb] Backup endpoints
