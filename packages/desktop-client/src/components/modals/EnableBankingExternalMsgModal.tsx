@@ -327,7 +327,7 @@ export function EnableBankingExternalMsgModal({
   return (
     <Modal
       name="enablebanking-external-msg"
-      containerProps={{ style: { width: 'clamp(400px, 30vw, 600px)' } }}
+      containerProps={{ style: { width: 'clamp(300px, 85vw, 600px)' } }}
     >
       {({ state: { close } }) => (
         <>
