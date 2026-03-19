@@ -288,11 +288,12 @@ export function startScheduler(): void {
             });
             recordBackupRun(result.sizeBytes, true);
           } else {
-            logger.error('Backup failed', { error: result.error });
+            const errMsg = (result as { success: false; error: string }).error;
+            logger.error('Backup failed', { error: errMsg });
             recordBackupRun(0, false);
             triggerAlert({
               event_type: 'backup_failure',
-              message: `Daily backup failed: ${result.error}`,
+              message: `Daily backup failed: ${errMsg}`,
               severity: 'error',
             }).catch(() => {});
           }

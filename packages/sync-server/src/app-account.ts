@@ -490,6 +490,7 @@ app.post('/backup/trigger', async (req: Request, res: Response) => {
       },
     });
   } else {
-    res.status(500).send({ status: 'error', reason: result.error });
+    const errMsg = (result as { success: false; error: string }).error;
+    res.status(500).send({ status: 'error', reason: errMsg });
   }
 });

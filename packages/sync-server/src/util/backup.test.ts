@@ -1,10 +1,10 @@
 // [eb] Unit tests for backup module
 import Database from 'better-sqlite3';
-import { mkdtempSync, mkdirSync, rmSync, existsSync, statSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, rmSync, existsSync, statSync, writeFileSync, utimesSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest';
+import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 import {
   backupSqliteFile,
@@ -28,10 +28,10 @@ function createOldArchive(dir: string, name: string, daysOld: number): string {
   const filePath = path.join(dir, name);
   // Write a minimal file
   const buf = Buffer.alloc(512, 0);
-  require('node:fs').writeFileSync(filePath, buf);
+  writeFileSync(filePath, buf);
   // Set mtime to simulate old file
   const oldTime = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
-  require('node:fs').utimesSync(filePath, oldTime, oldTime);
+  utimesSync(filePath, oldTime, oldTime);
   return filePath;
 }
 
@@ -147,8 +147,8 @@ describe('runBackup', () => {
     // Create the backups subdir won't matter - account.sqlite missing
     const result = await runBackup(badDir);
     expect(result.success).toBe(false);
-    if (result.success) throw new Error('unreachable');
-    expect(typeof result.error).toBe('string');
+    const failResult = result as { success: false; error: string };
+    expect(typeof failResult.error).toBe('string');
   });
 
   it('includes metadata.json in archive if present', async () => {
