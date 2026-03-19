@@ -18,4 +18,17 @@ export function runAuditMigrations(): void {
   db.mutate(
     'CREATE INDEX IF NOT EXISTS idx_audit_log_event ON audit_log (event_type, timestamp)',
   );
+
+  // [eb] TOTP table for two-factor authentication.
+  // Stores encrypted TOTP secret and hashed recovery codes per user.
+  db.mutate(`
+    CREATE TABLE IF NOT EXISTS totp (
+      id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id        TEXT    NOT NULL UNIQUE,
+      secret_enc     TEXT    NOT NULL,
+      enrolled_at    INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+      last_used_at   INTEGER,
+      recovery_codes TEXT    NOT NULL
+    )
+  `);
 }

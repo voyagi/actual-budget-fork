@@ -12,7 +12,12 @@ export type AuditEventType =
   | 'eb_consent_auth'
   | 'eb_consent_expiry'
   | 'eb_consent_renewal'
-  | 'eb_account_link';
+  | 'eb_account_link'
+  | 'totp_enrolled'
+  | 'totp_disabled'
+  | 'totp_verify_success'
+  | 'totp_verify_failure'
+  | 'totp_recovery_used';
 
 function hashActor(token: string): string {
   return createHash('sha256').update(token).digest('hex').slice(0, 8);
