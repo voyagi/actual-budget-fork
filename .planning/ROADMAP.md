@@ -37,7 +37,7 @@
 | 6. Design Refinement                | 2/2 | Complete   | 2026-03-18 |
 | 7. Observability and Monitoring     | 3/3 | Complete   | 2026-03-18 |
 | 8. Quality and Test Infrastructure  | 2/2 | Complete   | 2026-03-18 |
-| 9. Feature Expansion                | 0/?            | Not started               | -         |
+| 9. Feature Expansion                | 0/3            | Planned                   | -         |
 
 ## Phase Details
 
@@ -247,10 +247,12 @@ Plans:
 **Goal:** Implement 2FA/TOTP authentication and automated database backup trigger.
 **Requirements**: Audit findings fc-1, fc-2
 **Depends on:** Phase 8
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 9 to break down)
+- [ ] 09-01-PLAN.md -- TOTP server-side: totp.ts module, database migration, audit events, login flow intercept, REST endpoints
+- [ ] 09-02-PLAN.md -- Backup server-side: backup.ts module, scheduler cron extension, metrics, manual trigger endpoint
+- [ ] 09-03-PLAN.md -- Client-side integration: loot-core IPC handlers, TOTP login challenge screen, TwoFactorSettings + BackupStatus settings components
 
 ## Coverage
 
@@ -291,4 +293,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-19 - Phase 08 planned (2 plans: CI/coverage config, code splitting/error boundaries)_
+_Last updated: 2026-03-19 - Phase 09 planned (3 plans: TOTP server, backup server, client integration)_
