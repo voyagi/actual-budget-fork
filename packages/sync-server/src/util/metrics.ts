@@ -40,6 +40,26 @@ export function getSyncStats() {
   return { ...syncStats };
 }
 
+const backupStats = {
+  totalRuns: 0,
+  successRuns: 0,
+  failedRuns: 0,
+  lastRunAt: null as number | null,
+  lastRunSizeBytes: 0,
+};
+
+export function recordBackupRun(sizeBytes: number, success: boolean): void {
+  backupStats.totalRuns++;
+  if (success) backupStats.successRuns++;
+  else backupStats.failedRuns++;
+  backupStats.lastRunAt = Date.now();
+  backupStats.lastRunSizeBytes = sizeBytes;
+}
+
+export function getBackupStats() {
+  return { ...backupStats };
+}
+
 // For testing: reset all module-level state
 export function _resetMetrics(): void {
   latencySamples.length = 0;
@@ -49,4 +69,9 @@ export function _resetMetrics(): void {
   syncStats.lastRunAt = null;
   syncStats.lastRunAccounts = 0;
   syncStats.lastRunErrors = 0;
+  backupStats.totalRuns = 0;
+  backupStats.successRuns = 0;
+  backupStats.failedRuns = 0;
+  backupStats.lastRunAt = null;
+  backupStats.lastRunSizeBytes = 0;
 }

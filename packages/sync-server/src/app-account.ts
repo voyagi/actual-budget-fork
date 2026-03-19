@@ -14,6 +14,7 @@ import {
 } from './account-db';
 import { isValidRedirectUrl, loginWithOpenIdSetup } from './accounts/openid';
 import { changePassword, loginWithPassword } from './accounts/password';
+import { getBackupStatus, runBackup } from './util/backup.js';
 import { writeAuditLog } from './util/audit.js';
 import { triggerAlert } from './util/alerter.js';
 import logger from './util/logger.js';
@@ -244,5 +245,35 @@ app.get('/validate', (req: Request, res: Response) => {
         prefs: getServerPrefs(),
       },
     });
+  }
+});
+
+// [eb] Backup endpoints
+
+app.get('/backup/status', (req: Request, res: Response) => {
+  const session = validateSession(req, res);
+  if (!session) return;
+  res.send({ status: 'ok', data: getBackupStatus() });
+});
+
+app.post('/backup/trigger', async (req: Request, res: Response) => {
+  const session = validateSession(req, res);
+  if (!session) return;
+  if (!isAdmin(session.user_id)) {
+    res.status(403).send({ status: 'error', reason: 'forbidden' });
+    return;
+  }
+  const result = await runBackup();
+  if (result.success) {
+    res.send({
+      status: 'ok',
+      data: {
+        archivePath: result.archivePath,
+        filesCount: result.filesCount,
+        sizeBytes: result.sizeBytes,
+      },
+    });
+  } else {
+    res.status(500).send({ status: 'error', reason: result.error });
   }
 });

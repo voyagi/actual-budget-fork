@@ -8,7 +8,8 @@ import cron from 'node-cron';
 import { getAccountDb } from './account-db.js';
 import { triggerAlert } from './util/alerter.js';
 import logger from './util/logger.js';
-import { recordSyncRun } from './util/metrics.js';
+import { recordBackupRun, recordSyncRun } from './util/metrics.js';
+import { runBackup } from './util/backup.js';
 import {
   getBalances,
   getTransactions,
@@ -255,21 +256,58 @@ async function runScheduledSync(): Promise<void> {
   recordSyncRun(totalSynced, totalErrors);
 }
 
-// [eb] Registers the 6-hour cron job. No-op when ENABLE_AUTO_SYNC is not 'true'.
+// [eb] Registers the 6-hour sync cron and daily backup cron.
+// Sync is opt-in (ENABLE_AUTO_SYNC=true), backup is opt-out (ENABLE_AUTO_BACKUP=false).
 export function startScheduler(): void {
-  if (process.env.ENABLE_AUTO_SYNC !== 'true') {
-    logger.info('Auto-sync disabled (ENABLE_AUTO_SYNC not set to true)');
-    return;
-  }
-
-  // 5-field cron: at minute 0, hours 0/6/12/18 every day
-  cron.schedule('0 0,6,12,18 * * *', () => {
-    runScheduledSync().catch(err => {
-      logger.error('Unhandled error in sync run', {
-        error: err instanceof Error ? err.message : String(err),
+  // Sync cron -- opt-in via ENABLE_AUTO_SYNC=true
+  if (process.env.ENABLE_AUTO_SYNC === 'true') {
+    // 5-field cron: at minute 0, hours 0/6/12/18 every day
+    cron.schedule('0 0,6,12,18 * * *', () => {
+      runScheduledSync().catch(err => {
+        logger.error('Unhandled error in sync run', {
+          error: err instanceof Error ? err.message : String(err),
+        });
       });
     });
-  });
+    logger.info('Auto-sync scheduled (every 6 hours)');
+  } else {
+    logger.info('Auto-sync disabled (ENABLE_AUTO_SYNC not set to true)');
+  }
 
-  logger.info('Auto-sync scheduled (every 6 hours)');
+  // Backup cron -- opt-out via ENABLE_AUTO_BACKUP=false (enabled by default)
+  if (process.env.ENABLE_AUTO_BACKUP !== 'false') {
+    const backupSchedule = process.env.BACKUP_CRON_SCHEDULE ?? '0 2 * * *';
+    cron.schedule(backupSchedule, () => {
+      runBackup()
+        .then(result => {
+          if (result.success) {
+            logger.info('Backup completed', {
+              archivePath: result.archivePath,
+              files: result.filesCount,
+              sizeBytes: result.sizeBytes,
+            });
+            recordBackupRun(result.sizeBytes, true);
+          } else {
+            logger.error('Backup failed', { error: result.error });
+            recordBackupRun(0, false);
+            triggerAlert({
+              event_type: 'backup_failure',
+              message: `Daily backup failed: ${result.error}`,
+              severity: 'error',
+            }).catch(() => {});
+          }
+        })
+        .catch(err => {
+          const msg = err instanceof Error ? err.message : String(err);
+          logger.error('Backup cron unhandled error', { error: msg });
+          recordBackupRun(0, false);
+          triggerAlert({
+            event_type: 'backup_failure',
+            message: `Daily backup failed: ${msg}`,
+            severity: 'error',
+          }).catch(() => {});
+        });
+    });
+    logger.info('Auto-backup scheduled', { schedule: backupSchedule });
+  }
 }
