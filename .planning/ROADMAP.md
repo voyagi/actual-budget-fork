@@ -31,7 +31,7 @@
 | 4. PWA Completion                   | 2/2 | Complete   | 2026-03-19 |
 | 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
 | 4.2 Dependency Security Updates (INSERTED) | 0/1     | Not started               | -         |
-| 5. Infrastructure and Production    | 0/?            | Not started               | -         |
+| 5. Infrastructure and Production    | 0/2            | Planned                   | -         |
 | 5.1 Accessibility Overhaul (INSERTED) | 2/2 | Complete |  |
 | 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
 | 6. Design Refinement                | 2/2 | Complete   | 2026-03-18 |
@@ -188,7 +188,11 @@ Plans:
 
 **Note:** Production Enable Banking credentials require a separate registration at enablebanking.com/cp. This is distinct from the sandbox credentials used in Phases 1-3. Plan a dedicated smoke test milestone before marking this phase complete.
 
-**Plans:** TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md -- Docker Compose extension: add Caddy reverse proxy + cloudflared tunnel + healthcheck, create Caddyfile, update .env.example
+- [ ] 05-02-PLAN.md -- Production verification: Docker build + start, desktop HTTPS, phone HTTPS, volume persistence, multi-device sync, production EB OAuth + real bank sync
 
 ### Phase 05.1: Accessibility Overhaul (INSERTED)
 
@@ -297,4 +301,4 @@ Plans:
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-03-19 - Phase 04 planned (2 plans: build audit + responsive fix, Android install checkpoint + iOS deferral)_
+_Last updated: 2026-03-19 - Phase 05 planned (2 plans: Docker Compose + Caddyfile config, production verification checklist)_
