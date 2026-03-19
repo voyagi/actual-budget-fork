@@ -17,7 +17,7 @@ Implement two independent features: (1) optional 2FA/TOTP authentication for pas
 - 2FA is optional, user-enabled via Settings page (single-user app, no mandatory enforcement needed)
 - Enrollment flow: QR code + manual secret display in Settings, compatible with Google Authenticator/Authy/1Password
 - Generate 8 one-time recovery codes at enrollment time (essential safety net if authenticator device is lost)
-- Store TOTP secret encrypted in `auth` table with method='totp', recovery codes hashed in separate table or JSON field
+- Store TOTP secret in a separate `totp` table (not `auth` table) to avoid `needsBootstrap()` collision; secret AES-256-GCM encrypted, recovery codes bcrypt-hashed in JSON field
 - Use `otpauth` npm library (modern, ESM-native, zero-dependency, well-maintained)
 - Audit log enrollment and disable events via existing Phase 7 audit system
 
@@ -84,7 +84,7 @@ Implement two independent features: (1) optional 2FA/TOTP authentication for pas
 ## Existing Code Insights
 
 ### Reusable Assets
-- `auth` table: Stores auth methods with `method`, `display_name`, `extra_data`, `active` columns. TOTP secret can follow same pattern (method='totp').
+- `auth` table: Stores auth methods with `method`, `display_name`, `extra_data`, `active` columns. TOTP uses separate `totp` table to avoid `needsBootstrap()` collision.
 - `sessions` table: Token-based sessions with `expires_at`. TOTP verification integrates between password check and session creation.
 - `writeAuditLog()`: Ready to log TOTP enrollment, verification, and recovery code usage events.
 - `triggerAlert()`: Ready for backup_failure event type (same pattern as sync_failure, consent_expiry).
@@ -113,7 +113,7 @@ Implement two independent features: (1) optional 2FA/TOTP authentication for pas
 - TOTP enrollment should show both QR code and text secret (for manual entry in authenticator apps that don't support QR scanning)
 - Recovery codes should be shown ONCE at enrollment, with a "Download" or "Copy" option, then never shown again
 - Backup cron should be configurable via env var `BACKUP_CRON_SCHEDULE` (default: `0 2 * * *`) for flexibility
-- Backup should be skippable via `ENABLE_AUTO_BACKUP=true` env var (matches `ENABLE_AUTO_SYNC` pattern)
+- Backup enabled by default, disableable via `ENABLE_AUTO_BACKUP=false` env var (safer default for single-user personal app -- backup should run unless explicitly disabled)
 
 </specifics>
 
