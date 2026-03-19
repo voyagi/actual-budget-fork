@@ -37,7 +37,7 @@
 | 6. Design Refinement                | 2/2 | Complete   | 2026-03-18 |
 | 7. Observability and Monitoring     | 3/3 | Complete   | 2026-03-18 |
 | 8. Quality and Test Infrastructure  | 2/2 | Complete   | 2026-03-18 |
-| 9. Feature Expansion                | 1/3 | In Progress|  |
+| 9. Feature Expansion                | 2/3 | In Progress|  |
 
 ## Phase Details
 
@@ -247,7 +247,7 @@ Plans:
 **Goal:** Implement 2FA/TOTP authentication and automated database backup trigger.
 **Requirements**: Audit findings fc-1, fc-2
 **Depends on:** Phase 8
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 09-01-PLAN.md -- TOTP server-side: totp.ts module, database migration, audit events, login flow intercept, REST endpoints
