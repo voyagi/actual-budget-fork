@@ -39,10 +39,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **PWA-01**: Web app manifest is complete (name, icons 192px + 512px, start_url, display: standalone, theme_color)
 - [x] **PWA-02**: Service worker provides offline read of previously loaded budget data (cache-first for app shell, network-first for data)
-- [ ] **PWA-03**: User can install the app on Android home screen from Chrome and it launches without browser chrome
-- [ ] **PWA-04**: User can install the app on iOS home screen from Safari and it launches without browser chrome
+- [x] **PWA-03**: User can install the app on Android home screen from Chrome and it launches without browser chrome
+- [x] **PWA-04**: User can install the app on iOS home screen from Safari and it launches without browser chrome
 - [x] **PWA-05**: UI is usable on mobile without horizontal scrolling or cut-off elements (verify existing responsive design)
-- [ ] **PWA-06**: Installed PWA has a polished splash screen and branded theme color
+- [x] **PWA-06**: Installed PWA has a polished splash screen and branded theme color
 
 ### Infrastructure
 
@@ -114,10 +114,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTO-06     | Phase 3 | Complete |
 | PWA-01      | Phase 4 | Complete |
 | PWA-02      | Phase 4 | Complete |
-| PWA-03      | Phase 4 | Pending  |
-| PWA-04      | Phase 4 | Pending  |
+| PWA-03      | Phase 4 | Complete |
+| PWA-04      | Phase 4 | Complete |
 | PWA-05      | Phase 4 | Complete |
-| PWA-06      | Phase 4 | Pending  |
+| PWA-06      | Phase 4 | Complete |
 | INFRA-01    | Phase 5 | Complete |
 | INFRA-02    | Phase 5 | Complete |
 | INFRA-03    | Phase 5 | Complete |

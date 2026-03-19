@@ -10,7 +10,7 @@
 - [-] **Phase 1: Foundation and API Client** - Fork is running, Enable Banking API client is sandbox-tested with RSA auth
 - [ ] **Phase 2: Bank Sync Pipeline** - Full manual sync works end-to-end: OAuth, account linking, transaction import, balance update
 - [x] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI (completed 2026-03-01)
-- [ ] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support
+- [x] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support (completed 2026-03-19)
 - [x] **Phase 4.1: Audit Quick Wins** - Small-effort fixes from project audit (security, a11y, perf, design) (INSERTED - completed 2026-03-03)
 - [ ] **Phase 4.2: Dependency Security Updates** - Update deps with known CVEs (INSERTED)
 - [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and smoke-tested
@@ -28,7 +28,7 @@
 | 1. Foundation and API Client        | 4/4            | Awaiting human checkpoint | -         |
 | 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
 | 3. Automation and Consent Lifecycle | 2/2 | Complete   | 2026-03-01 |
-| 4. PWA Completion                   | 0/2            | Planned                   | -         |
+| 4. PWA Completion                   | 2/2 | Complete   | 2026-03-19 |
 | 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
 | 4.2 Dependency Security Updates (INSERTED) | 0/1     | Not started               | -         |
 | 5. Infrastructure and Production    | 0/?            | Not started               | -         |
@@ -141,7 +141,7 @@ Plans:
 
 **Research flag:** Read `packages/desktop-client/vite.config.mts` before planning this phase. The service worker build is known to be disabled - the reason for the disable determines the fix approach.
 
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 04-01-PLAN.md -- Build audit: verify SW and manifest generation, fix EnableBanking modal responsive width for 375px
