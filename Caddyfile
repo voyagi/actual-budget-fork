@@ -1,0 +1,21 @@
+# Caddy reverse proxy for Actual Budget
+# LAN/desktop access with automatic internal CA HTTPS
+# Phone/iOS access goes through Cloudflare Tunnel (separate service)
+#
+# CADDY_HOST: set in .env to your LAN hostname (e.g., actual.local)
+# If using a LAN IP instead, Caddy issues a self-signed cert (browser warning expected)
+
+{
+  log {
+    level ERROR
+  }
+}
+
+{$CADDY_HOST:localhost}:443 {
+  tls internal
+  reverse_proxy sync-server:5006
+}
+
+{$CADDY_HOST:localhost}:80 {
+  redir https://{host}{uri} permanent
+}
