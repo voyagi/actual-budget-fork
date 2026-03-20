@@ -217,6 +217,8 @@ export const GenericInput = ({
                                 }
                                 props.onChange(newValue);
                               },
+                              hiddenAccounts:
+                                props.multi === true ? props.value : undefined,
                             },
                           },
                         }),

@@ -20,7 +20,7 @@ import { useDispatch } from '@desktop-client/redux';
 import type { AppDispatch } from '@desktop-client/redux/store';
 
 function invalidateQueries(queryClient: QueryClient, queryKey?: QueryKey) {
-  queryClient.invalidateQueries({
+  void queryClient.invalidateQueries({
     queryKey: queryKey ?? categoryQueries.lists(),
   });
 }
@@ -779,7 +779,7 @@ export function useBudgetActions() {
           });
           return null;
         default:
-          throw new Error(`Unknown budget action type: ${type}`);
+          throw new Error(`Unknown budget action type: ${String(type)}`);
       }
     },
     onSuccess: notification => {

@@ -60,9 +60,9 @@ export function CreateEncryptionKeyModal({
         return;
       }
 
-      dispatch(loadGlobalPrefs());
-      dispatch(loadAllFiles());
-      dispatch(sync());
+      void dispatch(loadGlobalPrefs());
+      void dispatch(loadAllFiles());
+      void dispatch(sync());
 
       setLoading(false);
       close();
@@ -71,13 +71,13 @@ export function CreateEncryptionKeyModal({
 
   return (
     <Modal name="create-encryption-key">
-      {({ state: { close } }) => (
+      {({ state }) => (
         <>
           <ModalHeader
             title={
               isRecreating ? t('Generate new key') : t('Enable encryption')
             }
-            rightContent={<ModalCloseButton onPress={close} />}
+            rightContent={<ModalCloseButton onPress={() => state.close()} />}
           />
           <View
             style={{
@@ -174,7 +174,7 @@ export function CreateEncryptionKeyModal({
           <Form
             onSubmit={e => {
               e.preventDefault();
-              onCreateKey(close);
+              void onCreateKey(() => state.close());
             }}
           >
             <View style={{ alignItems: 'center' }}>

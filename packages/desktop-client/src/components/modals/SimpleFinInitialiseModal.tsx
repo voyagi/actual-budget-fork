@@ -61,11 +61,11 @@ export const SimpleFinInitialiseModal = ({
 
   return (
     <Modal name="simplefin-init" containerProps={{ style: { width: 300 } }}>
-      {({ state: { close } }) => (
+      {({ state }) => (
         <>
           <ModalHeader
             title={t('Set-up SimpleFIN')}
-            rightContent={<ModalCloseButton onPress={close} />}
+            rightContent={<ModalCloseButton onPress={() => state.close()} />}
           />
           <View style={{ display: 'flex', gap: 10 }}>
             <Text>
@@ -112,7 +112,7 @@ export const SimpleFinInitialiseModal = ({
               variant="primary"
               isLoading={isLoading}
               onPress={() => {
-                onSubmit(close);
+                void onSubmit(() => state.close());
               }}
             >
               <Trans>Save and continue</Trans>

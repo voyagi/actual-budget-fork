@@ -60,7 +60,7 @@ function useAvailableBanks(country: string) {
       setIsLoading(false);
     }
 
-    fetch();
+    void fetch();
   }, [setBanks, setIsLoading, country]);
 
   return {
@@ -273,11 +273,11 @@ export function GoCardlessExternalMsgModal({
       onClose={onClose}
       containerProps={{ style: { width: '30vw' } }}
     >
-      {({ state: { close } }) => (
+      {({ state }) => (
         <>
           <ModalHeader
             title={t('Link Your Bank')}
-            rightContent={<ModalCloseButton onPress={close} />}
+            rightContent={<ModalCloseButton onPress={() => state.close()} />}
           />
           <View>
             <Paragraph style={{ fontSize: 15 }}>

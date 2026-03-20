@@ -34,6 +34,7 @@ import { accountQueries } from '@desktop-client/accounts';
 import { getLatestAppVersion, sync } from '@desktop-client/app/appSlice';
 import { ProtectedRoute } from '@desktop-client/auth/ProtectedRoute';
 import { Permissions } from '@desktop-client/auth/types';
+import { useAccounts } from '@desktop-client/hooks/useAccounts';
 import { useGlobalPref } from '@desktop-client/hooks/useGlobalPref';
 import { useLocalPref } from '@desktop-client/hooks/useLocalPref';
 import { useMetaThemeColor } from '@desktop-client/hooks/useMetaThemeColor';
@@ -53,7 +54,7 @@ function NarrowNotSupported({
   const navigate = useNavigate();
   useEffect(() => {
     if (isNarrowWidth) {
-      navigate(redirectTo);
+      void navigate(redirectTo);
     }
   }, [isNarrowWidth, navigate, redirectTo]);
   return isNarrowWidth ? null : children;
@@ -70,7 +71,7 @@ function WideNotSupported({
   const navigate = useNavigate();
   useEffect(() => {
     if (!isNarrowWidth) {
-      navigate(redirectTo);
+      void navigate(redirectTo);
     }
   }, [isNarrowWidth, navigate, redirectTo]);
   return isNarrowWidth ? children : null;
@@ -93,10 +94,7 @@ export function FinancesApp() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
-  // TODO: Replace with `useAccounts` hook once it's updated to return the useQuery results.
-  const { data: accounts, isFetching: isAccountsFetching } = useQuery(
-    accountQueries.list(),
-  );
+  const { data: accounts, isFetching: isAccountsFetching } = useAccounts();
 
   const versionInfo = useSelector(state => state.app.versionInfo);
   const [notifyWhenUpdateIsAvailable] = useGlobalPref(
@@ -138,13 +136,13 @@ export function FinancesApp() {
       );
     }
 
-    run();
+    void run();
   });
 
   useEffect(() => init(), []);
 
   useEffect(() => {
-    dispatch(getLatestAppVersion());
+    void dispatch(getLatestAppVersion());
   }, [dispatch]);
 
   useEffect(() => {

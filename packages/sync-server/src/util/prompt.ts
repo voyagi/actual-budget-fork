@@ -1,6 +1,6 @@
 import { createInterface, cursorTo } from 'node:readline';
 
-export async function prompt(message: string): Promise<string> {
+export async function prompt(message: string) {
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -38,9 +38,9 @@ export async function promptPassword(): Promise<string> {
   return password;
 }
 
-async function askForPassword(promptText: string): Promise<string> {
-  let dataListener: (key: Buffer) => void;
-  let endListener: () => void;
+async function askForPassword(promptText: string) {
+  let dataListener: (key: Buffer) => void = () => null;
+  let endListener: () => void = () => null;
 
   const promise = new Promise<string>(resolve => {
     let result = '';

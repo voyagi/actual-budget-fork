@@ -67,7 +67,7 @@ export const TagRow = memo(
           type: 'string',
         },
       ];
-      navigate('/accounts', {
+      void navigate('/accounts', {
         state: {
           goBack: true,
           filterConditions,
@@ -116,7 +116,7 @@ export const TagRow = memo(
                   deleteTag({ id: tag.id });
                   break;
                 default:
-                  throw new Error(`Unrecognized menu option: ${name}`);
+                  throw new Error(`Unrecognized menu option: ${String(name)}`);
               }
               setMenuOpen(false);
             }}

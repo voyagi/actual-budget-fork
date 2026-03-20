@@ -517,7 +517,7 @@ export function AccountsPage() {
 
   const onOpenAccount = useCallback(
     (account: AccountEntity) => {
-      navigate(`/accounts/${account.id}`);
+      void navigate(`/accounts/${account.id}`);
     },
     [navigate],
   );

@@ -49,7 +49,7 @@ export function DuplicateFileModal({
   );
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       setNewName(await uniqueBudgetName(file.name + fileEndingTranslation));
     })();
   }, [file.name, fileEndingTranslation]);
@@ -116,14 +116,14 @@ export function DuplicateFileModal({
 
   return (
     <Modal name="duplicate-budget">
-      {({ state: { close } }) => (
+      {({ state }) => (
         <View style={{ maxWidth: 700 }}>
           <ModalHeader
             title={t('Duplicate "{{fileName}}"', { fileName: file.name })}
             rightContent={
               <ModalCloseButton
                 onPress={() => {
-                  close();
+                  state.close();
                   if (onComplete) onComplete({ status: 'canceled' });
                 }}
               />
@@ -192,7 +192,7 @@ export function DuplicateFileModal({
             <ModalButtons>
               <Button
                 onPress={() => {
-                  close();
+                  state.close();
                   if (onComplete) onComplete({ status: 'canceled' });
                 }}
               >

@@ -115,7 +115,7 @@ export function BudgetPage() {
       setInitialized(true);
     }
 
-    init();
+    void init();
   }, [budgetType, startMonth, dispatch, spreadsheet]);
 
   const onBudgetAction = useCallback(
@@ -480,7 +480,7 @@ export function BudgetPage() {
   );
 
   const onSwitchBudgetFile = useCallback(() => {
-    dispatch(closeBudget());
+    void dispatch(closeBudget());
   }, [dispatch]);
 
   const onOpenBudgetMonthMenu = useCallback(
@@ -589,7 +589,7 @@ export function BudgetPage() {
         <BudgetHeroCard />
         <SyncRefresh
           onSync={async () => {
-            dispatch(sync());
+            void dispatch(sync());
           }}
         >
           {({ onRefresh }) => (

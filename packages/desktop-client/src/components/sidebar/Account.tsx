@@ -258,7 +258,7 @@ export function Account<FieldName extends SheetFields<'account'>>({
                 onMenuSelect={type => {
                   switch (type) {
                     case 'close': {
-                      dispatch(
+                      void dispatch(
                         openAccountCloseModal({ accountId: account.id }),
                       );
                       break;
@@ -272,7 +272,9 @@ export function Account<FieldName extends SheetFields<'account'>>({
                       break;
                     }
                     default: {
-                      throw new Error(`Unrecognized menu option: ${type}`);
+                      throw new Error(
+                        `Unrecognized menu option: ${String(type)}`,
+                      );
                     }
                   }
                   setMenuOpen(false);

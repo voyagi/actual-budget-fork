@@ -122,7 +122,7 @@ function CalendarInner({ widget, parameters }: CalendarInnerProps) {
   );
 
   const { data: accounts = [] } = useAccounts();
-  const payees = usePayees();
+  const { data: payees = [] } = usePayees();
   const { data: { grouped: categoryGroups } = { grouped: [] } } =
     useCategories();
 
@@ -301,7 +301,7 @@ function CalendarInner({ widget, parameters }: CalendarInnerProps) {
 
       setAllMonths(allMonths);
     }
-    run();
+    void run();
   }, [locale]);
 
   useEffect(() => {
@@ -428,7 +428,7 @@ function CalendarInner({ widget, parameters }: CalendarInnerProps) {
 
   const onOpenTransaction = useCallback(
     (transaction: TransactionEntity) => {
-      navigate(`/transactions/${transaction.id}`);
+      void navigate(`/transactions/${transaction.id}`);
     },
     [navigate],
   );
@@ -447,23 +447,26 @@ function CalendarInner({ widget, parameters }: CalendarInnerProps) {
   const openY = 0;
   const [mobileTransactionsOpen, setMobileTransactionsOpen] = useState(false);
 
-  const [{ y }, api] = useSpring(() => ({
-    y: closeY.current,
-    immediate: false,
-  }));
+  const [{ y }, api] = useSpring(
+    () => ({
+      from: { y: closeY.current },
+      immediate: false,
+    }),
+    [],
+  );
 
   useEffect(() => {
     closeY.current = totalHeight;
-    api.start({
-      y: mobileTransactionsOpen ? openY : closeY.current,
+    void api.start({
+      to: { y: mobileTransactionsOpen ? openY : closeY.current },
       immediate: false,
     });
   }, [totalHeight, mobileTransactionsOpen, api]);
 
   const open = useCallback(
     ({ canceled }: { canceled: boolean }) => {
-      api.start({
-        y: openY,
+      void api.start({
+        to: { y: openY },
         immediate: false,
         config: canceled ? config.wobbly : config.stiff,
       });
@@ -474,8 +477,8 @@ function CalendarInner({ widget, parameters }: CalendarInnerProps) {
 
   const close = useCallback(
     (velocity = 0) => {
-      api.start({
-        y: closeY.current,
+      void api.start({
+        to: { y: closeY.current },
         config: { ...config.stiff, velocity },
       });
       setMobileTransactionsOpen(false);
@@ -487,7 +490,7 @@ function CalendarInner({ widget, parameters }: CalendarInnerProps) {
     ({ offset: [, oy], cancel }) => {
       if (oy < 0) {
         cancel();
-        api.start({ y: 0, immediate: true });
+        void api.start({ to: { y: 0 }, immediate: true });
         return;
       }
 
@@ -501,7 +504,7 @@ function CalendarInner({ widget, parameters }: CalendarInnerProps) {
           open({ canceled: true });
           setMobileTransactionsOpen(true);
         } else {
-          api.start({ y: oy, immediate: true });
+          void api.start({ to: { y: oy }, immediate: true });
         }
       }
     },
@@ -697,6 +700,7 @@ function CalendarInner({ widget, parameters }: CalendarInnerProps) {
                     onMakeAsNonSplitTransactions={() => {}}
                     showSelection={false}
                     allowSplitTransaction={false}
+                    allowReorder={false}
                   />
                 </SplitsExpandedProvider>
               ) : (

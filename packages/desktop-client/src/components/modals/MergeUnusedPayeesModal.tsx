@@ -30,7 +30,7 @@ export function MergeUnusedPayeesModal({
   targetPayeeId,
 }: MergeUnusedPayeesModalProps) {
   const { t } = useTranslation();
-  const allPayees = usePayees();
+  const { data: allPayees = [] } = usePayees();
   const modalStack = useSelector(state => state.modals.modalStack);
   const isEditingRule = !!modalStack.find(m => m.name === 'edit-rule');
   const dispatch = useDispatch();
@@ -103,7 +103,7 @@ export function MergeUnusedPayeesModal({
 
   return (
     <Modal name="merge-unused-payees">
-      {({ state: { close } }) => (
+      {({ state }) => (
         <View style={{ padding: 20, maxWidth: 500 }}>
           <View>
             <Paragraph style={{ marginBottom: 10, fontWeight: 500 }}>
@@ -197,8 +197,8 @@ export function MergeUnusedPayeesModal({
                 autoFocus
                 style={{ marginRight: 10 }}
                 onPress={() => {
-                  onMerge(targetPayee);
-                  close();
+                  void onMerge(targetPayee);
+                  state.close();
                 }}
               >
                 <Trans>Merge</Trans>
@@ -207,14 +207,14 @@ export function MergeUnusedPayeesModal({
                 <Button
                   style={{ marginRight: 10 }}
                   onPress={() => {
-                    onMergeAndCreateRule(targetPayee);
-                    close();
+                    void onMergeAndCreateRule(targetPayee);
+                    state.close();
                   }}
                 >
                   <Trans>Merge and edit rule</Trans>
                 </Button>
               )}
-              <Button style={{ marginRight: 10 }} onPress={close}>
+              <Button style={{ marginRight: 10 }} onPress={() => state.close()}>
                 <Trans>Do nothing</Trans>
               </Button>
             </ModalButtons>

@@ -33,17 +33,17 @@ import { SchedulesProvider } from '@desktop-client/hooks/useCachedSchedules';
 import { SelectedProviderWithItems } from '@desktop-client/hooks/useSelected';
 import { SplitsExpandedProvider } from '@desktop-client/hooks/useSplitsExpanded';
 import { SpreadsheetProvider } from '@desktop-client/hooks/useSpreadsheet';
-import { TestProviders } from '@desktop-client/mocks';
+import { createTestQueryClient, TestProviders } from '@desktop-client/mocks';
+import { payeeQueries } from '@desktop-client/payees';
+
+const queryClient = createTestQueryClient();
 
 vi.mock('loot-core/platform/client/connection');
-vi.mock('../../hooks/useFeatureFlag', () => ({
-  default: vi.fn().mockReturnValue(false),
-}));
 vi.mock('../../hooks/useSyncedPref', () => ({
   useSyncedPref: vi.fn().mockReturnValue([undefined, vi.fn()]),
 }));
 vi.mock('../../hooks/useFeatureFlag', () => ({
-  useFeatureFlag: () => false,
+  useFeatureFlag: vi.fn(() => false),
 }));
 
 const accounts = [generateAccount('Bank of America')];
@@ -68,22 +68,7 @@ const payees: PayeeEntity[] = [
     name: 'This guy on the side of the road',
   },
 ];
-vi.mock('../../hooks/usePayees', async importOriginal => {
-  const actual =
-    // oxlint-disable-next-line typescript/consistent-type-imports
-    await importOriginal<typeof import('../../hooks/usePayees')>();
-  return {
-    ...actual,
-    usePayees: () => payees,
-    usePayeesById: () => {
-      const payeesById: Record<string, PayeeEntity> = {};
-      payees.forEach(payee => {
-        payeesById[payee.id] = payee;
-      });
-      return payeesById;
-    },
-  };
-});
+queryClient.setQueryData(payeeQueries.list().queryKey, payees);
 
 const categoryGroups = generateCategoryGroups([
   {
@@ -195,7 +180,7 @@ function LiveTransactionTable(props: LiveTransactionTableProps) {
   // implementation properly uses the right latest state even if the
   // hook dependencies haven't changed
   return (
-    <TestProviders>
+    <TestProviders queryClient={queryClient}>
       <AuthProvider>
         <SpreadsheetProvider>
           <SchedulesProvider>
@@ -412,7 +397,7 @@ expect.extend({
     } else {
       return {
         message: () =>
-          `Expected ${validPayeeListWithFavorite} to have favorite stars`,
+          `Expected ${String(validPayeeListWithFavorite)} to have favorite stars`,
         pass: true,
       };
     }
@@ -460,7 +445,7 @@ describe('Transactions', () => {
               ?.name
           : 'Categorize',
       );
-      if (transaction.amount <= 0) {
+      if (transaction.amount < 0) {
         expect(queryField(container, 'debit', 'div', idx).textContent).toBe(
           integerToCurrency(-transaction.amount),
         );
@@ -555,7 +540,7 @@ describe('Transactions', () => {
       '{Shift>}[Enter]{/Shift}',
     ];
 
-    for (const idx in ks) {
+    for (const [idx] of ks.entries()) {
       const input = await editField(container, 'notes', 2);
       const oldValue = input.value;
       await userEvent.clear(input);

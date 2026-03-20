@@ -75,7 +75,12 @@ export function getLoginMethod(req?: {
     (req.body || { loginMethod: null }).loginMethod &&
     config.get('allowedLoginMethods').includes(req.body!.loginMethod!)
   ) {
-    return req.body!.loginMethod!;
+    const accountDb = getAccountDb();
+    const activeRow = accountDb.first(
+      'SELECT method FROM auth WHERE method = ? AND active = 1',
+      [req.body!.loginMethod!],
+    );
+    if (activeRow) return req.body!.loginMethod!;
   }
 
   //BY-PASS ANY OTHER CONFIGURATION TO ENSURE HEADER AUTH
@@ -215,7 +220,7 @@ export async function disableOpenID(
     }
   }
 
-  const { error } = (await bootstrapPassword(loginSettings.password)) || {};
+  const { error } = bootstrapPassword(loginSettings.password) || {};
   if (error) {
     return { error };
   }

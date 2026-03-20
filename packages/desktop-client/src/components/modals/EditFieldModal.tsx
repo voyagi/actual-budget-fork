@@ -276,12 +276,12 @@ export function EditFieldModal({
         },
       }}
     >
-      {({ state: { close } }) => (
+      {({ state }) => (
         <>
           {isNarrowWidth && (
             <ModalHeader
               title={label}
-              rightContent={<ModalCloseButton onPress={close} />}
+              rightContent={<ModalCloseButton onPress={() => state.close()} />}
             />
           )}
           <View>
@@ -295,7 +295,9 @@ export function EditFieldModal({
                 }}
               />
             )}
-            <View style={{ flex: 1 }}>{editor({ close })}</View>
+            <View style={{ flex: 1 }}>
+              {editor({ close: () => state.close() })}
+            </View>
           </View>
         </>
       )}

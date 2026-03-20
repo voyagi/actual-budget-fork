@@ -122,6 +122,24 @@ app.post('/change-password', (req: Request, res: Response) => {
   const session = validateSession(req, res);
   if (!session) return;
 
+  if (!isAdmin(session.user_id)) {
+    res.status(403).send({
+      status: 'error',
+      reason: 'forbidden',
+      details: 'permission-not-found',
+    });
+    return;
+  }
+
+  if (session.auth_method !== 'password') {
+    res.status(403).send({
+      status: 'error',
+      reason: 'forbidden',
+      details: 'password-auth-not-active',
+    });
+    return;
+  }
+
   const { error } = changePassword(req.body.password);
 
   if (error) {

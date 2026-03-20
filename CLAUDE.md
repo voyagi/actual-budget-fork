@@ -1,3 +1,6 @@
+@AGENTS.md
+@.github/agents/pr-and-commit-rules.md
+
 # Actual Budget Fork
 
 ## Design Skills (MANDATORY)

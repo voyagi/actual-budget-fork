@@ -120,10 +120,10 @@ export function useTransactionBatchActions() {
         if (name === 'notes') {
           if (mode === 'prepend') {
             valueToSet =
-              trans.notes === null ? value : `${value}${trans.notes}`;
+              trans.notes === null ? value : `${String(value)}${trans.notes}`;
           } else if (mode === 'append') {
             valueToSet =
-              trans.notes === null ? value : `${trans.notes}${value}`;
+              trans.notes === null ? value : `${trans.notes}${String(value)}`;
           } else if (mode === 'replace') {
             valueToSet = value;
           } else if (
@@ -276,7 +276,7 @@ export function useTransactionBatchActions() {
     if (name === 'cleared') {
       // Cleared just toggles it on/off and it depends on the data
       // loaded. Need to clean this up in the future.
-      onChange('cleared', null);
+      void onChange('cleared', null);
     } else if (name === 'category') {
       pushCategoryAutocompleteModal();
     } else if (name === 'payee') {

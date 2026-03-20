@@ -27,13 +27,13 @@ import { accountQueries } from './queries';
 import { sync } from '@desktop-client/app/appSlice';
 import { useAccounts } from '@desktop-client/hooks/useAccounts';
 import { addNotification } from '@desktop-client/notifications/notificationsSlice';
-import { markPayeesDirty } from '@desktop-client/payees/payeesSlice';
+import { payeeQueries } from '@desktop-client/payees';
 import { useDispatch, useStore } from '@desktop-client/redux';
 import type { AppDispatch } from '@desktop-client/redux/store';
 import { setNewTransactions } from '@desktop-client/transactions/transactionsSlice';
 
 const invalidateQueries = (queryClient: QueryClient, queryKey?: QueryKey) => {
-  queryClient.invalidateQueries({
+  void queryClient.invalidateQueries({
     queryKey: queryKey ?? accountQueries.lists(),
   });
 };
@@ -192,9 +192,7 @@ export function useMoveAccountMutation() {
     },
     onSuccess: () => {
       invalidateQueries(queryClient);
-      // TODO: Change to a call to queryClient.invalidateQueries
-      // once payees have been moved to react-query.
-      dispatch(markPayeesDirty());
+      invalidateQueries(queryClient, payeeQueries.lists());
     },
     onError: error => {
       console.error('Error moving account:', error);
@@ -210,6 +208,7 @@ export function useMoveAccountMutation() {
 type ImportPreviewTransactionsPayload = {
   accountId: string;
   transactions: TransactionEntity[];
+  reimportDeleted?: boolean;
 };
 
 export function useImportPreviewTransactionsMutation() {
@@ -221,6 +220,7 @@ export function useImportPreviewTransactionsMutation() {
     mutationFn: async ({
       accountId,
       transactions,
+      reimportDeleted,
     }: ImportPreviewTransactionsPayload) => {
       const { errors = [], updatedPreview } = await send(
         'transactions-import',
@@ -228,6 +228,7 @@ export function useImportPreviewTransactionsMutation() {
           accountId,
           transactions,
           isPreview: true,
+          opts: reimportDeleted !== undefined ? { reimportDeleted } : undefined,
         },
       );
 
@@ -262,6 +263,7 @@ type ImportTransactionsPayload = {
   accountId: string;
   transactions: TransactionEntity[];
   reconcile: boolean;
+  reimportDeleted?: boolean;
 };
 
 export function useImportTransactionsMutation() {
@@ -274,6 +276,7 @@ export function useImportTransactionsMutation() {
       accountId,
       transactions,
       reconcile,
+      reimportDeleted,
     }: ImportTransactionsPayload) => {
       if (!reconcile) {
         await send('api/transactions-add', {
@@ -292,6 +295,7 @@ export function useImportTransactionsMutation() {
         accountId,
         transactions,
         isPreview: false,
+        opts: reimportDeleted !== undefined ? { reimportDeleted } : undefined,
       });
 
       errors.forEach(error => {
@@ -400,9 +404,7 @@ export function useLinkAccountMutation() {
     },
     onSuccess: () => {
       invalidateQueries(queryClient);
-      // TODO: Change to a call to queryClient.invalidateQueries
-      // once payees have been moved to react-query.
-      dispatch(markPayeesDirty());
+      invalidateQueries(queryClient, payeeQueries.lists());
     },
     onError: error => {
       console.error('Error linking account:', error);
@@ -442,9 +444,7 @@ export function useLinkAccountSimpleFinMutation() {
     },
     onSuccess: () => {
       invalidateQueries(queryClient);
-      // TODO: Change to a call to queryClient.invalidateQueries
-      // once payees have been moved to react-query.
-      dispatch(markPayeesDirty());
+      invalidateQueries(queryClient, payeeQueries.lists());
     },
     onError: error => {
       console.error('Error linking account to SimpleFIN:', error);
@@ -486,9 +486,7 @@ export function useLinkAccountPluggyAiMutation() {
     },
     onSuccess: () => {
       invalidateQueries(queryClient);
-      // TODO: Change to a call to queryClient.invalidateQueries
-      // once payees have been moved to react-query.
-      dispatch(markPayeesDirty());
+      invalidateQueries(queryClient, payeeQueries.lists());
     },
     onError: error => {
       console.error('Error linking account to PluggyAI:', error);

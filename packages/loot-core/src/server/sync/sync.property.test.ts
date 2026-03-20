@@ -1,6 +1,7 @@
 // @ts-strict-ignore
 import { getClock, merkle, Timestamp } from '@actual-app/crdt';
-import fc from 'fast-check';
+import jsc from 'jsverify';
+import type { Arbitrary } from 'jsverify';
 
 import * as db from '../db';
 import * as prefs from '../prefs';
@@ -12,9 +13,10 @@ import { isError } from './utils';
 
 import * as sync from './index';
 
-const uuidGenerator = fc
-  .integer({ min: 97, max: 122 })
-  .map(x => String.fromCharCode(x));
+const uuidGenerator = jsc.integer(97, 122).smap(
+  x => String.fromCharCode(x),
+  x => x.charCodeAt(Number(x)),
+);
 
 beforeEach(() => {
   sync.setSyncingMode('enabled');
@@ -93,28 +95,38 @@ const baseTime = 1565374471903;
 const clientId1 = '80dd7da215247293';
 const clientId2 = '90xU1sd5124329ac';
 
-function makeGen({
+// oxlint-disable-next-line typescript/no-explicit-any
+function makeGen<T extends Arbitrary<any>>({
   table,
   row,
   field,
   value,
 }: {
   table: string;
-  row?: fc.Arbitrary<string>;
+  row?: Arbitrary<string>;
   field: string;
-  value: fc.Arbitrary<unknown>;
+  value: T;
 }) {
-  return fc.record({
-    dataset: fc.constant(table),
+  return jsc.record({
+    dataset: jsc.constant(table),
     row: row || uuidGenerator,
-    column: fc.constant(field),
+    column: jsc.constant(field),
     value,
-    timestamp: fc
-      .tuple(
-        fc.integer({ min: 1000, max: 10000 }),
-        fc.constantFrom(clientId1, clientId2),
-      )
-      .map(([x, clientId]) => new Timestamp(baseTime + x, 0, clientId)),
+    timestamp: jsc.integer(1000, 10000).smap(
+      x => {
+        let clientId: string;
+        switch (jsc.random(0, 1)) {
+          case 0:
+            clientId = clientId1;
+            break;
+          case 1:
+          default:
+            clientId = clientId2;
+        }
+        return new Timestamp(baseTime + x, 0, clientId);
+      },
+      x => x.millis() - baseTime,
+    ),
   });
 }
 
@@ -125,9 +137,12 @@ Object.keys(schema).forEach(table => {
       generators.push(
         makeGen({
           table,
-          row: fc.string().map(x => 'sheet!' + x),
+          row: jsc.asciinestring.smap(
+            x => 'sheet!' + x,
+            x => x,
+          ),
           field: 'expr',
-          value: fc.constant(JSON.stringify('fooooo')),
+          value: jsc.constant(JSON.stringify('fooooo')),
         }),
       );
       return obj;
@@ -136,33 +151,21 @@ Object.keys(schema).forEach(table => {
     const type = schema[table][field];
     switch (type) {
       case 'text':
-        generators.push(makeGen({ table, field, value: fc.string() }));
+        generators.push(makeGen({ table, field, value: jsc.asciinestring }));
         break;
 
       case 'integer':
         if (field === 'amount') {
-          generators.push(
-            makeGen({
-              table,
-              field,
-              value: fc.integer({ min: 0, max: 255 }),
-            }),
-          );
+          generators.push(makeGen({ table, field, value: jsc.uint8 }));
         } else {
           generators.push(
-            makeGen({ table, field, value: fc.constantFrom(0, 1) }),
+            makeGen({ table, field, value: jsc.elements([0, 1]) }),
           );
         }
         break;
 
       case 'real':
-        generators.push(
-          makeGen({
-            table,
-            field,
-            value: fc.integer({ min: 0, max: 0xffffffff }),
-          }),
-        );
+        generators.push(makeGen({ table, field, value: jsc.uint32 }));
         break;
 
       default:
@@ -222,8 +225,8 @@ async function run(msgs) {
     { firstMessages: [], secondMessages: [] },
   );
 
-  prefs.loadPrefs();
-  prefs.savePrefs({
+  void prefs.loadPrefs();
+  void prefs.savePrefs({
     groupId: 'group',
     lastSyncedTimestamp: new Timestamp(
       Date.now(),
@@ -310,11 +313,9 @@ async function run(msgs) {
 
 describe('sync property test', () => {
   it.skip('should always sync clients into the same state', async () => {
-    await fc.assert(
-      fc.asyncProperty(
-        fc.tuple(
-          ...Array.from(new Array(100)).map(() => fc.oneof(...generators)),
-        ),
+    const test = jsc.check(
+      jsc.forall(
+        jsc.tuple(Array.from(new Array(100)).map(() => jsc.oneof(generators))),
         async msgs => {
           let r;
 
@@ -340,8 +341,20 @@ describe('sync property test', () => {
           return true;
         },
       ),
-      { numRuns: 100 },
+      { tests: 100, quiet: true },
     );
+
+    if (test.counterexample) {
+      console.log('---------------------');
+      console.log(
+        test.counterexample[0].map(x => ({
+          ...x,
+          timestamp: x.timestamp.toString(),
+        })),
+      );
+
+      throw new Error('property test failed');
+    }
   }, 50000);
 
   it.skip('should run a counterexample that needs to be fixed', async () => {

@@ -64,7 +64,6 @@ import {
   useSelected,
 } from '@desktop-client/hooks/useSelected';
 import { addNotification } from '@desktop-client/notifications/notificationsSlice';
-import { getPayees } from '@desktop-client/payees/payeesSlice';
 import { aqlQuery } from '@desktop-client/queries/aqlQuery';
 import { useDispatch } from '@desktop-client/redux';
 import { disableUndo, enableUndo } from '@desktop-client/undo';
@@ -450,8 +449,8 @@ function getSplitActionFields() {
     ([field]) => !parentOnlyFields.includes(field),
   );
 }
-function getAllocationMethodOptions() {
-  return Object.entries(getAllocationMethods());
+function getAllocationMethodOptions(isFormulaEnabled = false) {
+  return Object.entries(getAllocationMethods(isFormulaEnabled));
 }
 
 type ActionEditorProps = {
@@ -570,31 +569,15 @@ function ActionEditor({
                     : onChange('formula', options.formula || value || '=')
                 }
               >
-                {hasFormula ? (
-                  <span
-                    style={{
-                      fontSize: 14,
-                      fontFamily: 'serif',
-                      textAlign: 'center',
-                    }}
-                  >
-                    ƒ
-                  </span>
-                ) : hasFormula ? (
-                  <SvgCode
-                    style={{ width: 12, height: 12, color: 'inherit' }}
-                  />
-                ) : (
-                  <span
-                    style={{
-                      fontSize: 14,
-                      fontFamily: 'serif',
-                      textAlign: 'center',
-                    }}
-                  >
-                    ƒ
-                  </span>
-                )}
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontFamily: 'serif',
+                    textAlign: 'center',
+                  }}
+                >
+                  ƒ
+                </span>
               </Button>
             )}
           {isTemplatingEnabled &&
@@ -630,7 +613,7 @@ function ActionEditor({
           </View>
 
           <SplitAmountMethodSelect
-            options={getAllocationMethodOptions()}
+            options={getAllocationMethodOptions(isFormulaEnabled)}
             value={options.method}
             onChange={onChange}
           />
@@ -641,7 +624,12 @@ function ActionEditor({
               minWidth: options.method === 'fixed-percent' ? 45 : 70,
             }}
           >
-            {options.method !== 'remainder' && (
+            {options.method === 'formula' ? (
+              <FormulaActionEditor
+                value={options?.formula || '='}
+                onChange={v => onChange('formula', v, { formula: true })}
+              />
+            ) : options.method !== 'remainder' ? (
               <GenericInput
                 key={inputKey}
                 // @ts-expect-error fix this
@@ -654,8 +642,34 @@ function ActionEditor({
                 value={value}
                 onChange={v => onChange('value', v)}
               />
-            )}
+            ) : null}
           </View>
+          {options.method === 'formula' && (
+            <View
+              style={{
+                padding: 5,
+                backgroundColor: theme.buttonPrimaryBackground,
+                height: 24,
+                width: 24,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 4,
+              }}
+              aria-label={t('Formula mode indicator')}
+              role="img"
+            >
+              <span
+                style={{
+                  fontSize: 14,
+                  fontFamily: 'serif',
+                  textAlign: 'center',
+                }}
+              >
+                ƒ
+              </span>
+            </View>
+          )}
         </>
       ) : op === 'link-schedule' ? (
         <>
@@ -1023,8 +1037,6 @@ export function RuleEditor({
   );
 
   useEffect(() => {
-    dispatch(getPayees());
-
     // Disable undo while this modal is open
     disableUndo();
     return () => enableUndo();
@@ -1059,7 +1071,7 @@ export function RuleEditor({
         setTransactions([]);
       }
     }
-    run();
+    void run();
   }, [actionSplits, conditions, conditionsOp]);
 
   const selectedInst = useSelected('transactions', transactions, []);
@@ -1218,7 +1230,7 @@ export function RuleEditor({
     const selectedTransactions = transactions.filter(({ id }) =>
       selectedInst.items.has(id),
     );
-    send('rule-apply-actions', {
+    void send('rule-apply-actions', {
       transactions: selectedTransactions,
       actions: getUnparsedActions(actionSplits),
     }).then(content => {

@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import * as expressWinston from 'express-winston';
 import * as winston from 'winston';
 
@@ -10,7 +10,7 @@ async function errorMiddleware(
   req: Request,
   res: Response,
   next: NextFunction,
-): Promise<void> {
+) {
   if (res.headersSent) {
     // If you call next() with an error after you have started writing the response
     // (for example, if you encounter an error while streaming the response
@@ -35,7 +35,7 @@ const validateSessionMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction,
-): Promise<void> => {
+) => {
   const session = await validateSession(req, res);
   if (!session) {
     return;
@@ -53,17 +53,10 @@ const requestLoggerMiddleware = expressWinston.logger({
       : [winston.format.colorize()]),
     winston.format.timestamp(),
     winston.format.printf(args => {
-      const { timestamp, level, meta } = args as unknown as {
-        timestamp: string;
-        level: string;
-        meta: {
-          res: { statusCode: number };
-          req: { method: string; url: string };
-        };
-      };
-      const { res, req } = meta;
+      const { timestamp, level, meta } = args;
+      const { res, req } = meta as { res: Response; req: Request };
 
-      return `${timestamp} ${level}: ${req.method} ${res.statusCode} ${req.url}`;
+      return `${String(timestamp)} ${String(level)}: ${req.method} ${res.statusCode} ${req.url}`;
     }),
   ),
 });

@@ -68,6 +68,11 @@ function useErrorMessage() {
           </Trans>
         );
 
+      case 'ACCOUNT_MISSING':
+        return t(
+          'This account was not found in SimpleFIN. Try unlinking and relinking the account.',
+        );
+
       default:
     }
 
@@ -99,7 +104,7 @@ export function AccountSyncCheck() {
       setOpen(false);
 
       if (acc.account_id) {
-        authorizeBank(dispatch);
+        void authorizeBank(dispatch);
       }
     },
     [dispatch],

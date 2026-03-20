@@ -2,6 +2,7 @@ Abanca
 ABNAMRO
 ABNANL
 Activo
+actualrc
 AESUDEF
 ALZEY
 Anglais
@@ -31,6 +32,7 @@ CAGLPTPL
 Caixa
 CAMT
 cashflow
+Catppuccin
 Cetelem
 cimode
 Citi
@@ -110,6 +112,7 @@ Keycloak
 Khurozov
 KORT
 Kreditbank
+KRW
 lage
 LHV
 LHVBEE

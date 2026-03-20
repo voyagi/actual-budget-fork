@@ -42,7 +42,7 @@ export function Value<T>({
   const { t } = useTranslation();
   const format = useFormat();
   const dateFormat = useDateFormat() || 'MM/dd/yyyy';
-  const payees = usePayees();
+  const { data: payees } = usePayees();
   const {
     data: { list: categories, grouped: categoryGroups } = {
       list: [],
@@ -137,7 +137,7 @@ export function Value<T>({
 
           return '…';
         default:
-          throw new Error(`Unknown field ${field}`);
+          throw new Error(`Unknown field ${String(field)}`);
       }
     }
   }

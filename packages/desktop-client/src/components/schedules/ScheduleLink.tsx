@@ -83,11 +83,11 @@ export function ScheduleLink({
         },
       }}
     >
-      {({ state: { close } }) => (
+      {({ state }) => (
         <>
           <ModalHeader
             title={t('Link schedule')}
-            rightContent={<ModalCloseButton onPress={close} />}
+            rightContent={<ModalCloseButton onPress={() => state.close()} />}
           />
           <View
             style={{
@@ -123,8 +123,8 @@ export function ScheduleLink({
                 variant="primary"
                 style={{ marginLeft: 15, padding: '4px 10px' }}
                 onPress={() => {
-                  close();
-                  onCreate();
+                  state.close();
+                  void onCreate();
                 }}
               >
                 <SvgAdd style={{ width: '20', padding: '3' }} />
@@ -148,8 +148,8 @@ export function ScheduleLink({
               filter={filter}
               minimal
               onSelect={id => {
-                onSelect(id);
-                close();
+                void onSelect(id);
+                state.close();
               }}
               schedules={schedules}
               statuses={statuses}

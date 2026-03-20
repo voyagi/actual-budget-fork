@@ -7,7 +7,7 @@ import { listen } from 'loot-core/platform/client/connection';
 import { accountQueries } from './accounts';
 import { categoryQueries } from './budget';
 import { addNotification } from './notifications/notificationsSlice';
-import { reloadPayees } from './payees/payeesSlice';
+import { payeeQueries } from './payees';
 import { loadPrefs } from './prefs/prefsSlice';
 import type { AppStore } from './redux/store';
 import { handleUnknownError, syncErrorHandlers } from './sync-event-handlers';
@@ -58,7 +58,7 @@ export function listenForSyncEvent(store: AppStore, queryClient: QueryClient) {
       const tables = event.tables;
 
       if (tables.includes('prefs')) {
-        store.dispatch(loadPrefs());
+        void store.dispatch(loadPrefs());
       }
 
       if (
@@ -66,7 +66,7 @@ export function listenForSyncEvent(store: AppStore, queryClient: QueryClient) {
         tables.includes('category_groups') ||
         tables.includes('category_mapping')
       ) {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: categoryQueries.lists(),
         });
       }
@@ -77,11 +77,13 @@ export function listenForSyncEvent(store: AppStore, queryClient: QueryClient) {
         tables.includes('payees') ||
         tables.includes('payee_mapping')
       ) {
-        store.dispatch(reloadPayees());
+        void queryClient.invalidateQueries({
+          queryKey: payeeQueries.lists(),
+        });
       }
 
       if (tables.includes('accounts')) {
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: accountQueries.lists(),
         });
       }

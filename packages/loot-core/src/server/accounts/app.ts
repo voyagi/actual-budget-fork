@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
+import type { ImportTransactionsOpts } from '#types/api-handlers';
 import { captureException } from '../../platform/exceptions';
 import * as asyncStorage from '../../platform/server/asyncStorage';
 import * as connection from '../../platform/server/connection';
@@ -128,7 +129,7 @@ async function getAccounts(): Promise<AccountEntity[]> {
         balance_limit: dbAccount.balance_limit ?? null,
         account_sync_source: dbAccount.account_sync_source ?? null,
         last_sync: dbAccount.last_sync ?? null,
-      }) as AccountEntity,
+      }) satisfies AccountEntity,
   );
 }
 
@@ -229,7 +230,7 @@ async function closeAccount({
     if (numTransactions === 0) {
       await db.deleteAccount({ id });
     } else if (forced) {
-      const rows = await db.runQuery<
+      const rows = db.runQuery<
         Pick<db.DbViewTransaction, 'id' | 'transfer_id'>
       >(
         'SELECT id, transfer_id FROM v_transactions WHERE account = ?',
@@ -249,18 +250,18 @@ async function closeAccount({
       await batchMessages(async () => {
         rows.forEach(row => {
           if (row.transfer_id) {
-            db.updateTransaction({
+            void db.updateTransaction({
               id: row.transfer_id,
               payee: null,
               transfer_id: null,
             });
           }
 
-          db.deleteTransaction({ id: row.id });
+          void db.deleteTransaction({ id: row.id });
         });
 
-        db.deleteAccount({ id });
-        db.deleteTransferPayee({ id: transferPayee.id });
+        void db.deleteAccount({ id });
+        void db.deleteTransferPayee({ id: transferPayee.id });
       });
     } else {
       if (balance !== 0 && transferAccountId == null) {
@@ -321,9 +322,7 @@ async function accountsBankSync({
   const { 'user-id': userId, 'user-key': userKey } =
     await asyncStorage.multiGet(['user-id', 'user-key']);
 
-  const accounts = await db.runQuery<
-    db.DbAccount & { bankId: db.DbBank['bank_id'] }
-  >(
+  const accounts = db.runQuery<db.DbAccount & { bankId: db.DbBank['bank_id'] }>(
     `
     SELECT a.*, b.bank_id as bankId
     FROM accounts a
@@ -388,9 +387,7 @@ async function simpleFinBatchSync({
 }): Promise<
   Array<{ accountId: AccountEntity['id']; res: SyncResponseWithErrors }>
 > {
-  const accounts = await db.runQuery<
-    db.DbAccount & { bankId: db.DbBank['bank_id'] }
-  >(
+  const accounts = db.runQuery<db.DbAccount & { bankId: db.DbBank['bank_id'] }>(
     `SELECT a.*, b.bank_id as bankId FROM accounts a
          LEFT JOIN banks b ON a.bank = b.id
          WHERE
@@ -443,7 +440,7 @@ async function simpleFinBatchSync({
       const matchedTransactions: Array<TransactionEntity['id']> = [];
       const updatedAccounts: Array<AccountEntity['id']> = [];
 
-      if (syncResponse.res.error_code) {
+      if (syncResponse.res?.error_code) {
         errors.push(
           handleSyncError(
             {
@@ -455,7 +452,7 @@ async function simpleFinBatchSync({
             account,
           ),
         );
-      } else {
+      } else if (syncResponse.res) {
         const syncResponseData = await handleSyncResponse(
           syncResponse.res,
           account,
@@ -464,6 +461,15 @@ async function simpleFinBatchSync({
         newTransactions.push(...syncResponseData.newTransactions);
         matchedTransactions.push(...syncResponseData.matchedTransactions);
         updatedAccounts.push(...syncResponseData.updatedAccounts);
+      } else {
+        errors.push(
+          handleSyncError(
+            new Error(
+              'Failed syncing account "' + account.name + '": empty response',
+            ),
+            account,
+          ),
+        );
       }
 
       retVal.push({
@@ -472,19 +478,17 @@ async function simpleFinBatchSync({
       });
     }
   } catch (err) {
-    const errors = [];
     for (const account of accounts) {
+      const error = err as Error;
       retVal.push({
         accountId: account.id,
         res: {
-          errors,
+          errors: [handleSyncError(error, account)],
           newTransactions: [],
           matchedTransactions: [],
           updatedAccounts: [],
         },
       });
-      const error = err as Error;
-      errors.push(handleSyncError(error, account));
     }
   }
 
@@ -515,9 +519,7 @@ async function importTransactions({
   accountId: AccountEntity['id'];
   transactions: ImportTransactionEntity[];
   isPreview: boolean;
-  opts?: {
-    defaultCleared?: boolean;
-  };
+  opts?: ImportTransactionsOpts;
 }): Promise<ImportTransactionsResult> {
   if (typeof accountId !== 'string') {
     throw APIError('transactions-import: accountId must be an id');
@@ -531,6 +533,8 @@ async function importTransactions({
       true,
       isPreview,
       opts?.defaultCleared,
+      false,
+      opts?.reimportDeleted,
     );
     return {
       errors: [],

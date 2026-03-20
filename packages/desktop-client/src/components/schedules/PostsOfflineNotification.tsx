@@ -47,11 +47,11 @@ export function PostsOfflineNotification() {
 
   return (
     <Modal name="schedule-posts-offline-notification">
-      {({ state: { close } }) => (
+      {({ state }) => (
         <>
           <ModalHeader
             title={t('Post transactions?')}
-            rightContent={<ModalCloseButton onPress={close} />}
+            rightContent={<ModalCloseButton onPress={() => state.close()} />}
           />
           <Paragraph>
             <Text>
@@ -91,15 +91,15 @@ export function PostsOfflineNotification() {
             gap={10}
             style={{ marginTop: 20, justifyContent: 'flex-end' }}
           >
-            <Button onPress={close}>
+            <Button onPress={() => state.close()}>
               <Trans>Decide later</Trans>
             </Button>
             <Button
               variant="primary"
               autoFocus
               onPress={() => {
-                onPost();
-                close();
+                void onPost();
+                state.close();
               }}
             >
               <Trans>Post transactions</Trans>

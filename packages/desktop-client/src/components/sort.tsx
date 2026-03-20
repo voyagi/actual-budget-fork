@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import type { DropPosition as AriaDropPosition } from 'react-aria';
 import { useDrag, useDrop } from 'react-dnd';
 
 import { theme } from '@actual-app/components/theme';
@@ -45,10 +46,10 @@ export function useDraggable<T>({
   const [, dragRef] = useDrag({
     type,
     item: () => {
-      _onDragChange.current({ state: 'start-preview', type, item });
+      void _onDragChange.current({ state: 'start-preview', type, item });
 
       setTimeout(() => {
-        _onDragChange.current({ state: 'start' });
+        void _onDragChange.current({ state: 'start' });
       }, 0);
 
       return { type, item };
@@ -56,7 +57,7 @@ export function useDraggable<T>({
     collect: monitor => ({ isDragging: monitor.isDragging() }),
 
     end(dragState) {
-      _onDragChange.current({ state: 'end', type, item: dragState.item });
+      void _onDragChange.current({ state: 'end', type, item: dragState.item });
     },
 
     canDrag() {
@@ -103,7 +104,7 @@ export function useDroppable<T extends { id: string }>({
   >({
     accept: types,
     drop({ item }) {
-      onDrop(item.id, dropPos, id);
+      void onDrop(item.id, dropPos, id);
     },
     hover(_, monitor) {
       if (!ref.current) return;
@@ -150,7 +151,9 @@ type ItemPosition = 'first' | 'last' | null;
 export const DropHighlightPosContext = createContext<ItemPosition>(null);
 
 type DropHighlightProps = {
-  pos: DropPosition;
+  // Supports legacy ('top'/'bottom') and react-aria ('before'/'after'/'on') positions
+  // 'on' is not used in our UI but is included for type compatibility
+  pos: DropPosition | AriaDropPosition | null;
   offset?: {
     top?: number;
     bottom?: number;
@@ -159,15 +162,17 @@ type DropHighlightProps = {
 export function DropHighlight({ pos, offset }: DropHighlightProps) {
   const itemPos = useContext(DropHighlightPosContext);
 
-  if (pos == null) {
+  // 'on' position is not supported for highlight (used for dropping onto items, not between)
+  if (pos == null || pos === 'on') {
     return null;
   }
 
   const topOffset = (itemPos === 'first' ? 2 : 0) + (offset?.top || 0);
   const bottomOffset = (itemPos === 'last' ? 2 : 0) + (offset?.bottom || 0);
 
-  const posStyle =
-    pos === 'top' ? { top: -2 + topOffset } : { bottom: -1 + bottomOffset };
+  // Support both legacy ('top'/'bottom') and aria ('before'/'after') position names
+  const isTop = pos === 'top' || pos === 'before';
+  const posStyle = isTop ? { top: topOffset } : { bottom: bottomOffset };
 
   return (
     <View

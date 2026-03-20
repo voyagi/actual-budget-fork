@@ -299,7 +299,7 @@ function QueryItem({
 
       setAllMonths(allMonths);
     }
-    run();
+    void run();
   }, [locale]);
 
   const filters = useRuleConditionFilters(

@@ -15,9 +15,8 @@ type AlertProps = {
   color?: string;
   backgroundColor?: string;
   style?: CSSProperties;
+  iconStyle?: CSSProperties;
   children?: ReactNode;
-  id?: string;
-  role?: string;
 };
 
 const Alert = ({
@@ -25,14 +24,11 @@ const Alert = ({
   color,
   backgroundColor,
   style,
+  iconStyle,
   children,
-  id,
-  role,
 }: AlertProps) => {
   return (
     <View
-      id={id}
-      role={role}
       style={{
         color,
         fontSize: 13,
@@ -54,27 +50,28 @@ const Alert = ({
           alignSelf: 'stretch',
           flexShrink: 0,
           marginRight: 5,
+          ...iconStyle,
         }}
       >
         <Icon width={13} style={{ marginTop: 2 }} />
       </View>
-      <Text style={{ zIndex: 1, lineHeight: 1.5 }}>{children}</Text>
+      <Text style={{ width: '100%', zIndex: 1, lineHeight: 1.5 }}>
+        {children}
+      </Text>
     </View>
   );
 };
 
 type ScopedAlertProps = {
   style?: CSSProperties;
+  iconStyle?: CSSProperties;
   children?: ReactNode;
-  id?: string;
-  role?: string;
 };
 
 export const Information = ({
   style,
+  iconStyle,
   children,
-  id,
-  role,
 }: ScopedAlertProps) => {
   return (
     <Alert
@@ -86,38 +83,35 @@ export const Information = ({
         padding: 5,
         ...style,
       }}
-      id={id}
-      role={role}
+      iconStyle={iconStyle}
     >
       {children}
     </Alert>
   );
 };
 
-export const Warning = ({ style, children, id, role }: ScopedAlertProps) => {
+export const Warning = ({ style, iconStyle, children }: ScopedAlertProps) => {
   return (
     <Alert
       icon={SvgExclamationOutline}
       color={theme.warningText}
       backgroundColor={theme.warningBackground}
       style={style}
-      id={id}
-      role={role}
+      iconStyle={iconStyle}
     >
       {children}
     </Alert>
   );
 };
 
-export const Error = ({ style, children, id, role }: ScopedAlertProps) => {
+export const Error = ({ style, iconStyle, children }: ScopedAlertProps) => {
   return (
     <Alert
       icon={SvgExclamationOutline}
       color={theme.errorTextDarker}
       backgroundColor={theme.errorBackground}
       style={style}
-      id={id}
-      role={role}
+      iconStyle={iconStyle}
     >
       {children}
     </Alert>

@@ -337,7 +337,7 @@ function SelectedTransactionsFloatingActionBar({
   const { data: accounts = [] } = useAccounts();
   const accountsById = useMemo(() => groupById(accounts), [accounts]);
 
-  const payees = usePayees();
+  const { data: payees = [] } = usePayees();
   const payeesById = useMemo(() => groupById(payees), [payees]);
 
   const {
@@ -483,7 +483,7 @@ function SelectedTransactionsFloatingActionBar({
               getItemStyle={getMenuItemStyle}
               style={{ backgroundColor: theme.floatingActionBarBackground }}
               onMenuSelect={name => {
-                onBatchEdit?.({
+                void onBatchEdit?.({
                   name,
                   ids: selectedTransactionsArray,
                   onSuccess: (ids, name, value, mode) => {
@@ -506,7 +506,7 @@ function SelectedTransactionsFloatingActionBar({
                           : integerToCurrency(Number(value));
                         break;
                       case 'notes':
-                        displayValue = `${mode} with ${value}`;
+                        displayValue = `${mode} with ${String(value)}`;
                         break;
                       default:
                         displayValue = value;
@@ -514,18 +514,18 @@ function SelectedTransactionsFloatingActionBar({
                     }
 
                     showUndoNotification({
-                      message: `Successfully updated ${name} of ${ids.length} transaction${ids.length > 1 ? 's' : ''} to [${displayValue}](#${displayValue}).`,
+                      message: `Successfully updated ${name} of ${ids.length} transaction${ids.length > 1 ? 's' : ''} to [${String(displayValue)}](#${String(displayValue)}).`,
                       messageActions: {
                         [String(displayValue)]: () => {
                           switch (name) {
                             case 'account':
-                              navigate(`/accounts/${value}`);
+                              void navigate(`/accounts/${String(value)}`);
                               break;
                             case 'category':
-                              navigate(`/categories/${value}`);
+                              void navigate(`/categories/${String(value)}`);
                               break;
                             case 'payee':
-                              navigate(`/payees`);
+                              void navigate(`/payees`);
                               break;
                             default:
                               break;
@@ -601,7 +601,7 @@ function SelectedTransactionsFloatingActionBar({
               style={{ backgroundColor: theme.floatingActionBarBackground }}
               onMenuSelect={type => {
                 if (type === 'duplicate') {
-                  onBatchDuplicate?.({
+                  void onBatchDuplicate?.({
                     ids: selectedTransactionsArray,
                     onSuccess: ids => {
                       showUndoNotification({
@@ -613,7 +613,7 @@ function SelectedTransactionsFloatingActionBar({
                     },
                   });
                 } else if (type === 'link-schedule') {
-                  onBatchLinkSchedule?.({
+                  void onBatchLinkSchedule?.({
                     ids: selectedTransactionsArray,
                     onSuccess: (ids, schedule) => {
                       // TODO: When schedule becomes available in mobile, update undo notification message
@@ -627,7 +627,7 @@ function SelectedTransactionsFloatingActionBar({
                     },
                   });
                 } else if (type === 'unlink-schedule') {
-                  onBatchUnlinkSchedule?.({
+                  void onBatchUnlinkSchedule?.({
                     ids: selectedTransactionsArray,
                     onSuccess: ids => {
                       showUndoNotification({
@@ -639,7 +639,7 @@ function SelectedTransactionsFloatingActionBar({
                     },
                   });
                 } else if (type === 'delete') {
-                  onBatchDelete?.({
+                  void onBatchDelete?.({
                     ids: selectedTransactionsArray,
                     onSuccess: ids => {
                       showUndoNotification({
@@ -652,7 +652,7 @@ function SelectedTransactionsFloatingActionBar({
                     },
                   });
                 } else if (type === 'transfer') {
-                  onSetTransfer?.(selectedTransactionsArray, payees, ids =>
+                  void onSetTransfer?.(selectedTransactionsArray, payees, ids =>
                     showUndoNotification({
                       message: t(
                         'Successfully marked {{count}} transactions as transfer.',
@@ -663,7 +663,7 @@ function SelectedTransactionsFloatingActionBar({
                     }),
                   );
                 } else if (type === 'merge') {
-                  onMerge?.(selectedTransactionsArray, () =>
+                  void onMerge?.(selectedTransactionsArray, () =>
                     showUndoNotification({
                       message: t('Successfully merged transactions'),
                     }),

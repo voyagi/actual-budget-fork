@@ -474,7 +474,7 @@ export function KeyboardShortcutModal() {
 
   return (
     <Modal name="keyboard-shortcuts" containerProps={{ style: { width: 700 } }}>
-      {({ state: { close } }) => (
+      {({ state }) => (
         <>
           <ModalHeader
             title={
@@ -505,7 +505,7 @@ export function KeyboardShortcutModal() {
                 </Button>
               ) : null
             }
-            rightContent={<ModalCloseButton onPress={close} />}
+            rightContent={<ModalCloseButton onPress={() => state.close()} />}
           />
           <View
             style={{
