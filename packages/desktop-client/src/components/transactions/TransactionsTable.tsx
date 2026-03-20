@@ -3370,7 +3370,7 @@ export const TransactionTable = forwardRef(
 
 TransactionTable.displayName = 'TransactionTable';
 
-const getCategoriesById = memoizeOne(
+export const getCategoriesById = memoizeOne(
   (categoryGroups: CategoryGroupEntity[] | null | undefined) => {
     const res: { [id: CategoryEntity['id']]: CategoryEntity } = {};
     categoryGroups?.forEach(group => {

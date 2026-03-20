@@ -91,6 +91,7 @@
     "typescript": "^5.9.3"
   },
   "resolutions": {
+    "@codemirror/state": "^6.5.4",
     "@codemirror/view": ">=6.39.15",
     "@isaacs/brace-expansion": ">=5.0.1",
     "adm-zip": "patch:adm-zip@npm%3A0.5.16#~/.yarn/patches/adm-zip-npm-0.5.16-4556fea098.patch",

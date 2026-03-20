@@ -7,10 +7,11 @@ import { merkle, SyncProtoBuf, Timestamp } from '@actual-app/crdt';
 import type { WrappedDatabase } from './db';
 import { openDatabase } from './db';
 import { sqlDir } from './load-config';
+import type { FileId } from './util/paths';
 import { getPathForGroupFile } from './util/paths';
 
 function getGroupDb(groupId: string): WrappedDatabase {
-  const path = getPathForGroupFile(groupId);
+  const path = getPathForGroupFile(groupId as FileId);
   const needsInit = !existsSync(path);
 
   const db = openDatabase(path);

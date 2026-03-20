@@ -113,7 +113,7 @@ export const GoCardlessInitialiseModal = ({
                   id="secret-id-field"
                   type="password"
                   value={secretId}
-                  aria-describedby={!isValid ? 'gocardless-error' : undefined}
+
                   onChangeValue={value => {
                     setSecretId(value);
                     setIsValid(true);
@@ -138,7 +138,7 @@ export const GoCardlessInitialiseModal = ({
             </FormField>
 
             {!isValid && (
-              <Error id="gocardless-error" role="alert">
+              <Error>
                 {error}
               </Error>
             )}

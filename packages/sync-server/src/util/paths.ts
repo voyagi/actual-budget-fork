@@ -6,7 +6,7 @@ import type { BrandedId } from './types';
 
 const ID_REGEX = /^[a-zA-Z0-9_-]+$/;
 
-type FileId = BrandedId<'file'>;
+export type FileId = BrandedId<'file'>;
 
 export function isValidFileId(id: string): id is FileId {
   return ID_REGEX.test(id);

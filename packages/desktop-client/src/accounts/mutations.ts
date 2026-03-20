@@ -529,9 +529,7 @@ export function useLinkAccountEnableBankingMutation() {
     },
     onSuccess: () => {
       invalidateQueries(queryClient);
-      // TODO: Change to a call to queryClient.invalidateQueries
-      // once payees have been moved to react-query.
-      dispatch(markPayeesDirty());
+      invalidateQueries(queryClient, payeeQueries.lists());
     },
     onError: error => {
       console.error('Error linking account to Enable Banking:', error);

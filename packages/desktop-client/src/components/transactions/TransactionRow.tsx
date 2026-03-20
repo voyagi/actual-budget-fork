@@ -62,7 +62,7 @@ import { useSelectedDispatch } from '@desktop-client/hooks/useSelected';
 import { SheetNameProvider } from '@desktop-client/hooks/useSheetName';
 import { pushModal } from '@desktop-client/modals/modalsSlice';
 import { NotesTagFormatter } from '@desktop-client/notes/NotesTagFormatter';
-import { getPayeesById } from '@desktop-client/payees/payeesSlice';
+import { getPayeesById } from '@desktop-client/payees/queries';
 import { useDispatch } from '@desktop-client/redux';
 
 type TransactionProps = {
@@ -265,7 +265,7 @@ const Transaction = memo(function Transaction({
     if (
       name === 'account' &&
       value &&
-      getAccountsById(accounts)[value].offbudget
+      getAccountsById(accounts)[value as string]?.offbudget
     ) {
       newTransaction.category = undefined;
     }

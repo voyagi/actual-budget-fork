@@ -91,7 +91,7 @@ export const SimpleFinInitialiseModal = ({
                 type="password"
                 value={token}
                 autoFocus
-                aria-describedby={!isValid ? 'simplefin-error' : undefined}
+
                 onChangeValue={value => {
                   setToken(value);
                   setIsValid(true);
@@ -101,7 +101,7 @@ export const SimpleFinInitialiseModal = ({
             </FormField>
 
             {!isValid && (
-              <Error id="simplefin-error" role="alert">
+              <Error>
                 {error}
               </Error>
             )}

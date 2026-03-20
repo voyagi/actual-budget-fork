@@ -37,6 +37,7 @@ export { SvgInformationOutline } from './InformationOutline';
 export { SvgLibrary } from './Library';
 export { SvgLightBulb } from './LightBulb';
 export { SvgListBullet } from './ListBullet';
+export { SvgLocation } from './Location';
 export { SvgLockOpen } from './LockOpen';
 export { SvgPiggyBank } from './PiggyBank';
 export { SvgPin } from './Pin';

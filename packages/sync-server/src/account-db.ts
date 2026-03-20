@@ -246,7 +246,7 @@ export async function disableOpenID(
   }
 }
 
-interface Session {
+export interface Session {
   token: string;
   expires_at: number;
   user_id: string;

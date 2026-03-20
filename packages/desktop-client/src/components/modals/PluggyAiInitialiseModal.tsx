@@ -131,7 +131,7 @@ export const PluggyAiInitialiseModal = ({
                   id="client-id-field"
                   type="text"
                   value={clientId}
-                  aria-describedby={!isValid ? 'pluggyai-error' : undefined}
+
                   onChangeValue={value => {
                     setClientId(value);
                     setIsValid(true);
@@ -177,7 +177,7 @@ export const PluggyAiInitialiseModal = ({
             </FormField>
 
             {!isValid && (
-              <Error id="pluggyai-error" role="alert">
+              <Error>
                 {error}
               </Error>
             )}
