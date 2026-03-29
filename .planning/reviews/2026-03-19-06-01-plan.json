@@ -1,0 +1,49 @@
+{
+  "reviewedAt": "2026-03-19T00:00:00.000Z",
+  "planFile": ".planning/phases/06-design-refinement/06-01-PLAN.md",
+  "planGoal": "Consolidate ConsentExpiryBanner and BankSyncStatus into the Redux Notifications system via two new side-effect hooks",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 1: useConsentExpiryNotifications — multi-session dismiss",
+      "description": "The multi-session aggregated notification uses id 'consent-expiry-multi'. The notificationsSlice idempotency guard means if sessions change from N > 1 to a different set (same count, different sessions), the guard silently no-ops because the id already exists. The user never sees an updated count or re-fires. The executed code uses sessionIdsKey as a dep but the notification id stays 'consent-expiry-multi' across re-runs — the old notification just stays.",
+      "suggestion": "Include a changing element in the notification id (e.g. a hash or join of session IDs) or call removeNotification('consent-expiry-multi') before re-dispatching when the session set changes but count stays > 1."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 1: useConsentExpiryNotifications — sessions transitioning from multi to single",
+      "description": "When sessions.length drops from > 1 to 1, the 'consent-expiry-multi' notification stays in the store orphaned (no removeNotification call) while the new per-session notification is also added. Both appear simultaneously.",
+      "suggestion": "Add a cleanup step in the useEffect: when transitioning to single-session mode, dispatch removeNotification({ id: 'consent-expiry-multi' }) before dispatching the individual notification."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 1: useBankSyncNotification — sync restarts while notification active",
+      "description": "The notification id 'bank-sync-in-progress' is stable. The idempotency guard in notificationsSlice means if a sync starts, triggers the notification, finishes (notification removed), then starts again, the second addNotification call will succeed because the id was already removed. This case is fine. BUT if accountsSyncing briefly hits 0 then immediately becomes non-zero in the same render cycle (two rapid Redux state changes), wasActive.current could be set to false mid-sequence. This is an unlikely but real race.",
+      "suggestion": "Minor: the current implementation is acceptable for the described use case. Document that useBankSyncNotification assumes accountsSyncing drains to zero only when sync is truly done."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "assumption",
+      "step": "Task 2: Delete BankSyncStatus.tsx and ConsentExpiryBanner.tsx",
+      "description": "The plan says 'Based on the codebase analysis, FinancesApp.tsx is the only consumer.' No verification step in the plan confirms this beyond a grep suggestion. If any lazy-loaded route, Storybook story, or test imports these components the delete would cause a compile error. The verification step only runs tsc, which would catch it — but only if the files are reachable from tsconfig roots.",
+      "suggestion": "The post-task grep check 'Grep confirms no remaining imports of ConsentExpiryBanner or BankSyncStatus anywhere in the codebase' adequately covers this. The plan should make this grep part of the automated verify block, not just the prose verification section."
+    }
+  ],
+  "missingSteps": [
+    "No removeNotification calls when transitioning between single-session and multi-session states — orphaned notifications can accumulate in the Redux store."
+  ],
+  "assumptions": [
+    "FinancesApp.tsx is the only consumer of ConsentExpiryBanner and BankSyncStatus (verified by grep post-execution).",
+    "The notificationsSlice idempotency guard (if id already exists, no-op) is intentional and the hooks rely on it to avoid re-dispatching on every render.",
+    "localStorage is available in all target environments (no SSR or web worker context for this code path)."
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 4,
+    "passed": true
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "reviewedAt": "2026-03-19T00:00:00.000Z",
+  "planFile": ".planning/phases/07-observability-and-monitoring/07-03-PLAN.md",
+  "planGoal": "Bridge server-side operational alerts to desktop client via GET /alerts + POST /alerts/acknowledge endpoints, IPC handlers, and a 60-second polling hook",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "category": "assumption",
+      "step": "Task 1A: GET /alerts and POST /alerts/acknowledge — no authentication",
+      "description": "The plan explicitly states 'These endpoints do NOT require authentication (they return no PII, only operational event_type/message/severity)'. However, the alert messages contain operational details that reveal server internals: account IDs (e.g., 'Sync failed for account abc-123 after 3 retries'), bank session IDs, aspsp names, and IP addresses (from auth_failure_burst: 'N authentication failures from IP x.x.x.x in Ys'). The IP address in auth_failure_burst messages is PII under GDPR. The endpoints are fully unauthenticated — any network actor that can reach the sync-server can enumerate these alerts.",
+      "suggestion": "Apply validateSessionMiddleware to both /alerts endpoints, matching the protection level of other sensitive routes. Remove IP addresses from alert messages (they are already in the audit_log; the alert message only needs the count and time window). Review all alert message templates in scheduler.ts and app-account.ts for embedded PII or sensitive identifiers."
+    },
+    {
+      "severity": "HIGH",
+      "category": "api-correctness",
+      "step": "Task 1B: fetchOperationalAlerts — uses get() not post()",
+      "description": "The plan's interface section documents post() as 'POST with JSON body' but fetchOperationalAlerts() was implemented using get() (verified in provider-status.ts line 479). The plan's interface snippet shows `return post(serverConfig.BASE_SERVER + '/alerts', {}, ...)` but the actual code uses get(). The get() function in post.ts (line 217-219) returns raw text and does NOT send X-ACTUAL-TOKEN headers — it takes an `opts` object passed directly to fetch(). The implementation passes `{ headers: { 'X-ACTUAL-TOKEN': userToken } }` which goes into fetch's init, so the header IS sent correctly. However the plan's interface documentation for get() shows `get(url, opts?)` with `opts` as optional — no mention of headers support — making it easy to misuse.",
+      "suggestion": "The implementation is correct (get() passes opts to fetch). Update the plan's interface documentation to show get(url, opts?) supports standard fetch init options including headers."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 2: useOperationalAlerts — knownAlertIds never pruned",
+      "description": "The knownAlertIds Set grows without bound across the component's lifetime. If a user leaves the app running for days and hundreds of alerts fire, acknowledged alerts are removed server-side but their IDs stay in knownAlertIds forever. The Set prevents re-displaying acknowledged alerts (correct), but acknowledged alerts with stable IDs can never reappear even if the server restarts (resetting alertCounter). After a server restart, new alerts get ids starting from alert-1 again, which may collide with already-acknowledged IDs in knownAlertIds, silently suppressing new alerts.",
+      "suggestion": "Clear knownAlertIds entries for acknowledged alerts (in the onClose callback, after the server acknowledge call succeeds). Or scope knownAlertIds to the server's session by including a server-generated nonce in the alert ID."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 2: useOperationalAlerts — no deduplication with useConsentExpiryNotifications",
+      "description": "Both useConsentExpiryNotifications() and useOperationalAlerts() can fire notifications for consent expiry. useConsentExpiryNotifications reads from the Redux EB status state (polling enablebanking-sync-status). useOperationalAlerts() polls server-side alerts which include consent_expiry events from the scheduler. A user could see two separate notifications for the same consent expiry situation — one from the client-side check and one from the server-side alert — with different message text.",
+      "suggestion": "Either suppress consent_expiry events in useOperationalAlerts() (since useConsentExpiryNotifications already handles this from the client side), or remove the client-side consent expiry hook and rely solely on server-side alerts. Document the chosen boundary explicitly."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "error-handling",
+      "step": "Task 1A: POST /alerts/acknowledge — no authentication means anyone can acknowledge",
+      "description": "Beyond the information disclosure issue (finding 1), the lack of authentication on POST /alerts/acknowledge means any network actor can silently dismiss all operational alerts before the legitimate admin sees them. This creates a blind spot where an attacker performing a credential stuffing attack could clear the auth_failure_burst alerts to avoid detection.",
+      "suggestion": "Authenticate both /alerts endpoints. This is the same fix as finding 1 — validateSessionMiddleware resolves both the read and the write exposure."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "ordering",
+      "step": "Task 1A: Endpoint placement — before route mounts",
+      "description": "The plan instructs adding /alerts endpoints 'BEFORE the route mounts (e.g., before app.use('/plaid', ...))'. Looking at the actual app.ts, there is no /plaid route. The instruction references a route that doesn't exist. This is a stale reference that could confuse an executor looking for the insertion point.",
+      "suggestion": "Reference existing routes for insertion context. The actual implementation placed the endpoints correctly after /metrics (verified in codebase). The stale /plaid reference is documentation debt."
+    }
+  ],
+  "missingSteps": [
+    "No test coverage for the /alerts or /alerts/acknowledge endpoints — the sync-server test suite does not include integration tests for these new routes.",
+    "No cleanup of knownAlertIds on server restart detection (alertCounter reset causes ID collisions that silently suppress new alerts)."
+  ],
+  "assumptions": [
+    "Alert messages contain no PII — this is incorrect for auth_failure_burst (contains source IP) and sync_failure (contains internal account IDs). The plan's stated justification for unauthenticated endpoints does not hold.",
+    "Server restarts are infrequent enough that alertCounter ID collisions with knownAlertIds are not a practical concern.",
+    "The 60-second polling interval is acceptable latency for operational alerts reaching the user."
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 2,
+    "medium": 4,
+    "passed": false
+  }
+}
