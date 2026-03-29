@@ -85,3 +85,12 @@ secrets/
 .env
 .env.sandbox
 .env.production
+packages/component-library/dist
+packages/ci-actions/dist
+
+# Local tooling
+.claude/
+.mcp.json
+project-audit.json
+project-audit-benchmark.json
+PROJECT-AUDIT.md
