@@ -1,5 +1,10 @@
 // @ts-strict-ignore
-import type { ImportTransactionsOpts } from '@actual-app/api';
+// Defined locally to avoid circular import with @actual-app/api
+// (upstream moved this to loot-core in #7053)
+type ImportTransactionsOpts = {
+  defaultCleared?: boolean;
+  dryRun?: boolean;
+};
 
 import type { ImportTransactionsResult } from '../server/accounts/app';
 import type {
