@@ -14,6 +14,7 @@ import * as enableBankingApp from './app-enablebanking/app-enablebanking.js';
 import * as goCardlessApp from './app-gocardless/app-gocardless';
 import * as openidApp from './app-openid';
 import * as pluggai from './app-pluggyai/app-pluggyai';
+import * as productionTrustApp from './app-production-trust.js';
 import * as secretApp from './app-secrets';
 import * as simpleFinApp from './app-simplefin/app-simplefin';
 import * as syncApp from './app-sync';
@@ -95,6 +96,7 @@ if (config.get('corsProxy.enabled')) {
 
 app.use('/admin', adminApp.handlers);
 app.use('/openid', openidApp.handlers);
+app.use('/production-trust', productionTrustApp.handlers);
 
 app.get('/mode', (req, res) => {
   res.send(config.get('mode'));
