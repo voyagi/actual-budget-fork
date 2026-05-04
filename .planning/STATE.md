@@ -374,6 +374,10 @@ Overall: 10/13 phases complete (24 plans complete across all phases)
 
 ## Accumulated Context
 
+### Pending Todos
+
+- [Update Phase 5 verification with production trust-state behavior](todos/pending/2026-05-04-update-phase-5-verification-with-production-trust-state-behavior.md) - Add stale/untrusted whole-app warning behavior to production readiness checks.
+
 ### Stack Versions (verified against npm registry 2026-02-18)
 
 - `jose`: 6.1.3 (sync-server) - RS256 JWT signing

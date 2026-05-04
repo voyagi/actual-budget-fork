@@ -119,7 +119,9 @@ function deriveEncryptionKey(): Buffer {
 function encryptTotpSecret(secret: string): string {
   const key = deriveEncryptionKey();
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv, {
+    authTagLength: 16,
+  });
   const ciphertext = Buffer.concat([
     cipher.update(secret, 'utf8'),
     cipher.final(),
@@ -143,6 +145,7 @@ function decryptTotpSecret(encrypted: string): string {
     'aes-256-gcm',
     key,
     Buffer.from(iv, 'base64'),
+    { authTagLength: 16 },
   );
   decipher.setAuthTag(Buffer.from(authTag, 'base64'));
   return (

@@ -50,6 +50,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **INFRA-02**: HTTPS termination via Caddy with automatic local CA (or Cloudflare Tunnel for phone access)
 - [x] **INFRA-03**: Multi-device sync works (phone and desktop see the same budget data via sync-server)
 - [x] **INFRA-04**: Docker volumes persist data across container restarts (verified explicitly)
+- [ ] **INFRA-05**: App shows a whole-app production trust warning when access, data persistence, multi-device sync, or bank sync is stale/untrusted
+- [ ] **INFRA-06**: Whole-app production trust warning clears only after a successful automated recovery check or a verified manual fix
 
 ## v2 Requirements
 
@@ -122,14 +124,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-02    | Phase 5 | Complete |
 | INFRA-03    | Phase 5 | Complete |
 | INFRA-04    | Phase 5 | Complete |
+| INFRA-05    | Phase 5 | Pending  |
+| INFRA-06    | Phase 5 | Pending  |
 
 **Coverage:**
 
-- v1 requirements: 29 total
-- Mapped to phases: 29
+- v1 requirements: 31 total
+- Mapped to phases: 31
 - Unmapped: 0
 
 ---
 
 _Requirements defined: 2026-02-18_
-_Last updated: 2026-02-18 after Plan 01-04 (FOUND-04 marked complete)_
+_Last updated: 2026-05-04 after production trust-state exploration_
