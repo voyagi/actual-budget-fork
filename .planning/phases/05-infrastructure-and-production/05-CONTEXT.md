@@ -1,61 +1,90 @@
 # Phase 5: Infrastructure and Production - Context
 
-**Gathered:** 2026-03-19
-**Status:** Ready for planning
+**Gathered:** 2026-05-04
+**Status:** Ready for re-planning
 
 <domain>
 ## Phase Boundary
 
-Deploy the full Actual Budget fork as a production-ready stack: Docker Compose with sync-server, Caddy reverse proxy, and Cloudflare Tunnel for external HTTPS access. Data persists across restarts, multi-device sync works between phone and desktop, and production Enable Banking credentials are connected with at least one real bank account syncing.
-
-This phase does NOT include new features, UI changes, or code logic changes. It is purely infrastructure, configuration, and deployment verification.
+Phase 5 verifies and hardens the production deployment path for this Actual Budget fork: single-command Compose startup, trusted HTTPS access on desktop and phone, persistent data, multi-device sync, production Enable Banking OAuth, real-bank sync, and whole-app production trust state. The original deployment topology from Plan 05-01 remains valid; the new work is the production trust-state behavior from `INFRA-05` and `INFRA-06`.
 
 </domain>
+
+<spec_lock>
+## Requirements (locked via SPEC.md)
+
+**8 requirements are locked.** See `.planning/phases/05-infrastructure-and-production/05-SPEC.md` for full requirements, boundaries, and acceptance criteria.
+
+Downstream agents MUST read `.planning/phases/05-infrastructure-and-production/05-SPEC.md` before planning or implementing. Requirements are not duplicated here.
+
+**In scope (from SPEC.md):**
+- Production Compose verification for `sync-server`, `caddy`, and `cloudflared`
+- Desktop HTTPS verification through Caddy
+- Phone HTTPS verification through Cloudflare Tunnel
+- Docker named-volume persistence verification
+- Two-device budget sync verification
+- Production Enable Banking OAuth with a real bank account
+- Manual and automatic real-bank sync verification
+- Whole-app production trust warning behavior for access, persistence, multi-device sync, and bank sync
+- Warning recovery behavior for automated recovery checks and verified manual fixes
+
+**Out of scope (from SPEC.md):**
+- Payment initiation
+- Native mobile app work
+- App store publishing
+- Automatic PSD2 consent renewal without user action
+- New bank-sync providers beyond Enable Banking
+- Custom certificate tooling
+- New push notification infrastructure
+- Broad UI redesign
+- Upstream contribution work
+
+</spec_lock>
 
 <decisions>
 ## Implementation Decisions
 
-### Phone Access and HTTPS Strategy
-- Cloudflare Tunnel for external/phone access (free tier, handles iOS HTTPS trust automatically, no port forwarding or domain purchase needed)
-- Caddy as local reverse proxy inside Docker Compose for LAN/desktop access with automatic local HTTPS
-- Cloudflare Tunnel runs as a `cloudflared` service in the same docker-compose.yml
-- sync-server's built-in HTTPS support (`ACTUAL_HTTPS_KEY`/`ACTUAL_HTTPS_CERT`) is NOT used — Caddy and Cloudflare Tunnel handle TLS termination externally
-- `trust proxy` is set on sync-server since it sits behind Caddy
+### Existing Deployment Topology
+- **D-01:** Keep the existing Phase 5 three-service production topology: `sync-server`, `caddy`, and `cloudflared` in the root `docker-compose.yml`.
+- **D-02:** Preserve Caddy for LAN/desktop HTTPS and Cloudflare Tunnel for phone/iOS trusted HTTPS; do not introduce new certificate tooling.
+- **D-03:** Preserve the no-raw-host-port production access decision: production ingress should go through Caddy or Cloudflare Tunnel, not direct sync-server HTTP.
+- **D-04:** Plan 05-01 is still the deployment baseline; the remaining Phase 5 work should update/replan Plan 05-02 rather than create a separate deployment primitive.
 
-### Docker Compose Topology
-- 3 services in single docker-compose.yml: `sync-server`, `caddy`, `cloudflared`
-- sync-server listens on HTTP port 5006 internally (no direct host port exposure in production)
-- Caddy proxies to sync-server, serves HTTPS on port 443 (LAN access)
-- cloudflared connects to Caddy or sync-server and exposes via Cloudflare Tunnel (phone access)
-- Named volume `actual_data` for persistence (already exists in current compose)
-- RSA key bind mount `./secrets/eb_private.pem:/run/secrets/eb_private.pem:ro` (already exists)
-- Healthcheck on sync-server using upstream pattern: `node src/scripts/health-check.js`
-- `restart: unless-stopped` on all services
+### Production Trust-State Model
+- **D-05:** Treat production trust as durable server-owned state, not as a purely client-side notification and not as the current in-memory operational alert store.
+- **D-06:** Track four condition classes explicitly: access/HTTPS, persistence, multi-device sync, and bank sync.
+- **D-07:** Each condition needs enough structured state to explain what is untrusted, when it was last checked, when it was last verified, and what recovery path can clear it.
+- **D-08:** Stale/unverified is a real trust state. A condition can become untrusted because verification failed or because the last successful verification is too old for production confidence.
 
-### Production Enable Banking Transition
-- Same docker-compose.yml for sandbox and production (per Phase 1 locked decision)
-- Environment switch via `.env` file: swap `ENABLE_BANKING_APP_ID` to production app ID
-- Production registration at enablebanking.com/cp is a manual human checkpoint (restricted mode, no contract needed)
-- New RSA key pair may be needed for production app — document in checklist
-- Production API base URL is the same: `https://api.enablebanking.com`
+### Warning Surface
+- **D-09:** Show one aggregated whole-app production trust warning for active trust problems instead of separate route-specific alerts.
+- **D-10:** The warning is non-blocking: users can keep reading budgets, navigating the app, and entering transactions while it is visible.
+- **D-11:** Mount the warning from app-shell code so it persists across normal budget workflows. `FinancesApp` is the existing app-shell integration point.
+- **D-12:** Reuse Actual's design system and translatable user-facing text. Avoid a broad UI redesign.
+- **D-13:** Existing sticky Redux Notifications are acceptable as the display surface only if dismissal does not clear the underlying trust state and the warning returns while the condition remains untrusted.
 
-### Verification and Smoke Test
-- Checklist-based verification with explicit human checkpoints for:
-  1. `docker compose up` starts all 3 services cleanly
-  2. Desktop Chrome accesses app via Caddy HTTPS (LAN) with trusted cert
-  3. Phone accesses app via Cloudflare Tunnel URL with trusted cert
-  4. `docker compose down && docker compose up` — data intact
-  5. Transaction entered on desktop visible on phone (and reverse)
-  6. Production EB OAuth flow completes with real bank
-  7. At least one automatic sync imports real transactions
-- Steps 6-7 require production credentials and real bank account — separate human milestone
+### Recovery and Clearing
+- **D-14:** Local dismissal, page reload, or elapsed time alone must not clear production trust state.
+- **D-15:** Automated recovery checks can clear a condition only when the affected check actually passes.
+- **D-16:** Manual recovery can clear a condition only through an explicit verified-manual-fix action that records what was verified.
+- **D-17:** Recovery actions should be auditable enough for later debugging; use existing logging/audit patterns where practical.
+- **D-18:** Acknowledge/dismiss behavior from `/alerts/acknowledge` must not be reused as the trust-state clearing mechanism.
+
+### Plan Handling
+- **D-19:** Fold the pending todo "Update Phase 5 verification with production trust-state behavior" into Phase 5 planning.
+- **D-20:** Replan or replace `05-02-PLAN.md` so it covers all 8 SPEC requirements, including `INFRA-05` and `INFRA-06`.
+- **D-21:** Keep human checkpoints for production Enable Banking registration, real-bank OAuth, phone HTTPS, and two-device verification; these cannot be fully automated.
+- **D-22:** Add automated or simulated checks for stale/untrusted trust-state conditions where code can cover them, then keep physical-device and real-bank checks as manual gates.
 
 ### Claude's Discretion
-- Caddyfile configuration details (reverse proxy directives, TLS settings)
-- cloudflared tunnel configuration format (config.yml vs CLI flags)
-- Exact healthcheck script path and timing intervals
-- Whether cloudflared proxies to Caddy or directly to sync-server
-- Docker network configuration between services
+- Exact database/table shape for production trust state
+- Exact endpoint names and IPC handler names
+- Whether the UI is implemented as a sticky Notification hook or a small dedicated app-shell banner, as long as dismissal cannot clear trust state
+- Exact stale thresholds for each condition, as long as they are explicit and testable
+- Exact recovery-check command names and test fixtures
+
+### Folded Todos
+- **Update Phase 5 verification with production trust-state behavior:** Folded into this context and into the required Plan 05-02 replan. It maps directly to `INFRA-05` and `INFRA-06`.
 
 </decisions>
 
@@ -64,18 +93,32 @@ This phase does NOT include new features, UI changes, or code logic changes. It 
 
 **Downstream agents MUST read these before planning or implementing.**
 
-### Docker and deployment
-- `docker-compose.yml` — Current fork compose (sync-server only, needs Caddy + cloudflared additions)
-- `packages/sync-server/Dockerfile` — Production monorepo build (node:22-bookworm-slim, full build chain)
-- `packages/sync-server/docker-compose.yml` — Upstream stock compose (healthcheck pattern reference)
-- `.env.example` — Current env var template (needs production vars added)
+### Locked requirements and planning state
+- `.planning/phases/05-infrastructure-and-production/05-SPEC.md` - Locked Phase 5 requirements, boundaries, and acceptance criteria
+- `.planning/REQUIREMENTS.md` - `INFRA-01` through `INFRA-06`, including pending trust-state requirements
+- `.planning/ROADMAP.md` - Phase 5 roadmap entry and current plan list
+- `.planning/todos/pending/2026-05-04-update-phase-5-verification-with-production-trust-state-behavior.md` - Folded todo that triggered the trust-state update
+- `.planning/phases/05-infrastructure-and-production/05-02-PLAN.md` - Existing production verification plan that must be updated/replaced
 
-### Server configuration
-- `packages/sync-server/src/load-config.ts` — All server config options including HTTPS, trustedProxies, ports
-- `packages/sync-server/src/app.ts` — Express app setup, trust proxy, HTTPS server creation
+### Existing production deployment baseline
+- `docker-compose.yml` - Current three-service production topology
+- `Caddyfile` - LAN HTTPS reverse proxy with `tls internal`
+- `.env.example` - Enable Banking, Caddy, Cloudflare Tunnel, and CORS environment documentation
+- `.planning/phases/05-infrastructure-and-production/05-01-SUMMARY.md` - Completed deployment topology decisions and deviations from original research
+- `.planning/phases/05-infrastructure-and-production/05-RESEARCH.md` - Deployment research and production Enable Banking checklist
 
-### Prior phase decisions
-- `.planning/phases/01-foundation-and-api-client/01-CONTEXT.md` — Locked decisions: single compose, bind mount, .env pattern, hybrid dev mode
+### Existing alert, status, and UI surfaces
+- `packages/sync-server/src/app.ts` - Server routes for `/health`, `/metrics`, `/alerts`, `/alerts/acknowledge`, static app serving, and scheduler startup
+- `packages/sync-server/src/util/alerter.ts` - Current in-memory operational alert store; useful pattern but insufficient as durable trust state
+- `packages/sync-server/src/scheduler.ts` - Scheduled bank sync, consent expiry alerts, sync failure alerts, and backup failure alerts
+- `packages/sync-server/src/app-enablebanking/app-enablebanking.ts` - Enable Banking routes, `/sync-status`, sync logging, account/session mapping
+- `packages/loot-core/src/server/accounts/provider-status.ts` - IPC bridge for Enable Banking status and operational alerts
+- `packages/loot-core/src/server/accounts/app.ts` - Account handler registration for Enable Banking and operational alert IPC methods
+- `packages/desktop-client/src/hooks/useEnableBankingStatus.ts` - Existing hooks for EB status, consent notifications, operational alerts, and bank-sync notifications
+- `packages/desktop-client/src/hooks/useSyncServerStatus.ts` - Existing online/offline/no-server status hook
+- `packages/desktop-client/src/components/FinancesApp.tsx` - App-shell hook wiring and global notification mounting point
+- `packages/desktop-client/src/notifications/notificationsSlice.ts` - Redux notification model and `addNotification`/`removeNotification`
+- `packages/desktop-client/src/components/Notifications.tsx` - Current sticky warning/error/message display surface
 
 </canonical_refs>
 
@@ -83,45 +126,51 @@ This phase does NOT include new features, UI changes, or code logic changes. It 
 ## Existing Code Insights
 
 ### Reusable Assets
-- `docker-compose.yml` (root): Working sync-server service definition with volumes and env vars — extend with Caddy and cloudflared
-- `packages/sync-server/Dockerfile`: Production-ready monorepo build — no changes needed
-- `packages/sync-server/docker-compose.yml`: Upstream healthcheck pattern (`node src/scripts/health-check.js`) — adopt for fork compose
-- Built-in HTTPS support in `app.ts` lines 259-266: Available but not needed (Caddy handles TLS)
-- `trust proxy` config in `app.ts` line 35 and `load-config.ts` line 135: Already supports reverse proxy setups
+- `docker-compose.yml`, `Caddyfile`, and `.env.example`: Production stack already exists; planning should verify and extend behavior, not rebuild infrastructure.
+- `packages/sync-server/src/app.ts`: Central place for server-level health/status endpoints and new production trust endpoints.
+- `packages/sync-server/src/app-enablebanking/app-enablebanking.ts`: Provides `/sync-status`, `eb_sync_log`, session metadata, and account mapping needed for bank-sync trust checks.
+- `packages/sync-server/src/util/alerter.ts`: Shows alert shape and tests, but stores only in memory and supports acknowledgment. Do not use it as the source of truth for production trust.
+- `packages/loot-core/src/server/accounts/provider-status.ts`: Established path for browser/client code to call sync-server endpoints through loot-core IPC.
+- `packages/desktop-client/src/hooks/useEnableBankingStatus.ts`: Existing side-effect hook pattern for polling server state and dispatching sticky notifications.
+- `packages/desktop-client/src/components/FinancesApp.tsx`: Existing app-shell hook call site for whole-app side effects.
+- `packages/desktop-client/src/notifications/notificationsSlice.ts` and `packages/desktop-client/src/components/Notifications.tsx`: Existing notification store and rendering surface.
 
 ### Established Patterns
-- Named Docker volume `actual_data` for `/data` persistence
-- `.env` + `.env.example` pattern for configuration
-- RSA key via bind mount to `/run/secrets/eb_private.pem:ro`
-- `restart: unless-stopped` on services
+- Sync-server owns provider status and operational status endpoints; desktop-client consumes through loot-core IPC handlers.
+- App-wide side effects are mounted from `FinancesApp` as hooks, alongside consent expiry, bank-sync progress, and operational alerts.
+- User-facing strings in React must be translatable.
+- Existing Notifications are sticky and global, but dismissible. Underlying production trust state must survive dismissal and reappear while untrusted.
+- Existing `/alerts` are in-memory and acknowledged on close; this is not durable enough for `INFRA-05`/`INFRA-06`.
+- Manual production verification is already accepted for physical-device HTTPS, real-bank OAuth, and two-device sync.
 
 ### Integration Points
-- Caddy needs to reverse proxy to `sync-server:5006` on Docker internal network
-- cloudflared needs tunnel token or config to connect to Cloudflare
-- `.env` needs new vars: `CLOUDFLARE_TUNNEL_TOKEN`, optional Caddy domain
-- `.gitignore` may need updates for any new config files
+- Add durable production trust state to sync-server storage or another server-owned persistent location.
+- Add sync-server endpoints for reading trust state and triggering/recording recovery checks.
+- Add loot-core account/provider-status handlers for production trust state.
+- Add a desktop-client hook mounted in `FinancesApp` to poll trust state and display/update the whole-app warning.
+- Update `05-02-PLAN.md` so verification covers original deployment checks plus trust warning trigger and clear paths.
 
 </code_context>
 
 <specifics>
 ## Specific Ideas
 
-- iOS PWA requires trusted HTTPS cert — Caddy local CA is insufficient (known pitfall #6 from STATE.md)
-- Cloudflare Tunnel is the recommended solution for iOS trust without buying a domain
-- Production Enable Banking uses "restricted mode" — free for personal accounts, no contract/KYB needed
-- Sandbox credentials (app ID `b619fe6c-ab92-4de5-a7c2-901c0e0ef580`) are documented in STATE.md — production will have different app ID
-- Redirect URL will change from `http://localhost:5006/enablebanking/callback` to the Cloudflare Tunnel URL
+- Warning copy should be direct and non-alarming, such as: "Production readiness needs attention" with details naming the affected condition.
+- Prefer one aggregate warning with condition details over four independent warnings, to avoid stacking noise.
+- Include a "Check again" style action for automated recovery checks where possible.
+- Manual verification should be explicit and recorded; do not make "close" or "dismiss" mean "fixed".
+- Simulated trust-state tests should cover stale/untrusted access, persistence, multi-device sync, and bank-sync states even when full real-device verification remains manual.
 
 </specifics>
 
 <deferred>
 ## Deferred Ideas
 
-None — discussion stayed within phase scope
+None - discussion stayed within Phase 5 scope.
 
 </deferred>
 
 ---
 
 *Phase: 05-infrastructure-and-production*
-*Context gathered: 2026-03-19*
+*Context gathered: 2026-05-04*
