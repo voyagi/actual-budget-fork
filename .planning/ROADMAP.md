@@ -13,7 +13,7 @@
 - [x] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support (completed 2026-03-19)
 - [x] **Phase 4.1: Audit Quick Wins** - Small-effort fixes from project audit (security, a11y, perf, design) (INSERTED - completed 2026-03-03)
 - [ ] **Phase 4.2: Dependency Security Updates** - Update deps with known CVEs (INSERTED)
-- [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and smoke-tested
+- [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and durable production trust warnings verified
 - [ ] **Phase 5.1: Accessibility Overhaul** - Heading hierarchy, form ARIA, shared utilities (INSERTED)
 - [ ] **Phase 5.2: Security Hardening** - PBKDF2, OpenID, password strength, ReDoS (INSERTED)
 - [x] **Phase 6: Design Refinement** - Alert surface consolidation, scheduler cleanup (completed 2026-03-18)
@@ -172,11 +172,11 @@ Plans:
 
 ### Phase 5: Infrastructure and Production
 
-**Goal:** A single `docker compose up` deploys the full stack with HTTPS that is trusted by both desktop Chrome and iOS Safari, data persists across restarts, multi-device sync works between phone and desktop, and production Enable Banking credentials are connected with at least one real bank account syncing successfully.
+**Goal:** A single `docker compose up` deploys the full stack with HTTPS that is trusted by both desktop Chrome and iOS Safari, data persists across restarts, multi-device sync works between phone and desktop, production Enable Banking credentials are connected with at least one real bank account syncing successfully, and stale/untrusted production conditions create deterministic whole-app trust warnings.
 
 **Depends on:** Phases 1-4 all complete (production cutover requires proven sandbox integration)
 
-**Requirements:** INFRA-01, INFRA-02, INFRA-03, INFRA-04
+**Requirements:** INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INFRA-06
 
 **Success Criteria** (what must be TRUE when this phase completes):
 
@@ -185,6 +185,8 @@ Plans:
 3. A transaction entered on desktop is visible on the phone within seconds, and a transaction entered on the phone is visible on desktop (multi-device sync confirmed in both directions)
 4. After `docker compose down && docker compose up`, all previously created budgets, accounts, and transactions are intact (volume persistence verified)
 5. With production Enable Banking credentials and a real bank account connected, at least one automatic sync completes successfully and imports real transactions into the correct Actual account
+6. Stale/untrusted access, persistence, multi-device sync, or bank-sync state creates a whole-app non-blocking production trust warning
+7. The production trust warning clears only after an automated passing recovery check or a verified manual fix
 
 **Note:** Production Enable Banking credentials require a separate registration at enablebanking.com/cp. This is distinct from the sandbox credentials used in Phases 1-3. Plan a dedicated smoke test milestone before marking this phase complete.
 
@@ -192,7 +194,7 @@ Plans:
 
 Plans:
 - [ ] 05-01-PLAN.md -- Docker Compose extension: add Caddy reverse proxy + cloudflared tunnel + healthcheck, create Caddyfile, update .env.example
-- [ ] 05-02-PLAN.md -- Production verification: Docker build + start, desktop HTTPS, phone HTTPS, volume persistence, multi-device sync, production EB OAuth + real bank sync
+- [ ] 05-02-PLAN.md -- Production trust and verification: durable trust state, whole-app warning, deterministic recovery, Docker build + start, desktop HTTPS, phone HTTPS, volume persistence, multi-device sync, production EB OAuth + real bank sync
 
 ### Phase 05.1: Accessibility Overhaul (INSERTED)
 
@@ -295,8 +297,10 @@ Plans:
 | INFRA-02    | Phase 5 | Infrastructure |
 | INFRA-03    | Phase 5 | Infrastructure |
 | INFRA-04    | Phase 5 | Infrastructure |
+| INFRA-05    | Phase 5 | Infrastructure |
+| INFRA-06    | Phase 5 | Infrastructure |
 
-**Total:** 29/29 v1 requirements mapped. No orphans.
+**Total:** 31/31 v1 requirements mapped. No orphans.
 
 ---
 
