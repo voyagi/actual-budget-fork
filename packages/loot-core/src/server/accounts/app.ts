@@ -40,15 +40,19 @@ import {
   enableBankingStatus,
   enableBankingSyncStatus,
   fetchOperationalAlerts,
+  fetchProductionTrustStatus,
   getGoCardlessBanks,
   goCardlessStatus,
   pluggyAiAccounts,
   pluggyAiStatus,
   pollGoCardlessWebToken,
+  recordProductionTrustUntrusted,
+  runProductionTrustCheck,
   setSecret,
   simpleFinAccounts,
   simpleFinStatus,
   stopGoCardlessWebTokenPolling,
+  verifyProductionTrustManually,
 } from './provider-status';
 import * as bankSync from './sync';
 import {
@@ -95,6 +99,10 @@ export type AccountHandlers = {
   'enablebanking-reauth-complete': typeof enableBankingReauthComplete;
   'operational-alerts': typeof fetchOperationalAlerts;
   'operational-alerts-acknowledge': typeof acknowledgeOperationalAlert;
+  'production-trust-status': typeof fetchProductionTrustStatus;
+  'production-trust-record': typeof recordProductionTrustUntrusted;
+  'production-trust-check': typeof runProductionTrustCheck;
+  'production-trust-manual-verify': typeof verifyProductionTrustManually;
 };
 
 async function updateAccount({
@@ -595,3 +603,7 @@ app.method('enablebanking-sync-status', enableBankingSyncStatus);
 app.method('enablebanking-reauth-complete', enableBankingReauthComplete);
 app.method('operational-alerts', fetchOperationalAlerts);
 app.method('operational-alerts-acknowledge', acknowledgeOperationalAlert);
+app.method('production-trust-status', fetchProductionTrustStatus);
+app.method('production-trust-record', recordProductionTrustUntrusted);
+app.method('production-trust-check', runProductionTrustCheck);
+app.method('production-trust-manual-verify', verifyProductionTrustManually);

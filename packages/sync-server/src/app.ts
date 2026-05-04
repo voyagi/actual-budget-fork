@@ -22,8 +22,8 @@ import { config } from './load-config';
 import { startScheduler } from './scheduler.js';
 import { getRecentAlerts, acknowledgeAlert } from './util/alerter.js';
 import { runAuditMigrations } from './util/audit-migrations.js';
-import { latencyMiddleware } from './util/middlewares.js';
 import { getLatencyPercentiles, getSyncStats } from './util/metrics.js';
+import { latencyMiddleware } from './util/middlewares.js';
 
 const app = express();
 
@@ -153,14 +153,20 @@ app.get('/metrics', (_req, res) => {
     const db = getAccountDb();
     const now = new Date().toISOString();
     const in14Days = new Date(Date.now() + 14 * 86400000).toISOString();
-    const activeCount = (db.first(
-      'SELECT COUNT(*) as cnt FROM eb_sessions WHERE valid_until > ?',
-      [now],
-    ) as { cnt: number } | null)?.cnt ?? 0;
-    const expiringCount = (db.first(
-      'SELECT COUNT(*) as cnt FROM eb_sessions WHERE valid_until > ? AND valid_until < ?',
-      [now, in14Days],
-    ) as { cnt: number } | null)?.cnt ?? 0;
+    const activeCount =
+      (
+        db.first(
+          'SELECT COUNT(*) as cnt FROM eb_sessions WHERE valid_until > ?',
+          [now],
+        ) as { cnt: number } | null
+      )?.cnt ?? 0;
+    const expiringCount =
+      (
+        db.first(
+          'SELECT COUNT(*) as cnt FROM eb_sessions WHERE valid_until > ? AND valid_until < ?',
+          [now, in14Days],
+        ) as { cnt: number } | null
+      )?.cnt ?? 0;
     sessions = { active: activeCount, expiringWithin14Days: expiringCount };
   } catch {
     // DB not yet bootstrapped - sessions remains null

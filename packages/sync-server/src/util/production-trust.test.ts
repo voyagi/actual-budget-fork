@@ -2,15 +2,15 @@ import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { closeAccountDb, getAccountDb } from '../account-db.js';
+import { runMigrations as runEnableBankingMigrations } from '../app-enablebanking/migrations.js';
 import { handlers as productionTrustApp } from '../app-production-trust.js';
+
 import {
   acknowledgeAlert,
   getRecentAlerts,
   triggerAlert,
   _resetAlerter,
 } from './alerter.js';
-import { runMigrations as runEnableBankingMigrations } from '../app-enablebanking/migrations.js';
-
 import {
   ensureProductionTrustTable,
   getProductionTrustState,
@@ -90,7 +90,9 @@ describe('production trust state', () => {
 
   it('keeps bank sync untrusted when no sync log exists', () => {
     const state = runBankSyncProductionTrustCheck();
-    const bankSync = state.conditions.find(row => row.condition === 'bank_sync');
+    const bankSync = state.conditions.find(
+      row => row.condition === 'bank_sync',
+    );
 
     expect(bankSync?.status).toBe('untrusted');
     expect(bankSync?.reason).toBe('bank_sync_missing');
@@ -102,7 +104,9 @@ describe('production trust state', () => {
     );
 
     const state = runBankSyncProductionTrustCheck();
-    const bankSync = state.conditions.find(row => row.condition === 'bank_sync');
+    const bankSync = state.conditions.find(
+      row => row.condition === 'bank_sync',
+    );
 
     expect(bankSync?.status).toBe('untrusted');
     expect(bankSync?.reason).toBe('bank_sync_failed');
@@ -116,7 +120,9 @@ describe('production trust state', () => {
     );
 
     const state = runBankSyncProductionTrustCheck();
-    const bankSync = state.conditions.find(row => row.condition === 'bank_sync');
+    const bankSync = state.conditions.find(
+      row => row.condition === 'bank_sync',
+    );
 
     expect(bankSync?.status).toBe('untrusted');
     expect(bankSync?.reason).toBe('bank_sync_stale');
@@ -130,7 +136,9 @@ describe('production trust state', () => {
     );
 
     const state = runBankSyncProductionTrustCheck();
-    const bankSync = state.conditions.find(row => row.condition === 'bank_sync');
+    const bankSync = state.conditions.find(
+      row => row.condition === 'bank_sync',
+    );
 
     expect(bankSync?.status).toBe('trusted');
     expect(bankSync?.reason).toBe('bank_sync_recent_ok');

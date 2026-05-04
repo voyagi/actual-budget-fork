@@ -1,5 +1,6 @@
 import express from 'express';
 
+import { validateSessionMiddleware } from './util/middlewares.js';
 import {
   getProductionTrustState,
   isProductionTrustCondition,
@@ -7,7 +8,6 @@ import {
   runProductionTrustAutomatedCheck,
   verifyProductionTrustCondition,
 } from './util/production-trust.js';
-import { validateSessionMiddleware } from './util/middlewares.js';
 
 const app = express();
 

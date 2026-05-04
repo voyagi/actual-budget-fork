@@ -503,3 +503,93 @@ export async function acknowledgeOperationalAlert({
     { 'X-ACTUAL-TOKEN': userToken },
   );
 }
+
+// ---------------------------------------------------------------------------
+// Production trust IPC handlers
+// ---------------------------------------------------------------------------
+
+export async function fetchProductionTrustStatus() {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) return { error: 'unauthorized' };
+
+  const serverConfig = getServer();
+  if (!serverConfig) throw new Error('Failed to get server config.');
+
+  const text = await get(serverConfig.BASE_SERVER + '/production-trust', {
+    headers: { 'X-ACTUAL-TOKEN': userToken },
+  });
+  try {
+    const response = JSON.parse(text);
+    return response.status === 'ok'
+      ? response.data
+      : { error: response.reason || 'unknown' };
+  } catch {
+    return { error: 'parse-error' };
+  }
+}
+
+export async function recordProductionTrustUntrusted({
+  condition,
+  reason,
+  message,
+  evidence,
+}: {
+  condition: string;
+  reason: string;
+  message?: string;
+  evidence?: unknown;
+}) {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) return { error: 'unauthorized' };
+
+  const serverConfig = getServer();
+  if (!serverConfig) throw new Error('Failed to get server config.');
+
+  return post(
+    serverConfig.BASE_SERVER + '/production-trust/record',
+    { condition, reason, message, evidence },
+    { 'X-ACTUAL-TOKEN': userToken },
+  );
+}
+
+export async function runProductionTrustCheck({
+  condition,
+  maxAgeMs,
+}: {
+  condition?: string;
+  maxAgeMs?: number;
+} = {}) {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) return { error: 'unauthorized' };
+
+  const serverConfig = getServer();
+  if (!serverConfig) throw new Error('Failed to get server config.');
+
+  return post(
+    serverConfig.BASE_SERVER + '/production-trust/check',
+    { condition, maxAgeMs },
+    { 'X-ACTUAL-TOKEN': userToken },
+  );
+}
+
+export async function verifyProductionTrustManually({
+  condition,
+  message,
+  evidence,
+}: {
+  condition: string;
+  message?: string;
+  evidence?: unknown;
+}) {
+  const userToken = await asyncStorage.getItem('user-token');
+  if (!userToken) return { error: 'unauthorized' };
+
+  const serverConfig = getServer();
+  if (!serverConfig) throw new Error('Failed to get server config.');
+
+  return post(
+    serverConfig.BASE_SERVER + '/production-trust/manual-verify',
+    { condition, message, evidence },
+    { 'X-ACTUAL-TOKEN': userToken },
+  );
+}

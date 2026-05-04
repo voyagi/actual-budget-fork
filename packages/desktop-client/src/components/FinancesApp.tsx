@@ -18,6 +18,7 @@ import { MobileBankSyncAccountEditPage } from './mobile/banksync/MobileBankSyncA
 import { MobileNavTabs } from './mobile/MobileNavTabs';
 import { TransactionEdit } from './mobile/transactions/TransactionEdit';
 import { Notifications } from './Notifications';
+import { ProductionTrustWarning } from './ProductionTrustWarning';
 import { LoadingIndicator } from './reports/LoadingIndicator';
 import { NarrowAlternate, WideComponent } from './responsive';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
@@ -418,6 +419,7 @@ export function FinancesApp() {
                 }}
               />
               <Notifications />
+              <ProductionTrustWarning />
 
               <React.Suspense fallback={<LoadingIndicator />}>
                 <RouteErrorBoundary>
