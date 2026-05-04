@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 
 import { send } from 'loot-core/platform/client/connection';
 
-import { useSyncServerStatus } from './useSyncServerStatus';
 import { useNavigate } from './useNavigate';
+import { useSyncServerStatus } from './useSyncServerStatus';
 
 import { accountQueries } from '@desktop-client/accounts';
 import { pushModal } from '@desktop-client/modals/modalsSlice';

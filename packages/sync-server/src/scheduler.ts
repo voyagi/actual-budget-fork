@@ -6,10 +6,6 @@
 import cron from 'node-cron';
 
 import { getAccountDb } from './account-db.js';
-import { triggerAlert } from './util/alerter.js';
-import logger from './util/logger.js';
-import { recordBackupRun, recordSyncRun } from './util/metrics.js';
-import { runBackup } from './util/backup.js';
 import {
   getBalances,
   getTransactions,
@@ -19,6 +15,10 @@ import {
   SessionExpiredError,
 } from './app-enablebanking/errors.js';
 import { normalizeTransaction } from './app-enablebanking/utils.js';
+import { triggerAlert } from './util/alerter.js';
+import { runBackup } from './util/backup.js';
+import logger from './util/logger.js';
+import { recordBackupRun, recordSyncRun } from './util/metrics.js';
 
 type AccountRow = {
   actual_account_id: string;
@@ -208,7 +208,10 @@ async function runScheduledSync(): Promise<void> {
       } catch (err) {
         if (err instanceof RateLimitError) {
           // A 429 applies to the entire API connection - don't sleep or retry.
-          logger.warn('Rate limited, skipping session', { sessionId, aspspName });
+          logger.warn('Rate limited, skipping session', {
+            sessionId,
+            aspspName,
+          });
           break;
         }
         if (err instanceof SessionExpiredError) {

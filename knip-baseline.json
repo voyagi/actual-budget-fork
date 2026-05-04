@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "description": "Baseline for known Actual Budget fork knip findings. Lower category counts as cleanup lands; do not raise counts without investigating the new findings.",
+  "generatedFrom": "yarn knip --reporter json --no-exit-code",
+  "categories": {
+    "files": 1,
+    "dependencies": 2,
+    "devDependencies": 16,
+    "optionalPeerDependencies": 0,
+    "unlisted": 28,
+    "unresolved": 2,
+    "binaries": 7,
+    "exports": 120,
+    "types": 67,
+    "enumMembers": 0,
+    "namespaceMembers": 0,
+    "catalog": 0
+  }
+}

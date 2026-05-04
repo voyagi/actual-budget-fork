@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.58
 milestone_name: milestone
 status: planning
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-19T02:05:41.781Z"
+stopped_at: Pending Phase 5 production trust-state verification update
+last_updated: "2026-05-04T00:00:00.000Z"
 progress:
   total_phases: 13
   completed_phases: 12
@@ -210,8 +210,8 @@ progress:
 
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-03-19
-**Session:** Phase 08 Plan 02 complete (React.lazy code splitting + ErrorBoundary for EB modal + fq-1 sync failure audit). Phase 08 complete (2/2 plans done).
+**Last updated:** 2026-05-04
+**Session:** Evolve research follow-up: GOALS now split fast local fitness from deep checks, knip is baseline-gated, VRT update image matches Playwright 1.58.2, and Phase 08 remains complete (2/2 plans done).
 
 ## Project Reference
 
@@ -219,31 +219,31 @@ progress:
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 08 complete. Ready for Phase 09 Feature Expansion.
+**Current Focus:** Phase 5 production verification update is pending; Phase 8 and Phase 9 are complete.
 
 ## Current Position
 
-**Active Phase:** 08-quality-and-test-infrastructure
-**Active Plan:** Not started
-**Status:** Ready to plan
+**Active Phase:** 05-infrastructure-and-production
+**Active Plan:** Update 05-02 production verification with stale/untrusted whole-app warning behavior
+**Status:** Pending planning/doc update
 
 **Progress:**
 [██████████] 97%
 Phase 1: Foundation and API Client [4/4] Complete
 Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
 Phase 3: Automation and Consent [2/2] Complete
-Phase 4: PWA Completion [ ] Not started
+Phase 4: PWA Completion [2/2] Complete
 Phase 4.1: Audit Quick Wins [3/3] Complete (INSERTED)
 Phase 4.2: Dependency Security Updates [1/1] Complete (INSERTED)
-Phase 5: Infrastructure and Production [ ] Not started
+Phase 5: Infrastructure and Production [1/2] In Progress
 Phase 5.1: Accessibility Overhaul [2/2] Complete (INSERTED)
 Phase 5.2: Security Hardening [2/2] Complete (INSERTED)
 Phase 6: Design Refinement [2/2] Complete
 Phase 7: Observability and Monitoring [3/3] Complete
-Phase 8: Quality and Test Infrastructure [ ] Not started
-Phase 9: Feature Expansion [ ] Not started
+Phase 8: Quality and Test Infrastructure [2/2] Complete
+Phase 9: Feature Expansion [3/3] Complete
 
-Overall: 10/13 phases complete (24 plans complete across all phases)
+Overall: 12/13 phases complete (32/33 plans complete across all phases)
 
 ## Performance Metrics
 
@@ -456,7 +456,7 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 ### CI Fixes (Feb 27-28)
 
 - Split lint job: oxfmt `--check` (hard fail) + oxlint (informational `|| true`)
-- E2E tests remain disabled (`if: false`) due to pre-existing Playwright browser version mismatch (`chromium_headless_shell-1208` missing from `mcr.microsoft.com/playwright:v1.57.0-jammy`)
+- VRT update generation now uses the Playwright `v1.58.2-jammy` image; desktop app E2E remains disabled (`if: false`) pending a separate recovery pass.
 - Autofix workflow disabled (pre-existing upstream oxlint errors)
 - Repo made public, GitHub Actions unlimited free minutes
 - Branch protection configured on master
@@ -470,9 +470,9 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Completed 05-01-PLAN.md
+**Stopped at:** Pending Phase 5 production trust-state verification update
 
-**Next action:** Plan Phase 08 Quality and Test Infrastructure (no CONTEXT.md exists, discuss first).
+**Next action:** Update Phase 5 verification so stale/untrusted access, persistence, multi-device sync, and bank-sync states show a whole-app warning while preserving app usability, then verify the warning clear path.
 
 **Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
@@ -493,4 +493,4 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 ---
 
 _State initialized: 2026-02-18_
-_Last updated: 2026-03-04 - Phase 05.1 Plan 01 complete (consent urgency utility extraction, dx-3 audit finding resolved)_
+_Last updated: 2026-05-04 - Evolve research follow-up aligned GOALS, knip baseline, VRT image, and Phase 08 state._
