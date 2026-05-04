@@ -49,6 +49,8 @@ services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    environment:
+      - CADDY_HOST=${CADDY_HOST:-localhost}
     ports:
       - '80:80'
       - '443:443'
