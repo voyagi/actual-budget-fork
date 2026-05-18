@@ -7,8 +7,9 @@ Actual-*
 **/xcuserdata/*
 export-2020-01-10.csv
 
-# MacOS
+# OS files
 .DS_Store
+Thumbs.db
 
 # Logs
 **/*.log
