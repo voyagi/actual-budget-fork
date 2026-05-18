@@ -30,10 +30,10 @@
   "dependencies": {
     "@actual-app/crdt": "2.1.0",
     "@actual-app/web": "workspace:*",
-    "axios": "^1.13.6",
+    "axios": "^1.15.2",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.6.2",
-    "convict": "^6.2.4",
+    "convict": "^6.2.5",
     "cors": "^2.8.6",
     "date-fns": "^4.1.0",
     "debug": "^4.4.3",
@@ -48,7 +48,7 @@
     "nordigen-node": "^1.4.1",
     "openid-client": "^6.1.0",
     "pluggy-sdk": "^0.83.0",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "winston": "^3.19.0"
   },
   "devDependencies": {

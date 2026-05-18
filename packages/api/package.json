@@ -23,7 +23,7 @@
     "@actual-app/crdt": "workspace:^",
     "better-sqlite3": "^12.6.2",
     "compare-versions": "^6.1.1",
-    "uuid": "^13.0.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "tsc-alias": "^1.8.16",
