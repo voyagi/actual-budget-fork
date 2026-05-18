@@ -14,10 +14,8 @@ import {
   removeNotification,
 } from '@desktop-client/notifications/notificationsSlice';
 import { useDispatch, useSelector } from '@desktop-client/redux';
-import {
-  getUrgencyLevel,
-  type ConsentUrgency,
-} from '@desktop-client/utils/consent-urgency';
+import { getUrgencyLevel } from '@desktop-client/utils/consent-urgency';
+import type { ConsentUrgency } from '@desktop-client/utils/consent-urgency';
 
 export type { ConsentUrgency } from '@desktop-client/utils/consent-urgency';
 
@@ -145,7 +143,7 @@ export type ConsentSession = {
  * - soon: within 14 days
  * - ok: more than 14 days away (not returned in sessions array)
  */
-export function useConsentExpiry(): {
+function useConsentExpiry(): {
   sessions: ConsentSession[];
   worstUrgency: ConsentUrgency;
 } {
