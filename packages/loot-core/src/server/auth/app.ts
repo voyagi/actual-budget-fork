@@ -50,6 +50,37 @@ app.method('totp-status', totpStatus);
 app.method('backup-status', backupStatus);
 app.method('backup-trigger', backupTrigger);
 
+type ApiResponse<T> =
+  | {
+      status: 'ok';
+      data: T;
+    }
+  | {
+      status: 'error';
+      reason?: string;
+    };
+
+type TotpStatusData = {
+  enrolled: boolean;
+  recoveryCodesRemaining: number;
+};
+
+type BackupStatusData = {
+  lastBackupAt: number | null;
+  lastBackupSize: number | null;
+  lastBackupStatus: 'success' | 'failure' | 'never' | null;
+  backupCount: number;
+};
+
+function parseApiData<T>(text: string): (T & { error?: never }) | { error: string } {
+  const res = JSON.parse(text) as ApiResponse<T>;
+  if (res.status === 'ok') {
+    return res.data as T & { error?: never };
+  }
+
+  return { error: res.reason ?? 'internal' };
+}
+
 async function didBootstrap() {
   return Boolean(await asyncStorage.getItem('did-bootstrap'));
 }
@@ -81,7 +112,7 @@ async function needsBootstrap({ url }: { url?: string } = {}) {
     status: 'ok';
     data: {
       bootstrapped: boolean;
-      loginMethod: 'password' | 'openid' | string;
+      loginMethod: string;
       availableLoginMethods: Array<{
         method: string;
         displayName: string;
@@ -524,9 +555,13 @@ async function totpStatus() {
   }
   try {
     const text = await get(serverConfig.SIGNUP_SERVER + '/totp/status', {
-      headers: { 'X-ACTUAL-TOKEN': userToken },
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'X-ACTUAL-TOKEN': userToken,
+      },
     });
-    return JSON.parse(text);
+    return parseApiData<TotpStatusData>(text);
   } catch (err) {
     if (err instanceof PostError) {
       return { error: err.reason };
@@ -546,9 +581,13 @@ async function backupStatus() {
   }
   try {
     const text = await get(serverConfig.SIGNUP_SERVER + '/backup/status', {
-      headers: { 'X-ACTUAL-TOKEN': userToken },
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'X-ACTUAL-TOKEN': userToken,
+      },
     });
-    return JSON.parse(text);
+    return parseApiData<BackupStatusData>(text);
   } catch (err) {
     if (err instanceof PostError) {
       return { error: err.reason };
