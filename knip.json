@@ -3,12 +3,7 @@
   "workspaces": {
     ".": {
       "entry": ["lage.config.js", "vitest.config.ts"],
-      "ignoreDependencies": [
-        "@vitest/coverage-v8",
-        "baseline-browser-mapping",
-        "eslint-plugin-perfectionist",
-        "eslint-plugin-typescript-paths"
-      ]
+      "ignoreDependencies": ["baseline-browser-mapping"]
     },
     "packages/sync-server": {
       "entry": [
@@ -25,18 +20,15 @@
         "src/app-simplefin/app-simplefin.js",
         "src/app-enablebanking/app-enablebanking.ts",
         "src/scripts/*.js",
-        "loader.mjs",
-        "register-loader.mjs"
+        "loader.mjs"
       ],
       "ignore": [
         "migrations/**",
         "src/app-gocardless/banks/**",
         "src/app-enablebanking/enablebanking.types.ts",
         "src/config-types.ts",
-        "src/util/hash.ts",
         "src/util/prompt.ts"
-      ],
-      "ignoreDependencies": ["cors", "pluggy-sdk"]
+      ]
     },
     "packages/desktop-client": {
       "ignore": [
@@ -79,12 +71,10 @@
         "docusaurus.netlify-config.js",
         "src/components/**/*.{jsx,tsx}",
         "src/theme/**/*.{jsx,js}"
-      ],
-      "ignoreDependencies": ["clsx"]
+      ]
     },
     "packages/plugins-service": {
-      "entry": ["src/plugin-service-worker.ts"],
-      "ignoreDependencies": ["workbox-precaching"]
+      "entry": ["src/plugin-service-worker.ts"]
     }
   },
   "exclude": ["duplicates"]
