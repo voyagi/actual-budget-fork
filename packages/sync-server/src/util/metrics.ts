@@ -2,6 +2,7 @@ const MAX_SAMPLES = 1000;
 const latencySamples: number[] = [];
 
 export function recordLatency(ms: number): void {
+  if (!Number.isFinite(ms)) return;
   if (latencySamples.length >= MAX_SAMPLES) latencySamples.shift();
   latencySamples.push(ms);
 }

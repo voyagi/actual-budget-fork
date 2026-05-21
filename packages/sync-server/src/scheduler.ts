@@ -88,8 +88,9 @@ export async function syncAccountWithRetry(
   accountLabel: string,
 ): Promise<void> {
   let delay = policy.initialDelay;
+  const maxRetries = Math.max(0, policy.maxRetries);
 
-  for (let attempt = 0; attempt <= policy.maxRetries; attempt++) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       await syncFn();
       return; // success
@@ -98,7 +99,7 @@ export async function syncAccountWithRetry(
       if (err instanceof RateLimitError || err instanceof SessionExpiredError) {
         throw err;
       }
-      if (attempt === policy.maxRetries) {
+      if (attempt === maxRetries) {
         // Final attempt exhausted - propagate to caller for eb_sync_log write
         throw err;
       }

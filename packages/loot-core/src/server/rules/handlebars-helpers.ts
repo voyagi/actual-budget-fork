@@ -36,7 +36,17 @@ export function registerHandlebarsHelpers() {
     // These are the primary cause of catastrophic backtracking.
     const nestedQuantifier =
       /([+*?]|\{[0-9]+,?\})\s*[)]\s*([+*?]|\{[0-9]+,?\})/;
-    return !nestedQuantifier.test(pattern);
+    // Catch nested groups: ((a+))+ where inner ) breaks the direct match
+    const nestedGroupQuantifier =
+      /([+*?]|\{[0-9]+,?\})\s*\)\s*\)\s*([+*?]|\{[0-9]+,?\})/;
+    // Catch alternation inside quantified groups: (a|a)+ or (a|b|c)+
+    // where the group content has | and the group is quantified
+    const alternationQuantifier = /\([^)]*\|[^)]*\)\s*([+*?]|\{[0-9]+,?\})/;
+    return (
+      !nestedQuantifier.test(pattern) &&
+      !nestedGroupQuantifier.test(pattern) &&
+      !alternationQuantifier.test(pattern)
+    );
   }
 
   function mathHelper(fn: (a: number, b: number) => number) {
@@ -100,12 +110,12 @@ export function registerHandlebarsHelpers() {
     ),
     replace: regexHelper(
       (regex, flags) => new RegExp(regex, flags),
-      value => escapeRegExp(value),
+      value => value,
       (value, regex, replace) => value.replace(regex, replace),
     ),
     replaceAll: regexHelper(
       (regex, flags) => new RegExp(regex, flags),
-      value => escapeRegExp(value),
+      value => value,
       (value, regex, replace) => value.replaceAll(regex, replace),
     ),
     add: mathHelper((a, b) => a + b),
@@ -120,46 +130,110 @@ export function registerHandlebarsHelpers() {
     min: mathHelper((a, b) => Math.min(a, b)),
     max: mathHelper((a, b) => Math.max(a, b)),
     fixed: (a: unknown, digits: unknown) => Number(a).toFixed(Number(digits)),
-    day: (date?: string) => date && format(date, 'd'),
-    month: (date?: string) => date && format(date, 'M'),
-    year: (date?: string) => date && format(date, 'yyyy'),
-    format: (date?: string, f?: string) => date && f && format(date, f),
+    day: (date?: string) => {
+      if (!date) return date;
+      try {
+        return format(date, 'd');
+      } catch {
+        return undefined;
+      }
+    },
+    month: (date?: string) => {
+      if (!date) return date;
+      try {
+        return format(date, 'M');
+      } catch {
+        return undefined;
+      }
+    },
+    year: (date?: string) => {
+      if (!date) return date;
+      try {
+        return format(date, 'yyyy');
+      } catch {
+        return undefined;
+      }
+    },
+    format: (date?: string, f?: string) => {
+      if (!date || !f) return date;
+      try {
+        return format(date, f);
+      } catch {
+        return undefined;
+      }
+    },
     addDays: (date?: string, days?: number) => {
       if (!date || !days) return date;
-      return format(addDays(date, days), 'yyyy-MM-dd');
+      try {
+        return format(addDays(date, days), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     subDays: (date?: string, days?: number) => {
       if (!date || !days) return date;
-      return format(subDays(date, days), 'yyyy-MM-dd');
+      try {
+        return format(subDays(date, days), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     addMonths: (date?: string, months?: number) => {
       if (!date || !months) return date;
-      return format(addMonths(parseDate(date), months), 'yyyy-MM-dd');
+      try {
+        return format(addMonths(parseDate(date), months), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     subMonths: (date?: string, months?: number) => {
       if (!date || !months) return date;
-      return format(subMonths(parseDate(date), months), 'yyyy-MM-dd');
+      try {
+        return format(subMonths(parseDate(date), months), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     addWeeks: (date?: string, weeks?: number) => {
       if (!date || !weeks) return date;
-      return format(addWeeks(parseDate(date), weeks), 'yyyy-MM-dd');
+      try {
+        return format(addWeeks(parseDate(date), weeks), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     subWeeks: (date?: string, weeks?: number) => {
       if (!date || !weeks) return date;
-      return format(subWeeks(parseDate(date), weeks), 'yyyy-MM-dd');
+      try {
+        return format(subWeeks(parseDate(date), weeks), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     addYears: (date?: string, years?: number) => {
       if (!date || !years) return date;
-      return format(addYears(parseDate(date), years), 'yyyy-MM-dd');
+      try {
+        return format(addYears(parseDate(date), years), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     subYears: (date?: string, years?: number) => {
       if (!date || !years) return date;
-      return format(subYears(parseDate(date), years), 'yyyy-MM-dd');
+      try {
+        return format(subYears(parseDate(date), years), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     setDay: (date?: string, day?: number) => {
-      if (!date || day == null) return date;
-      const actualDay = Number(format(date, 'd'));
-      return format(addDays(date, day - actualDay), 'yyyy-MM-dd');
+      if (!date || day == null || !Number.isFinite(day)) return date;
+      try {
+        const actualDay = Number(format(date, 'd'));
+        return format(addDays(date, day - actualDay), 'yyyy-MM-dd');
+      } catch {
+        return undefined;
+      }
     },
     debug: (value: unknown) => {
       logger.log(value);
