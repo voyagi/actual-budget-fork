@@ -5,6 +5,7 @@ import { SessionExpiredError, RateLimitError } from './errors';
 // Mock axios at module level before importing the service.
 vi.mock('axios', () => ({
   default: vi.fn(),
+  isAxiosError: vi.fn((err) => err?.isAxiosError === true),
 }));
 
 // Mock jose so we don't need a real RSA key.
@@ -101,6 +102,7 @@ describe('enablebanking-service', () => {
 
     it('throws SessionExpiredError on 401 response', async () => {
       const axiosError = new Error('Unauthorized');
+      axiosError.isAxiosError = true;
       axiosError.response = {
         status: 401,
         data: { message: 'Token expired' },
@@ -114,6 +116,7 @@ describe('enablebanking-service', () => {
 
     it('throws SessionExpiredError on 403 response', async () => {
       const axiosError = new Error('Forbidden');
+      axiosError.isAxiosError = true;
       axiosError.response = { status: 403, data: {} };
       axios.mockRejectedValueOnce(axiosError);
 
@@ -124,6 +127,7 @@ describe('enablebanking-service', () => {
 
     it('throws RateLimitError on 429 response', async () => {
       const axiosError = new Error('Too Many Requests');
+      axiosError.isAxiosError = true;
       axiosError.response = { status: 429, data: {} };
       axios.mockRejectedValueOnce(axiosError);
 
@@ -160,7 +164,8 @@ describe('enablebanking-service', () => {
       const result = await getAspsps('FI');
       expect(axios).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringContaining('/aspsps?country=FI'),
+          url: expect.stringContaining('/aspsps'),
+          params: { country: 'FI' },
         }),
       );
       expect(result.aspsps).toHaveLength(1);
@@ -384,7 +389,7 @@ describe('enablebanking-service', () => {
       await getTransactions('acct-uid', '2026-02-15');
       expect(axios).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringContaining('date_from=2026-02-15'),
+          params: expect.objectContaining({ date_from: '2026-02-15' }),
         }),
       );
     });
@@ -395,7 +400,10 @@ describe('enablebanking-service', () => {
       await getTransactions('acct-uid', '2026-01-01', 'existing-key');
       expect(axios).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringContaining('continuation_key=existing-key'),
+          params: expect.objectContaining({
+            date_from: '2026-01-01',
+            continuation_key: 'existing-key',
+          }),
         }),
       );
     });
