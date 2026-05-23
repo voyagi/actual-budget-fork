@@ -349,6 +349,7 @@ export async function unlinkAccount({ id }: { id: AccountEntity['id'] }) {
   }
 
   const isGoCardless = accRow.account_sync_source === 'goCardless';
+  const isEnableBanking = accRow.account_sync_source === 'enableBanking';
 
   await db.updateAccount({
     id,
@@ -359,6 +360,29 @@ export async function unlinkAccount({ id }: { id: AccountEntity['id'] }) {
     balance_limit: null,
     account_sync_source: null,
   });
+
+  if (isEnableBanking) {
+    const userToken = await asyncStorage.getItem('user-token');
+    const serverConfig = getServer();
+    if (serverConfig && userToken) {
+      const bank = await db.first<Pick<db.DbBank, 'bank_id'>>(
+        'SELECT bank_id FROM banks WHERE id = ?',
+        [bankId],
+      );
+      if (bank) {
+        try {
+          await post(
+            serverConfig.ENABLEBANKING_SERVER + '/remove-session',
+            { sessionId: bank.bank_id },
+            { 'X-ACTUAL-TOKEN': userToken },
+          );
+        } catch (error) {
+          logger.log({ error });
+        }
+      }
+    }
+    return 'ok';
+  }
 
   if (isGoCardless === false) {
     return;

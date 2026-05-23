@@ -92,15 +92,18 @@ export function useEnableBankingSyncStatus(accountIds: string[]) {
   const accountIdsKey = accountIds.join(',');
 
   useEffect(() => {
-    if (accountIds.length === 0) {
+    const ids = accountIdsKey ? accountIdsKey.split(',') : [];
+    if (ids.length === 0) {
       setStatuses({});
       return;
     }
 
-    async function fetch() {
+    async function doFetch() {
       setIsLoading(true);
 
-      const result = await send('enablebanking-sync-status', { accountIds });
+      const result = await send('enablebanking-sync-status', {
+        accountIds: ids,
+      });
 
       if (result && result.statuses) {
         setStatuses(result.statuses);
@@ -111,8 +114,7 @@ export function useEnableBankingSyncStatus(accountIds: string[]) {
       setIsLoading(false);
     }
 
-    fetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    doFetch();
   }, [accountIdsKey]);
 
   return {

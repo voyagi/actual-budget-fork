@@ -38,13 +38,26 @@ export function normalizeTransaction(ebTransaction, isBooked) {
     'Unknown';
 
   // date must be a yyyy-MM-dd string. booking_date is preferred over value_date.
-  const date = booking_date ?? value_date ?? null;
+  const date = booking_date ?? value_date;
+  if (!date) {
+    return null;
+  }
+
+  // Generate a synthetic ID when entry_reference is missing to prevent
+  // duplicate imports for same-day same-amount transactions.
+  const syntheticId = [
+    date,
+    transaction_amount.amount,
+    credit_debit_indicator,
+    creditor?.name ?? debtor?.name ?? '',
+    (remittance_information ?? [])[0] ?? '',
+  ].join('|');
 
   const notes = remittance_information?.[0] ?? null;
 
   return {
-    transactionId: entry_reference ?? null,
-    internalTransactionId: entry_reference ?? null,
+    transactionId: entry_reference ?? syntheticId,
+    internalTransactionId: syntheticId,
     transactionAmount: {
       amount: String(signedAmount),
       currency: transaction_amount.currency,
@@ -93,10 +106,11 @@ export function extractBalance(balances) {
   for (const balanceType of BALANCE_PRIORITY) {
     const bal = balances.find(b => b.balance_type === balanceType);
     if (bal) {
-      const raw = parseFloat(bal.balance_amount.amount);
-      // Apply CRDT/DBIT sign if present on the balance object; default positive.
       const sign = bal.credit_debit_indicator === 'DBIT' ? -1 : 1;
-      return Math.round(sign * raw * 100);
+      const parts = String(bal.balance_amount.amount).split('.');
+      const major = parseInt(parts[0], 10);
+      const minor = parseInt((parts[1] ?? '0').padEnd(2, '0').slice(0, 2), 10);
+      return sign * (Math.abs(major) * 100 + minor) * (major < 0 ? -1 : 1);
     }
   }
 

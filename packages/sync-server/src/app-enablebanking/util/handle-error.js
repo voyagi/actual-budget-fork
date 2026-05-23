@@ -1,3 +1,4 @@
+import logger from '../../util/logger.js';
 import {
   EnableBankingError,
   SessionExpiredError,
@@ -7,7 +8,10 @@ import {
 export function handleError(func) {
   return (req, res) => {
     func(req, res).catch(err => {
-      console.log('Error', req.originalUrl, err.message || String(err));
+      logger.error('Enable Banking route error', {
+        url: req.originalUrl,
+        error: err.message || String(err),
+      });
 
       let errorCode = 'INTERNAL_ERROR';
       let errorType = 'internal-error';

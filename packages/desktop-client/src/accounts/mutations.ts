@@ -536,7 +536,6 @@ export function useLinkAccountEnableBankingMutation() {
       dispatch(markPayeesDirty());
     },
     onError: error => {
-      console.error('Error linking account to Enable Banking:', error);
       dispatchErrorNotification(
         dispatch,
         t(

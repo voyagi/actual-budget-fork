@@ -751,7 +751,8 @@ function getInstitutionName(
   externalAccount:
     | SyncServerGoCardlessAccount
     | SyncServerSimpleFinAccount
-    | SyncServerPluggyAiAccount,
+    | SyncServerPluggyAiAccount
+    | SyncServerEnableBankingAccount,
 ) {
   if (typeof externalAccount?.institution === 'string') {
     return externalAccount?.institution ?? '';

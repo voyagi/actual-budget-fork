@@ -280,10 +280,12 @@ app.post(
         ebAccountUid,
         startDate,
       );
-      const normalizedBooked = booked.map(t => normalizeTransaction(t, true));
-      const normalizedPending = pending.map(t =>
-        normalizeTransaction(t, false),
-      );
+      const normalizedBooked = booked
+        .map(t => normalizeTransaction(t, true))
+        .filter(Boolean);
+      const normalizedPending = pending
+        .map(t => normalizeTransaction(t, false))
+        .filter(Boolean);
 
       const balancesData = await getBalances(ebAccountUid);
       const extractedBalance = extractBalance(
