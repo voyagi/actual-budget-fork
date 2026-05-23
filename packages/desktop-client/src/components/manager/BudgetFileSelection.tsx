@@ -677,7 +677,7 @@ export function BudgetFileSelection({
             justifyContent: 'flex-end',
             alignItems: 'stretch',
             margin: 10,
-            minHeight: 39,
+            minHeight: 44,
           }}
         >
           <Button
