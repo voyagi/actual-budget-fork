@@ -46,6 +46,7 @@ function KeyIcon({ shortcut, style }: KeyIconProps) {
         borderRadius: 8,
         minWidth: 44,
         minHeight: 44,
+        boxSizing: 'border-box',
         filter: 'drop-shadow(1px 1px)',
         padding: 5,
         ...style,
@@ -81,7 +82,7 @@ function ListItem({
         backgroundColor: theme.tableBackground,
         borderBottomWidth: 1,
         borderColor: theme.tableBorder,
-        height: 45,
+        minHeight: 52,
         flexShrink: 0,
         ':hover': {
           backgroundColor: theme.tableRowBackgroundHover,
