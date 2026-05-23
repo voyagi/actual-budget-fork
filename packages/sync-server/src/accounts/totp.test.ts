@@ -1,11 +1,10 @@
-import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
-import * as crypto from 'node:crypto';
+import { Secret, TOTP } from 'otpauth';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 beforeAll(() => {
   process.env.SECRET_KEY = 'test-totp-encryption-key-for-vitest';
 });
 
-// Mock getAccountDb so tests never touch a real SQLite file
 vi.mock('../account-db.js', () => {
   let totpRows: Record<string, unknown>[] = [];
 
@@ -24,8 +23,7 @@ vi.mock('../account-db.js', () => {
       } else if (s.startsWith('UPDATE TOTP SET LAST_USED_AT')) {
         if (totpRows[0]) totpRows[0].last_used_at = (params as unknown[])[0];
       } else if (s.startsWith('UPDATE TOTP SET RECOVERY_CODES')) {
-        if (totpRows[0])
-          totpRows[0].recovery_codes = (params as unknown[])[0];
+        if (totpRows[0]) totpRows[0].recovery_codes = (params as unknown[])[0];
       }
       return { changes: 1 };
     }),
@@ -34,7 +32,10 @@ vi.mock('../account-db.js', () => {
       if (s.startsWith('SELECT COUNT(*)') || s.startsWith('SELECT COUNT (*)')) {
         return { cnt: totpRows.length };
       }
-      if (s.startsWith('SELECT RECOVERY_CODES') || s.includes('RECOVERY_CODES')) {
+      if (
+        s.startsWith('SELECT RECOVERY_CODES') ||
+        s.includes('RECOVERY_CODES')
+      ) {
         return totpRows[0] ?? null;
       }
       if (s.startsWith('SELECT SECRET_ENC') || s.includes('SECRET_ENC')) {
@@ -55,17 +56,17 @@ vi.mock('../account-db.js', () => {
 
 import { getAccountDb } from '../account-db.js';
 import {
-  generateTotpSecret,
-  verifyTotpCode,
-  generateRecoveryCodes,
-  verifyRecoveryCode,
-  enrollTotp,
-  isTotpEnrolled,
-  disableTotp,
-  getTotpStatus,
-  getStoredTotpSecret,
-  updateTotpLastUsed,
   consumeRecoveryCode,
+  disableTotp,
+  enrollTotp,
+  generateRecoveryCodes,
+  generateTotpSecret,
+  getStoredTotpSecret,
+  getTotpStatus,
+  isTotpEnrolled,
+  updateTotpLastUsed,
+  verifyRecoveryCode,
+  verifyTotpCode,
 } from './totp.js';
 
 function resetDb() {
@@ -97,8 +98,12 @@ describe('verifyTotpCode', () => {
     // Generate a real secret and a real code from it
     const { secret, uri: _uri } = generateTotpSecret('Test', 'user');
     // Use otpauth to generate the current code
-    const { TOTP, Secret } = require('otpauth');
-    const totp = new TOTP({ secret: Secret.fromBase32(secret), algorithm: 'SHA1', digits: 6, period: 30 });
+    const totp = new TOTP({
+      secret: Secret.fromBase32(secret),
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+    });
     const validCode = totp.generate();
 
     const result = verifyTotpCode(secret, validCode, null);
@@ -119,8 +124,12 @@ describe('verifyTotpCode', () => {
 
   it('rejects a replayed code (same period timestamp)', () => {
     const { secret } = generateTotpSecret('Test', 'user');
-    const { TOTP, Secret } = require('otpauth');
-    const totp = new TOTP({ secret: Secret.fromBase32(secret), algorithm: 'SHA1', digits: 6, period: 30 });
+    const totp = new TOTP({
+      secret: Secret.fromBase32(secret),
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+    });
     const validCode = totp.generate();
 
     // First use: should succeed

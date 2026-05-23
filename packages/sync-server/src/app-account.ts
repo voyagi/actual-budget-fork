@@ -15,28 +15,35 @@ import {
   setServerPrefs,
 } from './account-db';
 import { isValidRedirectUrl, loginWithOpenIdSetup } from './accounts/openid';
-import { changePassword, checkPassword, loginWithPassword } from './accounts/password';
 import {
-  isTotpEnrolled,
-  enrollTotp,
-  disableTotp,
-  getTotpStatus,
-  generateTotpSecret,
-  verifyTotpCode,
-  getStoredTotpSecret,
-  updateTotpLastUsed,
-  generateRecoveryCodes,
-  verifyRecoveryCode,
+  changePassword,
+  checkPassword,
+  loginWithPassword,
+} from './accounts/password';
+import {
   consumeRecoveryCode,
+  disableTotp,
+  enrollTotp,
+  generateRecoveryCodes,
+  generateTotpSecret,
+  getStoredTotpSecret,
+  getTotpStatus,
+  isTotpEnrolled,
+  updateTotpLastUsed,
+  verifyRecoveryCode,
+  verifyTotpCode,
 } from './accounts/totp.js';
-import { getBackupStatus, runBackup } from './util/backup.js';
-import { writeAuditLog } from './util/audit.js';
 import { triggerAlert } from './util/alerter.js';
+import { writeAuditLog } from './util/audit.js';
+import { getBackupStatus, runBackup } from './util/backup.js';
 import logger from './util/logger.js';
 import { errorMiddleware, requestLoggerMiddleware } from './util/middlewares';
 import { validateAuthHeader, validateSession } from './util/validate-user';
 
-const authFailureTracker = new Map<string, { count: number; windowStart: number }>();
+const authFailureTracker = new Map<
+  string,
+  { count: number; windowStart: number }
+>();
 const AUTH_FAILURE_WINDOW_MS = 5 * 60 * 1000;
 const AUTH_FAILURE_THRESHOLD = 3;
 const MAX_TRACKED_IPS = 1000;
@@ -130,7 +137,13 @@ app.post('/login', async (req: Request, res: Response) => {
       console.debug('HEADER VALUE: ' + obfuscated);
       if (headerVal === '') {
         res.send({ status: 'error', reason: 'invalid-header' });
-        writeAuditLog({ event_type: 'login_failure', actor: 'unauthenticated', ip_address: req.ip, outcome: 'fail', details: { reason: 'invalid-header', method: 'header' } });
+        writeAuditLog({
+          event_type: 'login_failure',
+          actor: 'unauthenticated',
+          ip_address: req.ip,
+          outcome: 'fail',
+          details: { reason: 'invalid-header', method: 'header' },
+        });
         trackAuthFailure(req.ip ?? 'unknown');
         return;
       } else {
@@ -138,7 +151,13 @@ app.post('/login', async (req: Request, res: Response) => {
           tokenRes = loginWithPassword(headerVal);
         } else {
           res.send({ status: 'error', reason: 'proxy-not-trusted' });
-          writeAuditLog({ event_type: 'login_failure', actor: 'unauthenticated', ip_address: req.ip, outcome: 'fail', details: { reason: 'proxy-not-trusted', method: 'header' } });
+          writeAuditLog({
+            event_type: 'login_failure',
+            actor: 'unauthenticated',
+            ip_address: req.ip,
+            outcome: 'fail',
+            details: { reason: 'proxy-not-trusted', method: 'header' },
+          });
           trackAuthFailure(req.ip ?? 'unknown');
           return;
         }
