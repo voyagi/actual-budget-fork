@@ -51,6 +51,7 @@ services:
     restart: unless-stopped
     environment:
       - CADDY_HOST=${CADDY_HOST:-localhost}
+    # Binds to all interfaces (0.0.0.0). Use '127.0.0.1:80:80' to restrict to localhost only.
     ports:
       - '80:80'
       - '443:443'

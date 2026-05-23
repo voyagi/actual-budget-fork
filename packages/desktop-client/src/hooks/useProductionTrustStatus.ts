@@ -91,16 +91,20 @@ export function useProductionTrustStatus() {
     }) => {
       if (syncServerStatus !== 'online') return null;
 
-      const result = await send('production-trust-manual-verify', {
-        condition,
-        evidence,
-        message,
-      });
-      if (result?.error) {
+      try {
+        const result = await send('production-trust-manual-verify', {
+          condition,
+          evidence,
+          message,
+        });
+        if (result?.error) {
+          return null;
+        }
+        setState(result);
+        return result as ProductionTrustState;
+      } catch {
         return null;
       }
-      setState(result);
-      return result as ProductionTrustState;
     },
     [syncServerStatus],
   );

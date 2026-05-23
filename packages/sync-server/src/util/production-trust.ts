@@ -66,7 +66,22 @@ export function isProductionTrustCondition(
   );
 }
 
+const SENSITIVE_KEY_PATTERN =
+  /^(authorization|password|secret|token|api_?key|private_?key|credential|credentials)$/i;
+
 function redactEvidence(value: unknown): unknown {
+  if (typeof value === 'string') {
+    return value
+      .replace(
+        /(?:token|password|secret|key|authorization)[=:]\s*\S+/gi,
+        match => match.split(/[=:]/)[0] + '=[redacted]',
+      )
+      .replace(
+        /-----BEGIN[^-]*PRIVATE KEY-----[\s\S]*?-----END[^-]*PRIVATE KEY-----/g,
+        '[redacted-private-key]',
+      );
+  }
+
   if (Array.isArray(value)) {
     return value.map(item => redactEvidence(item));
   }
@@ -75,7 +90,7 @@ function redactEvidence(value: unknown): unknown {
     return Object.fromEntries(
       Object.entries(value).map(([key, entry]) => [
         key,
-        /authorization|password|private|secret|token|key/i.test(key)
+        SENSITIVE_KEY_PATTERN.test(key)
           ? '[redacted]'
           : redactEvidence(entry),
       ]),
@@ -90,16 +105,15 @@ function serializeEvidence(evidence: unknown): string | null {
     return null;
   }
 
+  const redacted = redactEvidence(evidence);
   const value =
-    typeof evidence === 'string'
-      ? evidence
-      : JSON.stringify(redactEvidence(evidence));
+    typeof redacted === 'string' ? redacted : JSON.stringify(redacted);
 
   if (value.length <= MAX_EVIDENCE_LENGTH) {
     return value;
   }
 
-  if (typeof evidence === 'string') {
+  if (typeof redacted === 'string') {
     return value.slice(0, MAX_EVIDENCE_LENGTH);
   }
 
