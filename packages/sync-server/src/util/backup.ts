@@ -102,8 +102,14 @@ async function createTarGz(
     // Build 512-byte POSIX ustar header
     const header = Buffer.alloc(512);
 
+    if (file.relativePath.length > 100) {
+      throw new Error(
+        `Backup path exceeds 100-char tar limit: ${file.relativePath} (${file.relativePath.length} chars). ` +
+          `Use shorter budget directory names or switch to a tar library for long path support.`,
+      );
+    }
     // Name (100 bytes at offset 0)
-    header.write(file.relativePath.slice(0, 100), 0, 100, 'utf8');
+    header.write(file.relativePath, 0, 100, 'utf8');
     // Mode (8 bytes at offset 100): regular file 0644
     header.write('0000644\0', 100, 8, 'utf8');
     // UID (8 bytes at offset 108)
@@ -301,4 +307,11 @@ export function getBackupStatus(): {
   backupCount: number;
 } {
   return { ...backupStatus };
+}
+
+export function _resetBackupStatus(): void {
+  backupStatus.lastBackupAt = null;
+  backupStatus.lastBackupSize = 0;
+  backupStatus.lastBackupStatus = 'never';
+  backupStatus.backupCount = 0;
 }

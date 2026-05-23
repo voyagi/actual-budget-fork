@@ -496,7 +496,13 @@ async function totpSetup() {
   }
 }
 
-async function totpVerifySetup({ code }: { code: string }) {
+async function totpVerifySetup({
+  code,
+  setupToken,
+}: {
+  code: string;
+  setupToken: string;
+}) {
   const userToken = await asyncStorage.getItem('user-token');
   if (!userToken) {
     return { error: 'unauthorized' };
@@ -508,7 +514,7 @@ async function totpVerifySetup({ code }: { code: string }) {
   try {
     await post(
       serverConfig.SIGNUP_SERVER + '/totp/verify-setup',
-      { code },
+      { code, setupToken },
       { 'X-ACTUAL-TOKEN': userToken },
     );
     return {};

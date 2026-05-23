@@ -7,6 +7,7 @@ import path from 'node:path';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 import {
+  _resetBackupStatus,
   backupSqliteFile,
   cleanOldBackups,
   discoverBudgetDirs,
@@ -39,6 +40,7 @@ let tempDir: string;
 
 beforeEach(() => {
   tempDir = mkdtempSync(path.join(tmpdir(), 'backup-test-'));
+  _resetBackupStatus();
 });
 
 afterEach(() => {

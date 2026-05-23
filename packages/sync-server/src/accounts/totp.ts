@@ -61,8 +61,8 @@ export function verifyTotpCode(
   // delta adjusts for the ±1 window.
   const periodTs = Math.floor(Date.now() / 1000 / 30) + delta;
 
-  if (lastUsedAt !== null && periodTs === lastUsedAt) {
-    // Replay attack: same TOTP period already used
+  if (lastUsedAt !== null && periodTs <= lastUsedAt) {
+    // Replay attack: code from a current or earlier TOTP period already used
     return { valid: false, usedAt: lastUsedAt };
   }
 
@@ -109,7 +109,9 @@ export async function verifyRecoveryCode(
 // TOTP Secret Encryption (AES-256-GCM)
 // ---------------------------------------------------------------------------
 
-function deriveEncryptionKey(): Buffer {
+const LEGACY_PBKDF2_SALT = 'totp-secret-encryption';
+
+function deriveEncryptionKey(salt: Buffer | string): Buffer {
   const keyMaterial =
     process.env.ACTUAL_SERVER_ENCRYPTION_KEY ?? process.env.SECRET_KEY;
   if (!keyMaterial) {
@@ -117,12 +119,12 @@ function deriveEncryptionKey(): Buffer {
       'TOTP encryption requires ACTUAL_SERVER_ENCRYPTION_KEY or SECRET_KEY environment variable',
     );
   }
-  const salt = 'totp-secret-encryption';
   return crypto.pbkdf2Sync(keyMaterial, salt, 100000, 32, 'sha256');
 }
 
 function encryptTotpSecret(secret: string): string {
-  const key = deriveEncryptionKey();
+  const salt = crypto.randomBytes(16);
+  const key = deriveEncryptionKey(salt);
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv('aes-256-gcm', key, iv, {
     authTagLength: 16,
@@ -133,6 +135,7 @@ function encryptTotpSecret(secret: string): string {
   ]);
   const authTag = cipher.getAuthTag();
   return JSON.stringify({
+    salt: salt.toString('base64'),
     iv: iv.toString('base64'),
     authTag: authTag.toString('base64'),
     ciphertext: ciphertext.toString('base64'),
@@ -140,21 +143,25 @@ function encryptTotpSecret(secret: string): string {
 }
 
 function decryptTotpSecret(encrypted: string): string {
-  const key = deriveEncryptionKey();
-  const { iv, authTag, ciphertext } = JSON.parse(encrypted) as {
+  const parsed = JSON.parse(encrypted) as {
+    salt?: string;
     iv: string;
     authTag: string;
     ciphertext: string;
   };
+  const salt = parsed.salt
+    ? Buffer.from(parsed.salt, 'base64')
+    : LEGACY_PBKDF2_SALT;
+  const key = deriveEncryptionKey(salt);
   const decipher = crypto.createDecipheriv(
     'aes-256-gcm',
     key,
-    Buffer.from(iv, 'base64'),
+    Buffer.from(parsed.iv, 'base64'),
     { authTagLength: 16 },
   );
-  decipher.setAuthTag(Buffer.from(authTag, 'base64'));
+  decipher.setAuthTag(Buffer.from(parsed.authTag, 'base64'));
   return (
-    decipher.update(Buffer.from(ciphertext, 'base64')).toString('utf8') +
+    decipher.update(Buffer.from(parsed.ciphertext, 'base64')).toString('utf8') +
     decipher.final('utf8')
   );
 }
@@ -195,14 +202,15 @@ export function disableTotp(userId?: string): void {
   }
 }
 
-export function getTotpStatus(): {
+export function getTotpStatus(userId = 'default-user'): {
   enrolled: boolean;
   recoveryCodesRemaining: number;
 } {
   const db = getAccountDb();
-  const row = db.first('SELECT recovery_codes FROM totp LIMIT 1') as {
-    recovery_codes: string;
-  } | null;
+  const row = db.first(
+    'SELECT recovery_codes FROM totp WHERE user_id = ?',
+    [userId],
+  ) as { recovery_codes: string } | null;
 
   if (!row) {
     return { enrolled: false, recoveryCodesRemaining: 0 };
@@ -212,13 +220,14 @@ export function getTotpStatus(): {
   return { enrolled: true, recoveryCodesRemaining: parsed.length };
 }
 
-export function getStoredTotpSecret(): {
+export function getStoredTotpSecret(userId = 'default-user'): {
   secret: string;
   lastUsedAt: number | null;
 } | null {
   const db = getAccountDb();
   const row = db.first(
-    'SELECT secret_enc, last_used_at FROM totp LIMIT 1',
+    'SELECT secret_enc, last_used_at FROM totp WHERE user_id = ?',
+    [userId],
   ) as { secret_enc: string; last_used_at: number | null } | null;
 
   if (!row) {

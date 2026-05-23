@@ -42,17 +42,21 @@ import { validateAuthHeader, validateSession } from './util/validate-user';
 
 const authFailureTracker = new Map<
   string,
-  { count: number; windowStart: number }
+  { count: number; windowStart: number; alerted: boolean }
 >();
 const AUTH_FAILURE_WINDOW_MS = 5 * 60 * 1000;
 const AUTH_FAILURE_THRESHOLD = 3;
 const MAX_TRACKED_IPS = 1000;
 
-const totpNonces = new Map<string, { expiresAt: number; token: string }>();
+const totpNonces = new Map<
+  string,
+  { expiresAt: number; token: string; attempts: number }
+>();
 const TOTP_NONCE_TTL_MS = 5 * 60 * 1000;
 const MAX_NONCES = 100;
+const MAX_TOTP_ATTEMPTS = 3;
 
-function trackAuthFailure(ip: string): void {
+function trackAuthFailure(ip: string): boolean {
   const now = Date.now();
   const entry = authFailureTracker.get(ip);
   if (!entry || now - entry.windowStart > AUTH_FAILURE_WINDOW_MS) {
@@ -60,19 +64,22 @@ function trackAuthFailure(ip: string): void {
       const oldest = authFailureTracker.keys().next().value!;
       authFailureTracker.delete(oldest);
     }
-    authFailureTracker.set(ip, { count: 1, windowStart: now });
-    return;
+    authFailureTracker.set(ip, { count: 1, windowStart: now, alerted: false });
+    return false;
   }
   entry.count++;
   if (entry.count >= AUTH_FAILURE_THRESHOLD) {
-    triggerAlert({
-      event_type: 'auth_failure_burst',
-      message: `${entry.count} authentication failures from IP ${ip} in ${Math.round((now - entry.windowStart) / 1000)}s`,
-      severity: 'warning',
-    }).catch(() => {}); // fire-and-forget
-    // Reset counter after alerting to avoid spamming (cooldown handles rapid re-fires)
-    authFailureTracker.delete(ip);
+    if (!entry.alerted) {
+      triggerAlert({
+        event_type: 'auth_failure_burst',
+        message: `${entry.count} authentication failures from IP ${ip} in ${Math.round((now - entry.windowStart) / 1000)}s`,
+        severity: 'warning',
+      }).catch(() => {});
+      entry.alerted = true;
+    }
+    return true;
   }
+  return false;
 }
 
 const app = express();
@@ -134,7 +141,7 @@ app.post('/login', async (req: Request, res: Response) => {
       const headerVal = req.get('x-actual-password') || '';
       const obfuscated =
         '*'.repeat(headerVal.length) || 'No password provided.';
-      console.debug('HEADER VALUE: ' + obfuscated);
+      logger.debug('Header login attempt', { obfuscated });
       if (headerVal === '') {
         res.send({ status: 'error', reason: 'invalid-header' });
         writeAuditLog({
@@ -198,6 +205,7 @@ app.post('/login', async (req: Request, res: Response) => {
         totpNonces.set(nonce, {
           expiresAt: Date.now() + TOTP_NONCE_TTL_MS,
           token: tokenRes.token,
+          attempts: 0,
         });
         writeAuditLog({
           event_type: 'login_success',
@@ -383,12 +391,17 @@ app.post('/totp/challenge', async (req: Request, res: Response) => {
     }
   }
 
-  // Both TOTP and recovery code failed
+  // Both TOTP and recovery code failed — track attempts and invalidate nonce
+  nonceEntry.attempts++;
+  if (nonceEntry.attempts >= MAX_TOTP_ATTEMPTS) {
+    totpNonces.delete(totpNonce);
+  }
   writeAuditLog({
     event_type: 'totp_verify_failure',
     actor: 'unauthenticated',
     ip_address: req.ip,
     outcome: 'fail',
+    details: { attempts: nonceEntry.attempts },
   });
   trackAuthFailure(req.ip ?? 'unknown');
   res.status(400).send({ status: 'error', reason: 'invalid-totp-code' });
@@ -396,9 +409,16 @@ app.post('/totp/challenge', async (req: Request, res: Response) => {
 
 // Pending TOTP setup: secret + recovery codes stored in memory until verify-setup.
 // Enrollment is NOT active until the user verifies a code via /totp/verify-setup.
+const MAX_PENDING_SETUPS = 50;
+const PENDING_SETUP_TTL_MS = 10 * 60 * 1000;
 const pendingTotpSetup = new Map<
   string,
-  { secret: string; recoveryHashes: string[]; recoveryCodes: string[] }
+  {
+    secret: string;
+    recoveryHashes: string[];
+    recoveryCodes: string[];
+    createdAt: number;
+  }
 >();
 
 app.post('/totp/setup', async (req: Request, res: Response) => {
@@ -414,10 +434,19 @@ app.post('/totp/setup', async (req: Request, res: Response) => {
   const recoveryCodes = await generateRecoveryCodes();
 
   const setupToken = uuidv4();
+  const now = Date.now();
+  for (const [k, v] of pendingTotpSetup) {
+    if (v.createdAt < now - PENDING_SETUP_TTL_MS) pendingTotpSetup.delete(k);
+  }
+  if (pendingTotpSetup.size >= MAX_PENDING_SETUPS) {
+    const oldest = pendingTotpSetup.keys().next().value!;
+    pendingTotpSetup.delete(oldest);
+  }
   pendingTotpSetup.set(setupToken, {
     secret: secret.secret,
     recoveryHashes: recoveryCodes.hashes,
     recoveryCodes: recoveryCodes.codes,
+    createdAt: now,
   });
 
   let qrCodeUri: string;

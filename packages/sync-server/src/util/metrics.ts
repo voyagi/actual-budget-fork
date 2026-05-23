@@ -16,8 +16,9 @@ export function getLatencyPercentiles(): {
   p99: number;
 } | null {
   if (latencyCount === 0) return null;
-  const active = Array.from(latencySamples.subarray(0, latencyCount));
-  const sorted = active.sort((a, b) => a - b);
+  const sorted = [...Array.from(latencySamples.subarray(0, latencyCount))].sort(
+    (a, b) => a - b,
+  );
   const p = (pct: number) =>
     sorted[Math.floor((sorted.length * pct) / 100)] ?? sorted[sorted.length - 1];
   return { p50: p(50), p95: p(95), p99: p(99) };

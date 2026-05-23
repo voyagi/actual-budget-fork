@@ -304,7 +304,13 @@ export function startScheduler(): void {
   }
 
   if (process.env.ENABLE_AUTO_BACKUP !== 'false') {
-    const backupSchedule = process.env.BACKUP_CRON_SCHEDULE ?? '0 2 * * *';
+    let backupSchedule = process.env.BACKUP_CRON_SCHEDULE ?? '0 2 * * *';
+    if (!cron.validate(backupSchedule)) {
+      logger.error('Invalid BACKUP_CRON_SCHEDULE, falling back to default', {
+        provided: backupSchedule,
+      });
+      backupSchedule = '0 2 * * *';
+    }
     cron.schedule(backupSchedule, () => {
       if (backupRunning) {
         logger.warn('Skipping backup - previous run still active');

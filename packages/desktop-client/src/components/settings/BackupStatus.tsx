@@ -25,15 +25,20 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatRelativeTime(epochMs: number): string {
+function formatRelativeTime(
+  epochMs: number,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
   const diffMs = Date.now() - epochMs;
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+  if (diffMins < 1) return t('just now');
+  if (diffMins < 60)
+    return t('{{count}} minute ago', { count: diffMins, defaultValue_other: '{{count}} minutes ago' });
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+  if (diffHours < 24)
+    return t('{{count}} hour ago', { count: diffHours, defaultValue_other: '{{count}} hours ago' });
   const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+  return t('{{count}} day ago', { count: diffDays, defaultValue_other: '{{count}} days ago' });
 }
 
 export function BackupStatus() {
@@ -89,7 +94,7 @@ export function BackupStatus() {
 
   const lastBackupText =
     status?.lastBackupAt != null
-      ? `${new Date(status.lastBackupAt).toLocaleString()} (${formatRelativeTime(status.lastBackupAt)})`
+      ? `${new Date(status.lastBackupAt).toLocaleString()} (${formatRelativeTime(status.lastBackupAt, t)})`
       : t('Never');
 
   const statusColor =

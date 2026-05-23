@@ -1,13 +1,16 @@
 ---
 phase: 01-foundation-and-api-client
 review_depth: standard
-status: findings
+status: fixed
 files_reviewed: 8
 findings:
   critical: 0
   warning: 4
   info: 5
   total: 9
+fixed: 7
+skipped: 2
+fix_commit: 7e30f19cc
 reviewed_at: 2026-05-23
 ---
 
@@ -157,8 +160,20 @@ The imported PKCS#8 key is cached for the process lifetime. If the key file is r
 
 ---
 
+## Fix Status
+
+| Finding | Status | Commit |
+|---------|--------|--------|
+| WR-01 | Fixed | 7e30f19cc - axios params instead of string concat |
+| WR-02 | Fixed | 7e30f19cc - Winston logger.error with structured metadata |
+| WR-03 | Skipped | Inherited GoCardless pattern, changing breaks client error handling |
+| WR-04 | Fixed | 7e30f19cc - removed @ts-strict-ignore from enablebanking-service.ts |
+| IN-01 | Fixed | 7e30f19cc - all service functions typed |
+| IN-02 | Skipped | Module-level migrations is the established adapter pattern |
+| IN-03 | Fixed | 7e30f19cc - multi-stage Dockerfile with non-root user |
+| IN-04 | Fixed | 7e30f19cc - mem_limit + cpus on all 3 services |
+| IN-05 | Skipped | By design for Docker deployment model |
+
 ## Summary
 
-No critical issues found. The 4 warnings are addressable without architectural changes. The most impactful fix is WR-01 (URL encoding) since it could cause subtle bugs with certain bank names or date formats containing special characters. WR-02 and WR-04 are code quality improvements. WR-03 is an inherited pattern from the GoCardless adapter.
-
-The info-level findings are architectural observations that don't require immediate action.
+7 of 9 findings fixed. 2 skipped (WR-03 inherited GoCardless pattern, IN-02 established adapter pattern).

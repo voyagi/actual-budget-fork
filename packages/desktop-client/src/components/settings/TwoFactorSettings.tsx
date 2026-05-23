@@ -22,6 +22,7 @@ type SetupData = {
   qrCodeUri: string;
   secret: string;
   recoveryCodes: string[];
+  setupToken: string;
 };
 
 export function TwoFactorSettings() {
@@ -73,7 +74,10 @@ export function TwoFactorSettings() {
     if (!verifyCode || loading) return;
     setError(null);
     setLoading(true);
-    const res = await send('totp-verify-setup', { code: verifyCode });
+    const res = await send('totp-verify-setup', {
+      code: verifyCode,
+      setupToken: setupData!.setupToken,
+    });
     setLoading(false);
     if (res.error) {
       setError(res.error);
