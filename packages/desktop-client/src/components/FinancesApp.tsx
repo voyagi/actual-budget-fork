@@ -42,6 +42,43 @@ import { useNavigate } from '@desktop-client/hooks/useNavigate';
 import { ScrollProvider } from '@desktop-client/hooks/useScrollListener';
 import { addNotification } from '@desktop-client/notifications/notificationsSlice';
 import { useDispatch, useSelector } from '@desktop-client/redux';
+import { isConsentExpired } from '@desktop-client/utils/consent-urgency';
+
+async function getStaleAccountIds(
+  staleThresholdHours: number | undefined,
+): Promise<string[]> {
+  const allAccounts = await send('accounts-get');
+  const linkedAccounts = (allAccounts || []).filter(
+    (a: { account_sync_source: string | null; account_id: string | null }) =>
+      a.account_sync_source && a.account_id,
+  );
+  const effectiveThreshold = (staleThresholdHours ?? 6) * 60 * 60 * 1000;
+  const now = Date.now();
+
+  const linkedIds = linkedAccounts.map((a: { id: string }) => a.id);
+  const syncStatuses =
+    linkedIds.length > 0
+      ? ((
+          await send('enablebanking-sync-status', {
+            accountIds: linkedIds,
+          })
+        )?.statuses ?? {})
+      : {};
+
+  return linkedAccounts
+    .filter((a: { id: string; last_sync: string | null }) => {
+      const ebStatus = syncStatuses[a.id];
+      if (
+        ebStatus?.consent_valid_until &&
+        isConsentExpired(ebStatus.consent_valid_until)
+      ) {
+        return false;
+      }
+      const lastSync = a.last_sync ? parseInt(a.last_sync, 10) : 0;
+      return now - lastSync > effectiveThreshold;
+    })
+    .map((a: { id: string }) => a.id);
+}
 
 // Route-level code splitting: lazy-load heavy page components so they are
 // bundled as separate JS chunks and only fetched when the user visits each
@@ -145,46 +182,8 @@ export function FinancesApp() {
     setTimeout(async () => {
       await dispatch(sync());
 
-      // After CRDT sync completes, trigger background bank sync for accounts
-      // whose last sync is older than the configurable stale threshold.
-      // CRDT sync must finish first to avoid SQLite race conditions.
       try {
-        const allAccounts = await send('accounts-get');
-        const linkedAccounts = (allAccounts || []).filter(
-          a => a.account_sync_source && a.account_id,
-        );
-        const effectiveThreshold = (staleThresholdHours ?? 6) * 60 * 60 * 1000;
-        const now = Date.now();
-
-        // Fetch consent status in one call to filter out expired-consent
-        // accounts before syncing (avoids wasted Enable Banking API calls).
-        const linkedIds = linkedAccounts.map(a => a.id);
-        // CRITICAL: send() returns { statuses } directly. post() already
-        // unwraps responseData.data, so there is NO extra .data layer.
-        const syncStatuses =
-          linkedIds.length > 0
-            ? ((
-                await send('enablebanking-sync-status', {
-                  accountIds: linkedIds,
-                })
-              )?.statuses ?? {})
-            : {};
-
-        const staleIds = linkedAccounts
-          .filter(a => {
-            const ebStatus = syncStatuses[a.id];
-            // Skip EB accounts with expired consent
-            if (
-              ebStatus?.consent_valid_until &&
-              new Date(ebStatus.consent_valid_until) <= new Date()
-            ) {
-              return false;
-            }
-            const lastSync = a.last_sync ? parseInt(a.last_sync, 10) : 0;
-            return now - lastSync > effectiveThreshold;
-          })
-          .map(a => a.id);
-
+        const staleIds = await getStaleAccountIds(staleThresholdHours);
         if (staleIds.length > 0) {
           send('accounts-bank-sync', { ids: staleIds }).catch(() => {
             dispatch(
@@ -237,43 +236,10 @@ export function FinancesApp() {
   // localStorage key ('undefined-bankSyncStaleThresholdHours').
   useEffect(() => {
     async function onVisibilityOrFocus() {
-      // App.tsx already fires dispatch(sync()) (CRDT sync) on visibilitychange.
-      // The two handlers run concurrently - this is acceptable because bank
-      // sync reads from the EB API (not local DB) and is idempotent.
       if (document.hidden || isSyncingRef.current) return;
       isSyncingRef.current = true;
       try {
-        const allAccounts = await send('accounts-get');
-        const linkedAccounts = (allAccounts || []).filter(
-          a => a.account_sync_source && a.account_id,
-        );
-        const effectiveThreshold = (staleThresholdHours ?? 6) * 60 * 60 * 1000;
-        const now = Date.now();
-
-        const linkedIds = linkedAccounts.map(a => a.id);
-        const syncStatuses =
-          linkedIds.length > 0
-            ? ((
-                await send('enablebanking-sync-status', {
-                  accountIds: linkedIds,
-                })
-              )?.statuses ?? {})
-            : {};
-
-        const staleIds = linkedAccounts
-          .filter(a => {
-            const ebStatus = syncStatuses[a.id];
-            if (
-              ebStatus?.consent_valid_until &&
-              new Date(ebStatus.consent_valid_until) <= new Date()
-            ) {
-              return false;
-            }
-            const lastSync = a.last_sync ? parseInt(a.last_sync, 10) : 0;
-            return now - lastSync > effectiveThreshold;
-          })
-          .map(a => a.id);
-
+        const staleIds = await getStaleAccountIds(staleThresholdHours);
         if (staleIds.length > 0) {
           send('accounts-bank-sync', { ids: staleIds }).catch(() => {});
         }

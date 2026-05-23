@@ -225,9 +225,7 @@ describe('operational alerts', () => {
     const result = await fetchOperationalAlerts();
     expect(getMock).toHaveBeenCalledWith(
       'https://server.test/alerts',
-      expect.objectContaining({
-        headers: { 'X-ACTUAL-TOKEN': 'valid-token' },
-      }),
+      { 'X-ACTUAL-TOKEN': 'valid-token' },
     );
     expect(result).toEqual({ alerts: [{ id: '1' }] });
   });
