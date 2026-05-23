@@ -20,7 +20,7 @@ import { runBackup } from './util/backup.js';
 import logger from './util/logger.js';
 import { recordBackupRun, recordSyncRun } from './util/metrics.js';
 
-type AccountRow = {
+export type AccountRow = {
   actual_account_id: string;
   eb_account_uid: string;
   session_id: string;
