@@ -7,6 +7,7 @@ import { ReportsPage } from './reports-page';
 import { RulesPage } from './rules-page';
 import { SchedulesPage } from './schedules-page';
 import { SettingsPage } from './settings-page';
+import { TagsPage } from './tags-page';
 
 type AccountEntry = {
   name: string;
@@ -78,6 +79,18 @@ export class Navigation {
     await bankSyncLink.click();
 
     return new BankSyncPage(this.page);
+  }
+
+  async goToTagsPage() {
+    const tagsLink = this.page.getByRole('link', { name: 'Tags' });
+
+    if (!(await tagsLink.isVisible())) {
+      await this.page.getByRole('button', { name: 'More' }).click();
+    }
+
+    await tagsLink.click();
+
+    return new TagsPage(this.page);
   }
 
   async goToSettingsPage() {
