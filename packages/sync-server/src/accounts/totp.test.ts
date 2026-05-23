@@ -1,5 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import * as crypto from 'node:crypto';
+
+beforeAll(() => {
+  process.env.SECRET_KEY = 'test-totp-encryption-key-for-vitest';
+});
 
 // Mock getAccountDb so tests never touch a real SQLite file
 vi.mock('../account-db.js', () => {
@@ -8,7 +12,7 @@ vi.mock('../account-db.js', () => {
   const db = {
     mutate: vi.fn((sql: string, params?: unknown[]) => {
       const s = sql.trim().toUpperCase();
-      if (s.startsWith('INSERT INTO TOTP')) {
+      if (s.startsWith('INSERT INTO TOTP') || s.startsWith('INSERT OR REPLACE INTO TOTP')) {
         totpRows.push({
           user_id: (params as unknown[])[0],
           secret_enc: (params as unknown[])[1],
@@ -136,47 +140,45 @@ describe('verifyTotpCode', () => {
 });
 
 describe('generateRecoveryCodes', () => {
-  it('generates exactly 8 codes', () => {
-    const { codes } = generateRecoveryCodes();
+  it('generates exactly 8 codes', async () => {
+    const { codes } = await generateRecoveryCodes();
     expect(codes).toHaveLength(8);
   });
 
-  it('codes match XXXX-XXXX-XXXX format (uppercase hex groups)', () => {
-    const { codes } = generateRecoveryCodes();
+  it('codes match XXXX-XXXX-XXXX format (uppercase hex groups)', async () => {
+    const { codes } = await generateRecoveryCodes();
     for (const code of codes) {
       expect(code).toMatch(/^[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/);
     }
   });
 
-  it('codes are unique', () => {
-    const { codes } = generateRecoveryCodes();
+  it('codes are unique', async () => {
+    const { codes } = await generateRecoveryCodes();
     const unique = new Set(codes);
     expect(unique.size).toBe(8);
   });
 
-  it('returns 8 bcrypt hashes', () => {
-    const { hashes } = generateRecoveryCodes();
+  it('returns 8 bcrypt hashes', async () => {
+    const { hashes } = await generateRecoveryCodes();
     expect(hashes).toHaveLength(8);
     for (const hash of hashes) {
-      // bcrypt hashes start with $2b$ or $2a$
       expect(hash).toMatch(/^\$2[ab]\$/);
     }
   });
 });
 
 describe('verifyRecoveryCode', () => {
-  it('matches a valid code and returns remaining without that code', () => {
-    const { codes, hashes } = generateRecoveryCodes();
-    const result = verifyRecoveryCode(codes[0], hashes);
+  it('matches a valid code and returns remaining without that code', async () => {
+    const { codes, hashes } = await generateRecoveryCodes();
+    const result = await verifyRecoveryCode(codes[0], hashes);
     expect(result.valid).toBe(true);
     expect(result.remaining).toHaveLength(7);
-    // The matched hash should be removed
     expect(result.remaining).not.toContain(hashes[0]);
   });
 
-  it('rejects a wrong code and returns all hashes unchanged', () => {
-    const { hashes } = generateRecoveryCodes();
-    const result = verifyRecoveryCode('XXXX-XXXX-XXXX', hashes);
+  it('rejects a wrong code and returns all hashes unchanged', async () => {
+    const { hashes } = await generateRecoveryCodes();
+    const result = await verifyRecoveryCode('XXXX-XXXX-XXXX', hashes);
     expect(result.valid).toBe(false);
     expect(result.remaining).toHaveLength(8);
     expect(result.remaining).toEqual(hashes);
@@ -192,16 +194,16 @@ describe('enrollTotp / isTotpEnrolled / disableTotp lifecycle', () => {
     expect(isTotpEnrolled()).toBe(false);
   });
 
-  it('enrollTotp inserts a row and isTotpEnrolled returns true', () => {
+  it('enrollTotp inserts a row and isTotpEnrolled returns true', async () => {
     const { secret } = generateTotpSecret('Test', 'user');
-    const { hashes } = generateRecoveryCodes();
+    const { hashes } = await generateRecoveryCodes();
     enrollTotp('default-user', secret, hashes);
     expect(isTotpEnrolled()).toBe(true);
   });
 
-  it('disableTotp removes the row and isTotpEnrolled returns false', () => {
+  it('disableTotp removes the row and isTotpEnrolled returns false', async () => {
     const { secret } = generateTotpSecret('Test', 'user');
-    const { hashes } = generateRecoveryCodes();
+    const { hashes } = await generateRecoveryCodes();
     enrollTotp('default-user', secret, hashes);
     expect(isTotpEnrolled()).toBe(true);
     disableTotp();
@@ -220,9 +222,9 @@ describe('getTotpStatus', () => {
     expect(status.recoveryCodesRemaining).toBe(0);
   });
 
-  it('returns enrolled:true and correct remaining count after enrollment', () => {
+  it('returns enrolled:true and correct remaining count after enrollment', async () => {
     const { secret } = generateTotpSecret('Test', 'user');
-    const { hashes } = generateRecoveryCodes();
+    const { hashes } = await generateRecoveryCodes();
     enrollTotp('default-user', secret, hashes);
     const status = getTotpStatus();
     expect(status.enrolled).toBe(true);
@@ -235,29 +237,29 @@ describe('getStoredTotpSecret / updateTotpLastUsed / consumeRecoveryCode', () =>
     resetDb();
   });
 
-  it('getStoredTotpSecret returns the original secret after enroll', () => {
+  it('getStoredTotpSecret returns the original secret after enroll', async () => {
     const { secret } = generateTotpSecret('Test', 'user');
-    const { hashes } = generateRecoveryCodes();
+    const { hashes } = await generateRecoveryCodes();
     enrollTotp('default-user', secret, hashes);
     const stored = getStoredTotpSecret();
     expect(stored).not.toBeNull();
     expect(stored!.secret).toBe(secret);
   });
 
-  it('updateTotpLastUsed stores and retrieves lastUsedAt', () => {
+  it('updateTotpLastUsed stores and retrieves lastUsedAt', async () => {
     const { secret } = generateTotpSecret('Test', 'user');
-    const { hashes } = generateRecoveryCodes();
+    const { hashes } = await generateRecoveryCodes();
     enrollTotp('default-user', secret, hashes);
     updateTotpLastUsed(12345);
     const stored = getStoredTotpSecret();
     expect(stored!.lastUsedAt).toBe(12345);
   });
 
-  it('consumeRecoveryCode reduces remaining count by 1', () => {
+  it('consumeRecoveryCode reduces remaining count by 1', async () => {
     const { secret } = generateTotpSecret('Test', 'user');
-    const { hashes } = generateRecoveryCodes();
+    const { hashes } = await generateRecoveryCodes();
     enrollTotp('default-user', secret, hashes);
-    consumeRecoveryCode(hashes.slice(1)); // remove first code
+    consumeRecoveryCode(hashes.slice(1));
     const status = getTotpStatus();
     expect(status.recoveryCodesRemaining).toBe(7);
   });

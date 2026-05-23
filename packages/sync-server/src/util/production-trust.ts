@@ -95,7 +95,15 @@ function serializeEvidence(evidence: unknown): string | null {
       ? evidence
       : JSON.stringify(redactEvidence(evidence));
 
-  return value.slice(0, MAX_EVIDENCE_LENGTH);
+  if (value.length <= MAX_EVIDENCE_LENGTH) {
+    return value;
+  }
+
+  if (typeof evidence === 'string') {
+    return value.slice(0, MAX_EVIDENCE_LENGTH);
+  }
+
+  return JSON.stringify({ _truncated: true, _preview: value.slice(0, MAX_EVIDENCE_LENGTH - 50) });
 }
 
 function parseEvidence(evidence: string | null): unknown {
@@ -268,9 +276,12 @@ type BankSyncRow = {
 };
 
 function bankSyncTimestamp(row: BankSyncRow): number {
-  return typeof row.synced_at === 'number'
-    ? row.synced_at
-    : parseInt(row.synced_at, 10);
+  const raw =
+    typeof row.synced_at === 'number'
+      ? row.synced_at
+      : parseInt(row.synced_at, 10);
+  // Auto-detect milliseconds vs seconds: values > 1e12 are milliseconds
+  return raw > 1e12 ? Math.floor(raw / 1000) : raw;
 }
 
 export function runBankSyncProductionTrustCheck({

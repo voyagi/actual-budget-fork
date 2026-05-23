@@ -23,7 +23,10 @@ import { startScheduler } from './scheduler.js';
 import { getRecentAlerts, acknowledgeAlert } from './util/alerter.js';
 import { runAuditMigrations } from './util/audit-migrations.js';
 import { getLatencyPercentiles, getSyncStats } from './util/metrics.js';
-import { latencyMiddleware } from './util/middlewares.js';
+import {
+  latencyMiddleware,
+  validateSessionMiddleware,
+} from './util/middlewares.js';
 
 const app = express();
 
@@ -80,7 +83,12 @@ app.use(
 
 app.use('/sync', syncApp.handlers);
 app.use(
-  ['/account/login', '/account/bootstrap', '/openid/login'],
+  [
+    '/account/login',
+    '/account/bootstrap',
+    '/account/totp/challenge',
+    '/openid/login',
+  ],
   authRateLimit,
 );
 app.use('/account', accountApp.handlers);
@@ -147,7 +155,7 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'UP' });
 });
 
-app.get('/metrics', (_req, res) => {
+app.get('/metrics', validateSessionMiddleware, (_req, res) => {
   let sessions = null;
   try {
     const db = getAccountDb();
@@ -181,11 +189,11 @@ app.get('/metrics', (_req, res) => {
   });
 });
 
-app.get('/alerts', (_req, res) => {
+app.get('/alerts', validateSessionMiddleware, (_req, res) => {
   res.status(200).json({ alerts: getRecentAlerts() });
 });
 
-app.post('/alerts/acknowledge', (req, res) => {
+app.post('/alerts/acknowledge', validateSessionMiddleware, (req, res) => {
   const { alertId } = req.body;
   if (!alertId || typeof alertId !== 'string') {
     res.status(400).json({ status: 'error', reason: 'missing-alert-id' });

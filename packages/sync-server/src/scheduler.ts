@@ -28,7 +28,7 @@ type AccountRow = {
   aspsp_name: string | null;
 };
 
-async function syncOneAccount(account: AccountRow): Promise<void> {
+export async function syncOneAccount(account: AccountRow): Promise<void> {
   const db = getAccountDb();
 
   // Derive sinceDate from last successful sync (epoch integer -> YYYY-MM-DD).
@@ -126,7 +126,7 @@ const DEFAULT_RETRY_POLICY: RetryPolicy = {
   jitterFraction: 0.2,
 };
 
-async function runScheduledSync(): Promise<void> {
+export async function runScheduledSync(): Promise<void> {
   logger.info('Starting scheduled sync run');
 
   const db = getAccountDb();
@@ -208,15 +208,28 @@ async function runScheduledSync(): Promise<void> {
         totalSynced++;
       } catch (err) {
         if (err instanceof RateLimitError) {
-          // A 429 applies to the entire API connection - don't sleep or retry.
           logger.warn('Rate limited, skipping session', {
             sessionId,
             aspspName,
           });
+          const rlDb = getAccountDb();
+          rlDb.mutate(
+            `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
+             VALUES (?, ?, 'error', ?)`,
+            [account.actual_account_id, account.eb_account_uid, 'Rate limited (429)'],
+          );
+          totalErrors++;
           break;
         }
         if (err instanceof SessionExpiredError) {
           logger.warn('Session expired mid-sync', { sessionId });
+          const seDb = getAccountDb();
+          seDb.mutate(
+            `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
+             VALUES (?, ?, 'error', ?)`,
+            [account.actual_account_id, account.eb_account_uid, 'Session expired'],
+          );
+          totalErrors++;
           break;
         }
         // All retries exhausted - log error to eb_sync_log
@@ -260,28 +273,44 @@ async function runScheduledSync(): Promise<void> {
   recordSyncRun(totalSynced, totalErrors);
 }
 
-// [eb] Registers the 6-hour sync cron and daily backup cron.
-// Sync is opt-in (ENABLE_AUTO_SYNC=true), backup is opt-out (ENABLE_AUTO_BACKUP=false).
+let syncRunning = false;
+let backupRunning = false;
+
 export function startScheduler(): void {
-  // Sync cron -- opt-in via ENABLE_AUTO_SYNC=true
-  if (process.env.ENABLE_AUTO_SYNC === 'true') {
-    // 5-field cron: at minute 0, hours 0/6/12/18 every day
+  const autoSync = ['true', '1', 'yes'].includes(
+    (process.env.ENABLE_AUTO_SYNC ?? '').toLowerCase(),
+  );
+
+  if (autoSync) {
     cron.schedule('0 0,6,12,18 * * *', () => {
-      runScheduledSync().catch(err => {
-        logger.error('Unhandled error in sync run', {
-          error: err instanceof Error ? err.message : String(err),
+      if (syncRunning) {
+        logger.warn('Skipping sync run - previous run still active');
+        return;
+      }
+      syncRunning = true;
+      runScheduledSync()
+        .catch(err => {
+          logger.error('Unhandled error in sync run', {
+            error: err instanceof Error ? err.message : String(err),
+          });
+        })
+        .finally(() => {
+          syncRunning = false;
         });
-      });
     });
     logger.info('Auto-sync scheduled (every 6 hours)');
   } else {
-    logger.info('Auto-sync disabled (ENABLE_AUTO_SYNC not set to true)');
+    logger.info('Auto-sync disabled (ENABLE_AUTO_SYNC not set)');
   }
 
-  // Backup cron -- opt-out via ENABLE_AUTO_BACKUP=false (enabled by default)
   if (process.env.ENABLE_AUTO_BACKUP !== 'false') {
     const backupSchedule = process.env.BACKUP_CRON_SCHEDULE ?? '0 2 * * *';
     cron.schedule(backupSchedule, () => {
+      if (backupRunning) {
+        logger.warn('Skipping backup - previous run still active');
+        return;
+      }
+      backupRunning = true;
       runBackup()
         .then(result => {
           if (result.success) {
@@ -311,6 +340,9 @@ export function startScheduler(): void {
             message: `Daily backup failed: ${msg}`,
             severity: 'error',
           }).catch(() => {});
+        })
+        .finally(() => {
+          backupRunning = false;
         });
     });
     logger.info('Auto-backup scheduled', { schedule: backupSchedule });

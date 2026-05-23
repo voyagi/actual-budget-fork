@@ -1,10 +1,13 @@
 const MAX_SAMPLES = 1000;
-const latencySamples: number[] = [];
+const latencySamples = new Float64Array(MAX_SAMPLES);
+let latencyWriteIdx = 0;
+let latencyCount = 0;
 
 export function recordLatency(ms: number): void {
   if (!Number.isFinite(ms)) return;
-  if (latencySamples.length >= MAX_SAMPLES) latencySamples.shift();
-  latencySamples.push(ms);
+  latencySamples[latencyWriteIdx] = ms;
+  latencyWriteIdx = (latencyWriteIdx + 1) % MAX_SAMPLES;
+  if (latencyCount < MAX_SAMPLES) latencyCount++;
 }
 
 export function getLatencyPercentiles(): {
@@ -12,8 +15,9 @@ export function getLatencyPercentiles(): {
   p95: number;
   p99: number;
 } | null {
-  if (latencySamples.length === 0) return null;
-  const sorted = [...latencySamples].sort((a, b) => a - b);
+  if (latencyCount === 0) return null;
+  const active = Array.from(latencySamples.subarray(0, latencyCount));
+  const sorted = active.sort((a, b) => a - b);
   const p = (pct: number) =>
     sorted[Math.floor((sorted.length * pct) / 100)] ?? sorted[sorted.length - 1];
   return { p50: p(50), p95: p(95), p99: p(99) };
@@ -63,7 +67,9 @@ export function getBackupStats() {
 
 // For testing: reset all module-level state
 export function _resetMetrics(): void {
-  latencySamples.length = 0;
+  latencySamples.fill(0);
+  latencyWriteIdx = 0;
+  latencyCount = 0;
   syncStats.totalRuns = 0;
   syncStats.successRuns = 0;
   syncStats.failedRuns = 0;

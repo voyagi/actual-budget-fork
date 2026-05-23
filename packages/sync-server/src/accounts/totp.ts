@@ -39,6 +39,10 @@ export function verifyTotpCode(
   code: string,
   lastUsedAt: number | null,
 ): { valid: boolean; usedAt: number } {
+  if (typeof code !== 'string') {
+    return { valid: false, usedAt: lastUsedAt ?? 0 };
+  }
+
   const totp = new TOTP({
     secret: Secret.fromBase32(secretBase32),
     algorithm: 'SHA1',
@@ -69,31 +73,29 @@ export function verifyTotpCode(
 // Recovery Code Generation and Verification
 // ---------------------------------------------------------------------------
 
-export function generateRecoveryCodes(): {
+export async function generateRecoveryCodes(): Promise<{
   codes: string[];
   hashes: string[];
-} {
+}> {
   const codes: string[] = [];
   const hashes: string[] = [];
 
   for (let i = 0; i < 8; i++) {
-    // 6 random bytes = 12 hex chars, formatted as XXXX-XXXX-XXXX
     const raw = crypto.randomBytes(6).toString('hex').toUpperCase();
     const code = `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 12)}`;
     codes.push(code);
-    // Hash the formatted code (with dashes) for consistent comparison
-    hashes.push(bcrypt.hashSync(code, 10));
+    hashes.push(await bcrypt.hash(code, 10));
   }
 
   return { codes, hashes };
 }
 
-export function verifyRecoveryCode(
+export async function verifyRecoveryCode(
   submitted: string,
   hashedCodes: string[],
-): { valid: boolean; remaining: string[] } {
+): Promise<{ valid: boolean; remaining: string[] }> {
   for (let i = 0; i < hashedCodes.length; i++) {
-    if (bcrypt.compareSync(submitted, hashedCodes[i])) {
+    if (await bcrypt.compare(submitted, hashedCodes[i])) {
       return {
         valid: true,
         remaining: hashedCodes.filter((_, idx) => idx !== i),
@@ -109,9 +111,12 @@ export function verifyRecoveryCode(
 
 function deriveEncryptionKey(): Buffer {
   const keyMaterial =
-    process.env.ACTUAL_SERVER_ENCRYPTION_KEY ??
-    process.env.SECRET_KEY ??
-    'actual-totp-default-key';
+    process.env.ACTUAL_SERVER_ENCRYPTION_KEY ?? process.env.SECRET_KEY;
+  if (!keyMaterial) {
+    throw new Error(
+      'TOTP encryption requires ACTUAL_SERVER_ENCRYPTION_KEY or SECRET_KEY environment variable',
+    );
+  }
   const salt = 'totp-secret-encryption';
   return crypto.pbkdf2Sync(keyMaterial, salt, 100000, 32, 'sha256');
 }
@@ -166,22 +171,28 @@ export function enrollTotp(
   const db = getAccountDb();
   const secretEnc = encryptTotpSecret(secretBase32);
   db.mutate(
-    'INSERT INTO totp (user_id, secret_enc, recovery_codes) VALUES (?, ?, ?)',
+    'INSERT OR REPLACE INTO totp (user_id, secret_enc, recovery_codes) VALUES (?, ?, ?)',
     [userId, secretEnc, JSON.stringify(recoveryCodeHashes)],
   );
 }
 
-export function isTotpEnrolled(): boolean {
+export function isTotpEnrolled(userId?: string): boolean {
   const db = getAccountDb();
-  const row = db.first('SELECT count(*) as cnt FROM totp') as {
-    cnt: number;
-  } | null;
+  const query = userId
+    ? 'SELECT count(*) as cnt FROM totp WHERE user_id = ?'
+    : 'SELECT count(*) as cnt FROM totp';
+  const params = userId ? [userId] : [];
+  const row = db.first(query, params) as { cnt: number } | null;
   return (row?.cnt ?? 0) > 0;
 }
 
-export function disableTotp(): void {
+export function disableTotp(userId?: string): void {
   const db = getAccountDb();
-  db.mutate('DELETE FROM totp');
+  if (userId) {
+    db.mutate('DELETE FROM totp WHERE user_id = ?', [userId]);
+  } else {
+    db.mutate('DELETE FROM totp');
+  }
 }
 
 export function getTotpStatus(): {

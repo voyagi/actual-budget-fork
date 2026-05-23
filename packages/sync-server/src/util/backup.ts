@@ -121,6 +121,9 @@ async function createTarGz(
     );
     // Type flag (1 byte at offset 156): '0' = regular file
     header.write('0', 156, 1, 'utf8');
+    // POSIX ustar magic (6 bytes at offset 257) and version (2 bytes at offset 263)
+    header.write('ustar\0', 257, 6, 'utf8');
+    header.write('00', 263, 2, 'utf8');
     // Checksum field (8 bytes at offset 148): spaces as initial value per POSIX
     header.write('        ', 148, 8, 'utf8');
     // Compute checksum as sum of all bytes (checksum field treated as spaces)

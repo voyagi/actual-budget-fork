@@ -348,47 +348,63 @@ app.post(
   '/sync-status',
   handleError(async (req, res) => {
     const { accountIds } = req.body || {};
+    const ids: string[] = accountIds || [];
+    if (ids.length === 0) {
+      return res.send({ status: 'ok', data: { statuses: {} } });
+    }
+
     const db = getAccountDb();
+    const placeholders = ids.map(() => '?').join(',');
+
+    const syncRows = db.all(
+      `SELECT l.* FROM eb_sync_log l
+       INNER JOIN (
+         SELECT actual_account_id, MAX(id) as max_id
+         FROM eb_sync_log
+         WHERE actual_account_id IN (${placeholders})
+         GROUP BY actual_account_id
+       ) latest ON l.id = latest.max_id`,
+      ids,
+    );
+    const syncMap = new Map(
+      syncRows.map((r: any) => [r.actual_account_id, r]),
+    );
+
+    const mapRows = db.all(
+      `SELECT m.actual_account_id, m.session_id,
+              s.valid_until, s.aspsp_name, s.aspsp_country
+       FROM eb_account_map m
+       LEFT JOIN eb_sessions s ON s.id = m.session_id
+       WHERE m.actual_account_id IN (${placeholders})`,
+      ids,
+    );
+    const accountMap = new Map(
+      mapRows.map((r: any) => [r.actual_account_id, r]),
+    );
+
+    const defaultEntry = {
+      synced_at: null,
+      status: null,
+      error_message: null,
+      transactions_added: 0,
+      transactions_updated: 0,
+      error_code: null,
+    };
+
     const statuses = {};
-
-    for (const accountId of accountIds || []) {
-      const lastEntry = db.first(
-        'SELECT * FROM eb_sync_log WHERE actual_account_id = ? ORDER BY id DESC LIMIT 1',
-        [accountId],
-      );
-
-      const mapRow = db.first(
-        'SELECT session_id FROM eb_account_map WHERE actual_account_id = ?',
-        [accountId],
-      );
-      const session = mapRow
-        ? db.first(
-            'SELECT valid_until, aspsp_name, aspsp_country FROM eb_sessions WHERE id = ?',
-            [mapRow.session_id],
-          )
-        : null;
-
-      // Null-guard: when lastEntry is null (account linked but never synced),
-      // provide explicit defaults so the client always sees all expected fields.
-      const defaultEntry = {
-        synced_at: null,
-        status: null,
-        error_message: null,
-        transactions_added: 0,
-        transactions_updated: 0,
-        error_code: null,
-      };
+    for (const accountId of ids) {
+      const lastEntry = syncMap.get(accountId) ?? null;
+      const mapInfo = accountMap.get(accountId) ?? null;
 
       statuses[accountId] = {
         ...(lastEntry ?? defaultEntry),
-        // Convert synced_at from Unix epoch integer to ISO string for the client.
         synced_at: lastEntry?.synced_at
           ? new Date(Number(lastEntry.synced_at) * 1000).toISOString()
           : null,
-        consent_valid_until: session?.valid_until ?? null,
-        session_id: mapRow?.session_id ?? null,
-        aspsp_name: session?.aspsp_name ?? null,
-        aspsp_country: session?.aspsp_country ?? null,
+        consent_valid_until: mapInfo?.valid_until ?? null,
+        session_id: mapInfo?.session_id ?? null,
+        aspsp_name: mapInfo?.aspsp_name ?? null,
+        aspsp_country: mapInfo?.aspsp_country ?? null,
       };
     }
 
