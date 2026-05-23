@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 
 import axios, { isAxiosError } from 'axios';
-import { type KeyLike, SignJWT, importPKCS8 } from 'jose';
+import { SignJWT, importPKCS8 } from 'jose';
 
 import { SessionExpiredError, RateLimitError } from './errors.js';
 
@@ -11,7 +11,7 @@ const appId = process.env.ENABLE_BANKING_APP_ID;
 const keyPath =
   process.env.ENABLE_BANKING_KEY_PATH ?? '/run/secrets/eb_private.pem';
 
-let cachedPrivateKey: KeyLike | null = null;
+let cachedPrivateKey: Awaited<ReturnType<typeof importPKCS8>> | null = null;
 
 export function clearKeyCache() {
   cachedPrivateKey = null;

@@ -266,7 +266,7 @@ app.post(
       });
     }
 
-    const ebAccountUid = mapRow.eb_account_uid;
+    const ebAccountUid: string = mapRow.eb_account_uid;
 
     // actual_account_id from the map row is the Actual Budget UUID (populated
     // at link time by /update-account-map). We use it for the sync log so that
