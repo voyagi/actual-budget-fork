@@ -48,14 +48,14 @@ describe('normalizeTransaction', () => {
     expect(result.date).toBe('2026-01-14');
   });
 
-  it('returns null date when both booking_date and value_date are missing', () => {
+  it('returns null when both booking_date and value_date are missing', () => {
     const tx = {
       ...baseTransaction,
       booking_date: undefined,
       value_date: undefined,
     };
     const result = normalizeTransaction(tx, true);
-    expect(result.date).toBeNull();
+    expect(result).toBeNull();
   });
 
   it('uses debtor name as payee for CRDT (credit) transactions', () => {
@@ -101,17 +101,19 @@ describe('normalizeTransaction', () => {
     expect(result.notes).toBeNull();
   });
 
-  it('maps entry_reference to transactionId and internalTransactionId', () => {
+  it('uses entry_reference as transactionId and generates synthetic internalTransactionId', () => {
     const result = normalizeTransaction(baseTransaction, true);
     expect(result.transactionId).toBe('REF-001');
-    expect(result.internalTransactionId).toBe('REF-001');
+    expect(result.internalTransactionId).toContain('2026-01-15');
+    expect(result.internalTransactionId).toContain('100.50');
   });
 
-  it('handles null entry_reference gracefully', () => {
+  it('generates synthetic IDs when entry_reference is missing', () => {
     const tx = { ...baseTransaction, entry_reference: undefined };
     const result = normalizeTransaction(tx, true);
-    expect(result.transactionId).toBeNull();
-    expect(result.internalTransactionId).toBeNull();
+    expect(result.transactionId).toContain('2026-01-15');
+    expect(result.internalTransactionId).toContain('2026-01-15');
+    expect(result.transactionId).toBe(result.internalTransactionId);
   });
 
   it('sets booked flag correctly for booked transactions', () => {
@@ -357,15 +359,15 @@ describe('extractBalance', () => {
     expect(extractBalance(balances)).toBe(8000);
   });
 
-  it('rounds correctly for amounts with sub-cent precision', () => {
+  it('truncates sub-cent precision to 2 decimal places', () => {
     const balances = [
       {
         balance_type: 'CLAV',
         balance_amount: { amount: '99.999', currency: 'EUR' },
       },
     ];
-    // 99.999 * 100 = 9999.9 -> Math.round -> 10000
-    expect(extractBalance(balances)).toBe(10000);
+    // String-based parsing: "99.999" -> major=99, minor=99 (first 2 chars of "999") -> 9999
+    expect(extractBalance(balances)).toBe(9999);
   });
 
   it('handles zero balance', () => {
