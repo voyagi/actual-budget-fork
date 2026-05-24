@@ -3,14 +3,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import {
+  RateLimitError,
+  SessionExpiredError,
+} from './app-enablebanking/errors.js';
+import {
   syncAccountWithRetry,
   applyJitter,
   type RetryPolicy,
 } from './scheduler.js';
-import {
-  RateLimitError,
-  SessionExpiredError,
-} from './app-enablebanking/errors.js';
 
 const testPolicy: RetryPolicy = {
   maxRetries: 3,
@@ -36,7 +36,9 @@ describe('syncAccountWithRetry', () => {
 
   beforeEach(() => {
     syncFn = vi.fn<() => Promise<void>>();
-    sleepFn = vi.fn<(ms: number) => Promise<void>>().mockResolvedValue(undefined);
+    sleepFn = vi
+      .fn<(ms: number) => Promise<void>>()
+      .mockResolvedValue(undefined);
   });
 
   it('succeeds on first attempt without retry', async () => {
@@ -81,7 +83,9 @@ describe('syncAccountWithRetry', () => {
     ).rejects.toThrow();
 
     expect(sleepFn).toHaveBeenCalledTimes(3);
-    const delays = sleepFn.mock.calls.map((call: unknown[]) => call[0] as number);
+    const delays = sleepFn.mock.calls.map(
+      (call: unknown[]) => call[0] as number,
+    );
 
     // 1st sleep: nominal 5000, +/-20% -> 4000 to 6000
     expect(delays[0]).toBeGreaterThanOrEqual(4000);
@@ -132,7 +136,9 @@ describe('syncAccountWithRetry', () => {
       syncAccountWithRetry(syncFn, sleepFn, capPolicy, 'test-account'),
     ).rejects.toThrow();
 
-    const delays = sleepFn.mock.calls.map((call: unknown[]) => call[0] as number);
+    const delays = sleepFn.mock.calls.map(
+      (call: unknown[]) => call[0] as number,
+    );
     const maxWithJitter = 60000 * 1.2;
     for (const delay of delays) {
       expect(delay).toBeLessThanOrEqual(maxWithJitter);
@@ -164,9 +170,9 @@ describe('syncAccountWithRetry', () => {
 
     // Each log should include a numeric delayMs
     for (const call of retryCalls) {
-      expect(
-        typeof (call[1] as Record<string, unknown>).delayMs,
-      ).toBe('number');
+      expect(typeof (call[1] as Record<string, unknown>).delayMs).toBe(
+        'number',
+      );
     }
 
     loggerSpy.mockRestore();

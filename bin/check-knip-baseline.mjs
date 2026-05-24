@@ -93,7 +93,9 @@ for (const category of categories) {
 }
 
 if (improvements.length > 0) {
-  console.log('\nCategories below baseline; lower knip-baseline.json when ready:');
+  console.log(
+    '\nCategories below baseline; lower knip-baseline.json when ready:',
+  );
   for (const { category, allowed, actual } of improvements) {
     console.log(`- ${category}: ${actual} current, ${allowed} baseline`);
   }

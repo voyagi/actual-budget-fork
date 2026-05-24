@@ -71,10 +71,19 @@ const requestLoggerMiddleware = expressWinston.logger({
   ),
 });
 
-function latencyMiddleware(req: Request, res: Response, next: NextFunction): void {
+function latencyMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   const start = Date.now();
   res.on('finish', () => recordLatency(Date.now() - start));
   next();
 }
 
-export { validateSessionMiddleware, errorMiddleware, requestLoggerMiddleware, latencyMiddleware };
+export {
+  validateSessionMiddleware,
+  errorMiddleware,
+  requestLoggerMiddleware,
+  latencyMiddleware,
+};

@@ -11,7 +11,10 @@ vi.mock('../account-db.js', () => {
   const db = {
     mutate: vi.fn((sql: string, params?: unknown[]) => {
       const s = sql.trim().toUpperCase();
-      if (s.startsWith('INSERT INTO TOTP') || s.startsWith('INSERT OR REPLACE INTO TOTP')) {
+      if (
+        s.startsWith('INSERT INTO TOTP') ||
+        s.startsWith('INSERT OR REPLACE INTO TOTP')
+      ) {
         totpRows.push({
           user_id: (params as unknown[])[0],
           secret_enc: (params as unknown[])[1],
@@ -55,6 +58,7 @@ vi.mock('../account-db.js', () => {
 });
 
 import { getAccountDb } from '../account-db.js';
+
 import {
   consumeRecoveryCode,
   disableTotp,

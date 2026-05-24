@@ -18,6 +18,7 @@ vi.mock('./logger.js', () => ({
 }));
 
 import { getAccountDb } from '../account-db.js';
+
 import { runAuditMigrations } from './audit-migrations.js';
 import { writeAuditLog } from './audit.js';
 
@@ -33,7 +34,9 @@ describe('runAuditMigrations', () => {
 
   it('creates audit_log table with correct columns', () => {
     runAuditMigrations();
-    const calls = getMutateMock().mock.calls.map((c: unknown[]) => c[0] as string);
+    const calls = getMutateMock().mock.calls.map(
+      (c: unknown[]) => c[0] as string,
+    );
     const createCall = calls.find((sql: string) =>
       sql.includes('CREATE TABLE IF NOT EXISTS audit_log'),
     );
@@ -49,7 +52,9 @@ describe('runAuditMigrations', () => {
 
   it('creates idx_audit_log_event index on (event_type, timestamp)', () => {
     runAuditMigrations();
-    const calls = getMutateMock().mock.calls.map((c: unknown[]) => c[0] as string);
+    const calls = getMutateMock().mock.calls.map(
+      (c: unknown[]) => c[0] as string,
+    );
     const indexCall = calls.find((sql: string) =>
       sql.includes('CREATE INDEX IF NOT EXISTS idx_audit_log_event'),
     );

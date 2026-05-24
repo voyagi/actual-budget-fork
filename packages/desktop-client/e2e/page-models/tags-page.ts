@@ -25,9 +25,7 @@ export class TagsPage {
   }
 
   async fillNewTagName(name: string) {
-    await this.newTagRow
-      .locator('input[placeholder="New tag"]')
-      .fill(name);
+    await this.newTagRow.locator('input[placeholder="New tag"]').fill(name);
   }
 
   async fillNewTagDescription(description: string) {
@@ -49,10 +47,7 @@ export class TagsPage {
   }
 
   async selectAllTags() {
-    await this.page
-      .locator('[data-testid="select-cell"]')
-      .first()
-      .click();
+    await this.page.locator('[data-testid="select-cell"]').first().click();
   }
 
   getDeleteButton(count: number) {

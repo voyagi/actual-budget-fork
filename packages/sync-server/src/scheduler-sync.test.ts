@@ -341,9 +341,7 @@ describe('runScheduledSync', () => {
         session_id: 's1',
       }),
     ]);
-    getTransactionsMock.mockRejectedValue(
-      new SessionExpiredError('expired'),
-    );
+    getTransactionsMock.mockRejectedValue(new SessionExpiredError('expired'));
 
     await runScheduledSync();
 

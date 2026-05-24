@@ -33,12 +33,21 @@ function formatRelativeTime(
   const diffMins = Math.floor(diffMs / 60000);
   if (diffMins < 1) return t('just now');
   if (diffMins < 60)
-    return t('{{count}} minute ago', { count: diffMins, defaultValue_other: '{{count}} minutes ago' });
+    return t('{{count}} minute ago', {
+      count: diffMins,
+      defaultValue_other: '{{count}} minutes ago',
+    });
   const diffHours = Math.floor(diffMins / 60);
   if (diffHours < 24)
-    return t('{{count}} hour ago', { count: diffHours, defaultValue_other: '{{count}} hours ago' });
+    return t('{{count}} hour ago', {
+      count: diffHours,
+      defaultValue_other: '{{count}} hours ago',
+    });
   const diffDays = Math.floor(diffHours / 24);
-  return t('{{count}} day ago', { count: diffDays, defaultValue_other: '{{count}} days ago' });
+  return t('{{count}} day ago', {
+    count: diffDays,
+    defaultValue_other: '{{count}} days ago',
+  });
 }
 
 export function BackupStatus() {
@@ -160,9 +169,7 @@ export function BackupStatus() {
                   {triggerResult}
                 </Text>
               )}
-              {error && (
-                <Text style={{ color: theme.errorText }}>{error}</Text>
-              )}
+              {error && <Text style={{ color: theme.errorText }}>{error}</Text>}
             </View>
           )}
         </>

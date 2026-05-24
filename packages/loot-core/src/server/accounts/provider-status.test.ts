@@ -223,10 +223,9 @@ describe('operational alerts', () => {
   it('fetchOperationalAlerts calls GET /alerts', async () => {
     getMock.mockResolvedValue(JSON.stringify({ alerts: [{ id: '1' }] }));
     const result = await fetchOperationalAlerts();
-    expect(getMock).toHaveBeenCalledWith(
-      'https://server.test/alerts',
-      { 'X-ACTUAL-TOKEN': 'valid-token' },
-    );
+    expect(getMock).toHaveBeenCalledWith('https://server.test/alerts', {
+      'X-ACTUAL-TOKEN': 'valid-token',
+    });
     expect(result).toEqual({ alerts: [{ id: '1' }] });
   });
 

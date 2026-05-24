@@ -90,9 +90,7 @@ function redactEvidence(value: unknown): unknown {
     return Object.fromEntries(
       Object.entries(value).map(([key, entry]) => [
         key,
-        SENSITIVE_KEY_PATTERN.test(key)
-          ? '[redacted]'
-          : redactEvidence(entry),
+        SENSITIVE_KEY_PATTERN.test(key) ? '[redacted]' : redactEvidence(entry),
       ]),
     );
   }
@@ -117,7 +115,10 @@ function serializeEvidence(evidence: unknown): string | null {
     return value.slice(0, MAX_EVIDENCE_LENGTH);
   }
 
-  return JSON.stringify({ _truncated: true, _preview: value.slice(0, MAX_EVIDENCE_LENGTH - 50) });
+  return JSON.stringify({
+    _truncated: true,
+    _preview: value.slice(0, MAX_EVIDENCE_LENGTH - 50),
+  });
 }
 
 function parseEvidence(evidence: string | null): unknown {

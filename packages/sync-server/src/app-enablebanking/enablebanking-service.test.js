@@ -5,7 +5,7 @@ import { SessionExpiredError, RateLimitError } from './errors';
 // Mock axios at module level before importing the service.
 vi.mock('axios', () => ({
   default: vi.fn(),
-  isAxiosError: vi.fn((err) => err?.isAxiosError === true),
+  isAxiosError: vi.fn(err => err?.isAxiosError === true),
 }));
 
 // Mock jose so we don't need a real RSA key.

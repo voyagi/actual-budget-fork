@@ -15,8 +15,11 @@ import { Cell, Row } from '@desktop-client/components/table';
 import { useEnableBankingSyncStatus } from '@desktop-client/hooks/useEnableBankingStatus';
 import { pushModal } from '@desktop-client/modals/modalsSlice';
 import { useDispatch } from '@desktop-client/redux';
+import { formatExpiryDate } from '@desktop-client/utils/consent-helpers';
 import {
+  getDaysUntilExpiry,
   getUrgencyLevel,
+  isConsentExpired,
   urgencyColors,
 } from '@desktop-client/utils/consent-urgency';
 
@@ -52,23 +55,15 @@ export const AccountRow = memo(
     const consentUrgencyColor = (() => {
       const validUntil = ebStatus?.consent_valid_until;
       if (!validUntil) return null;
-      const now = new Date();
-      const expiry = new Date(validUntil);
-      const daysUntilExpiry =
-        (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-      const urgency = getUrgencyLevel(daysUntilExpiry);
+      const urgency = getUrgencyLevel(getDaysUntilExpiry(validUntil));
       return urgency !== 'ok' ? { text: urgencyColors[urgency].text } : null;
     })();
     const consentValidUntil = ebStatus?.consent_valid_until
-      ? new Date(ebStatus.consent_valid_until).toLocaleDateString(undefined, {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+      ? formatExpiryDate(ebStatus.consent_valid_until, 'short')
       : null;
     const consentIsExpired =
       ebStatus?.consent_valid_until &&
-      new Date(ebStatus.consent_valid_until) <= new Date();
+      isConsentExpired(ebStatus.consent_valid_until);
 
     function handleReauth() {
       dispatch(

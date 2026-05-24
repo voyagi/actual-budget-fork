@@ -129,11 +129,26 @@ export function BankSync() {
         {Object.entries(groupedAccounts).map(([syncProvider, accounts]) => {
           return (
             <View key={syncProvider} style={{ minHeight: 'initial' }}>
-              {Object.keys(groupedAccounts).length > 1 && (
-                <h2 style={{ fontWeight: 500, fontSize: 20, margin: '.5em 0' }}>
-                  {syncSourceReadable[syncProvider as SyncProviders]}
-                </h2>
-              )}
+              <h2
+                style={{
+                  fontWeight: 500,
+                  fontSize: 20,
+                  margin: '.5em 0',
+                  ...(Object.keys(groupedAccounts).length <= 1 && {
+                    position: 'absolute',
+                    width: 1,
+                    height: 1,
+                    padding: 0,
+                    margin: -1,
+                    overflow: 'hidden',
+                    clip: 'rect(0, 0, 0, 0)',
+                    whiteSpace: 'nowrap',
+                    borderWidth: 0,
+                  }),
+                }}
+              >
+                {syncSourceReadable[syncProvider as SyncProviders]}
+              </h2>
               <View style={styles.tableContainer}>
                 <AccountsHeader unlinked={syncProvider === 'unlinked'} />
                 <AccountsList

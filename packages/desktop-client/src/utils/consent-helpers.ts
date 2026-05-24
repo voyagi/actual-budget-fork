@@ -3,20 +3,20 @@
  * Extracted from useEnableBankingStatus.ts for testability.
  */
 
-export function formatExpiryDate(validUntil: string | null): string {
+export function formatExpiryDate(
+  validUntil: string | null,
+  monthFormat: 'long' | 'short' = 'long',
+): string {
   if (!validUntil) return 'Unknown date';
   const date = new Date(validUntil);
   return date.toLocaleDateString(undefined, {
-    month: 'long',
+    month: monthFormat,
     day: 'numeric',
     year: 'numeric',
   });
 }
 
-export function getDismissalKey(
-  sessionId: string,
-  dateString: string,
-): string {
+export function getDismissalKey(sessionId: string, dateString: string): string {
   return `consent-dismissed-${sessionId}-${dateString}`;
 }
 

@@ -78,9 +78,7 @@ export async function ebRequest(
         );
       }
       if (status === 429) {
-        throw new RateLimitError(
-          `Enable Banking rate limit hit: ${message}`,
-        );
+        throw new RateLimitError(`Enable Banking rate limit hit: ${message}`);
       }
     }
     throw err;
@@ -207,9 +205,6 @@ export async function getTransactions(
 
 // [eb] Returns balance information for an account.
 export async function getBalances(accountUid: string) {
-  const response = await ebRequest(
-    'GET',
-    `/accounts/${accountUid}/balances`,
-  );
+  const response = await ebRequest('GET', `/accounts/${accountUid}/balances`);
   return response.data;
 }

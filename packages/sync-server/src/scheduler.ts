@@ -20,6 +20,23 @@ import { runBackup } from './util/backup.js';
 import logger from './util/logger.js';
 import { recordBackupRun, recordSyncRun } from './util/metrics.js';
 
+function toErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function logSyncError(
+  accountId: string,
+  ebUid: string,
+  errorMessage: string,
+): void {
+  const db = getAccountDb();
+  db.mutate(
+    `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
+     VALUES (?, ?, 'error', ?)`,
+    [accountId, ebUid, errorMessage],
+  );
+}
+
 export type AccountRow = {
   actual_account_id: string;
   eb_account_uid: string;
@@ -212,47 +229,36 @@ export async function runScheduledSync(): Promise<void> {
             sessionId,
             aspspName,
           });
-          const rlDb = getAccountDb();
-          rlDb.mutate(
-            `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
-             VALUES (?, ?, 'error', ?)`,
-            [account.actual_account_id, account.eb_account_uid, 'Rate limited (429)'],
+          logSyncError(
+            account.actual_account_id,
+            account.eb_account_uid,
+            'Rate limited (429)',
           );
           totalErrors++;
           break;
         }
         if (err instanceof SessionExpiredError) {
           logger.warn('Session expired mid-sync', { sessionId });
-          const seDb = getAccountDb();
-          seDb.mutate(
-            `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
-             VALUES (?, ?, 'error', ?)`,
-            [account.actual_account_id, account.eb_account_uid, 'Session expired'],
+          logSyncError(
+            account.actual_account_id,
+            account.eb_account_uid,
+            'Session expired',
           );
           totalErrors++;
           break;
         }
-        // All retries exhausted - log error to eb_sync_log
+        const errMsg = toErrorMessage(err);
         logger.error('Sync failed after retries exhausted', {
           accountId: account.actual_account_id,
           maxRetries: DEFAULT_RETRY_POLICY.maxRetries,
-          error: err instanceof Error ? err.message : String(err),
+          error: errMsg,
         });
         triggerAlert({
           event_type: 'sync_failure',
-          message: `Sync failed for account ${account.actual_account_id} after ${DEFAULT_RETRY_POLICY.maxRetries} retries: ${err instanceof Error ? err.message : String(err)}`,
+          message: `Sync failed for account ${account.actual_account_id} after ${DEFAULT_RETRY_POLICY.maxRetries} retries: ${errMsg}`,
           severity: 'error',
         }).catch(() => {});
-        const retryDb = getAccountDb();
-        retryDb.mutate(
-          `INSERT INTO eb_sync_log (actual_account_id, eb_account_uid, status, error_message)
-           VALUES (?, ?, 'error', ?)`,
-          [
-            account.actual_account_id,
-            account.eb_account_uid,
-            err instanceof Error ? err.message : String(err),
-          ],
-        );
+        logSyncError(account.actual_account_id, account.eb_account_uid, errMsg);
         totalErrors++;
       }
     }
@@ -291,7 +297,7 @@ export function startScheduler(): void {
       runScheduledSync()
         .catch(err => {
           logger.error('Unhandled error in sync run', {
-            error: err instanceof Error ? err.message : String(err),
+            error: toErrorMessage(err),
           });
         })
         .finally(() => {
@@ -338,7 +344,7 @@ export function startScheduler(): void {
           }
         })
         .catch(err => {
-          const msg = err instanceof Error ? err.message : String(err);
+          const msg = toErrorMessage(err);
           logger.error('Backup cron unhandled error', { error: msg });
           recordBackupRun(0, false);
           triggerAlert({

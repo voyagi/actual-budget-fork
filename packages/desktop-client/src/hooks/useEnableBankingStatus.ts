@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
@@ -14,7 +14,16 @@ import {
   removeNotification,
 } from '@desktop-client/notifications/notificationsSlice';
 import { useDispatch, useSelector } from '@desktop-client/redux';
-import { getUrgencyLevel } from '@desktop-client/utils/consent-urgency';
+import {
+  formatExpiryDate,
+  isDismissed,
+  dismiss,
+  formatAlertTitle,
+} from '@desktop-client/utils/consent-helpers';
+import {
+  getDaysUntilExpiry,
+  getUrgencyLevel,
+} from '@desktop-client/utils/consent-urgency';
 import type { ConsentUrgency } from '@desktop-client/utils/consent-urgency';
 
 export type { ConsentUrgency } from '@desktop-client/utils/consent-urgency';
@@ -22,34 +31,22 @@ export type { ConsentUrgency } from '@desktop-client/utils/consent-urgency';
 /**
  * Checks whether Enable Banking is configured on the sync-server
  * (JWT key present and valid).
- *
- * Returns:
- * - configured: true when the server has a working Enable Banking key
- * - isLoading: true while the status check is in flight
  */
 export function useEnableBankingStatus() {
-  const [configured, setConfigured] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const status = useSyncServerStatus();
 
-  useEffect(() => {
-    async function fetch() {
-      setIsLoading(true);
-
+  const { data, isFetching } = useQuery({
+    queryKey: ['eb-status'],
+    queryFn: async () => {
       const results = await send('enablebanking-status');
-
-      setConfigured(results?.configured || false);
-      setIsLoading(false);
-    }
-
-    if (status === 'online') {
-      fetch();
-    }
-  }, [status]);
+      return results?.configured || false;
+    },
+    enabled: status === 'online',
+  });
 
   return {
-    configured,
-    isLoading,
+    configured: data ?? null,
+    isLoading: isFetching,
   };
 }
 
@@ -69,57 +66,25 @@ type SyncStatusEntry = {
 /**
  * Fetches per-account Enable Banking sync status from the sync-server.
  * Accepts an array of Actual account UUIDs (the standard `account.id` field).
- *
- * CRITICAL DEPENDENCY: This hook works correctly because
- * `eb_account_map.actual_account_id` is populated at link time by the
- * `enablebanking-accounts-link` IPC handler (Plan 02-03 Task 2), which
- * calls POST /update-account-map to store the Actual UUID in the map.
- * The /transactions route then uses `mapRow.actual_account_id` from that
- * map when writing to `eb_sync_log`. Without this link-time population,
- * the `actual_account_id` column would be NULL and queries here would
- * return no results.
- *
- * Returns:
- * - statuses: Record<string, SyncStatusEntry> keyed by Actual account UUID
- * - isLoading: true while the fetch is in flight
  */
 export function useEnableBankingSyncStatus(accountIds: string[]) {
-  const [statuses, setStatuses] = useState<Record<string, SyncStatusEntry>>({});
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Stable key to avoid re-fetching on every render when the array
-  // reference changes but contents are the same
   const accountIdsKey = accountIds.join(',');
 
-  useEffect(() => {
-    const ids = accountIdsKey ? accountIdsKey.split(',') : [];
-    if (ids.length === 0) {
-      setStatuses({});
-      return;
-    }
-
-    async function doFetch() {
-      setIsLoading(true);
-
+  const { data, isFetching } = useQuery({
+    queryKey: ['eb-sync-status', accountIdsKey],
+    queryFn: async () => {
+      const ids = accountIdsKey.split(',');
       const result = await send('enablebanking-sync-status', {
         accountIds: ids,
       });
-
-      if (result && result.statuses) {
-        setStatuses(result.statuses);
-      } else {
-        setStatuses({});
-      }
-
-      setIsLoading(false);
-    }
-
-    doFetch();
-  }, [accountIdsKey]);
+      return (result?.statuses ?? {}) as Record<string, SyncStatusEntry>;
+    },
+    enabled: accountIdsKey.length > 0,
+  });
 
   return {
-    statuses,
-    isLoading,
+    statuses: data ?? {},
+    isLoading: isFetching,
   };
 }
 
@@ -171,11 +136,7 @@ function useConsentExpiry(): {
       let urgency: ConsentUrgency = 'ok';
 
       if (validUntil) {
-        const now = new Date();
-        const expiry = new Date(validUntil);
-        const msUntilExpiry = expiry.getTime() - now.getTime();
-        const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
-        urgency = getUrgencyLevel(daysUntilExpiry);
+        urgency = getUrgencyLevel(getDaysUntilExpiry(validUntil));
       }
 
       sessionMap.set(sessionId, {
@@ -207,30 +168,6 @@ function useConsentExpiry(): {
     sessions.length > 0 ? sessions[0].urgency : 'ok';
 
   return { sessions, worstUrgency };
-}
-
-// ---------------------------------------------------------------------------
-// Helper functions (moved from ConsentExpiryBanner.tsx)
-// ---------------------------------------------------------------------------
-
-function formatExpiryDate(validUntil: string | null): string {
-  if (!validUntil) return 'Unknown date';
-  const date = new Date(validUntil);
-  return date.toLocaleDateString(undefined, {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function isDismissed(sessionId: string): boolean {
-  const key = `consent-dismissed-${sessionId}-${new Date().toDateString()}`;
-  return localStorage.getItem(key) === 'true';
-}
-
-function dismiss(sessionId: string): void {
-  const key = `consent-dismissed-${sessionId}-${new Date().toDateString()}`;
-  localStorage.setItem(key, 'true');
 }
 
 // ---------------------------------------------------------------------------
@@ -440,19 +377,6 @@ export function useOperationalAlerts(): void {
       clearInterval(interval);
     };
   }, [status, dispatch]);
-}
-
-function formatAlertTitle(eventType: string): string {
-  switch (eventType) {
-    case 'sync_failure':
-      return 'Sync failed';
-    case 'consent_expiry':
-      return 'Bank connection expiring';
-    case 'auth_failure_burst':
-      return 'Repeated login failures';
-    default:
-      return 'Operational alert';
-  }
 }
 
 // ---------------------------------------------------------------------------

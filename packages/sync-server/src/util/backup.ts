@@ -1,18 +1,37 @@
-// [eb] Server-side automated database backup.
-// Atomic SQLite copies via better-sqlite3 .backup() API, tar.gz archiving,
-// 7-day retention policy, and backup status tracking.
-import Database from 'better-sqlite3';
-import { createReadStream, createWriteStream, readdirSync, statSync } from 'node:fs';
-import { mkdir, rm, stat, readdir, copyFile, readFile, unlink } from 'node:fs/promises';
+import {
+  createReadStream,
+  createWriteStream,
+  readdirSync,
+  statSync,
+} from 'node:fs';
+import {
+  mkdir,
+  rm,
+  stat,
+  readdir,
+  copyFile,
+  readFile,
+  unlink,
+} from 'node:fs/promises';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 
+// [eb] Server-side automated database backup.
+// Atomic SQLite copies via better-sqlite3 .backup() API, tar.gz archiving,
+// 7-day retention policy, and backup status tracking.
+import Database from 'better-sqlite3';
+
 import logger from './logger.js';
 
 export type BackupResult =
-  | { success: true; archivePath: string; filesCount: number; sizeBytes: number }
+  | {
+      success: true;
+      archivePath: string;
+      filesCount: number;
+      sizeBytes: number;
+    }
   | { success: false; error: string };
 
 const backupStatus = {
@@ -79,7 +98,11 @@ async function createTarGz(
   sourceDir: string,
   outputPath: string,
 ): Promise<void> {
-  const files: Array<{ relativePath: string; absolutePath: string; size: number }> = [];
+  const files: Array<{
+    relativePath: string;
+    absolutePath: string;
+    size: number;
+  }> = [];
 
   async function collectFiles(dir: string, prefix: string): Promise<void> {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -90,7 +113,11 @@ async function createTarGz(
         await collectFiles(absPath, relPath);
       } else if (entry.isFile()) {
         const fileStat = await stat(absPath);
-        files.push({ relativePath: relPath, absolutePath: absPath, size: fileStat.size });
+        files.push({
+          relativePath: relPath,
+          absolutePath: absPath,
+          size: fileStat.size,
+        });
       }
     }
   }
@@ -117,10 +144,17 @@ async function createTarGz(
     // GID (8 bytes at offset 116)
     header.write('0001000\0', 116, 8, 'utf8');
     // Size (12 bytes at offset 124, octal, null-terminated)
-    header.write(file.size.toString(8).padStart(11, '0') + '\0', 124, 12, 'utf8');
+    header.write(
+      file.size.toString(8).padStart(11, '0') + '\0',
+      124,
+      12,
+      'utf8',
+    );
     // Mtime (12 bytes at offset 136, octal, null-terminated)
     header.write(
-      Math.floor(Date.now() / 1000).toString(8).padStart(11, '0') + '\0',
+      Math.floor(Date.now() / 1000)
+        .toString(8)
+        .padStart(11, '0') + '\0',
       136,
       12,
       'utf8',
@@ -168,8 +202,7 @@ async function createTarGz(
  * @param dataDir  Data directory to back up (defaults to ACTUAL_DATA_DIR or /data)
  */
 export async function runBackup(dataDir?: string): Promise<BackupResult> {
-  const resolvedDataDir =
-    dataDir ?? process.env.ACTUAL_DATA_DIR ?? '/data';
+  const resolvedDataDir = dataDir ?? process.env.ACTUAL_DATA_DIR ?? '/data';
 
   try {
     // Create timestamped backup directory name
@@ -177,7 +210,11 @@ export async function runBackup(dataDir?: string): Promise<BackupResult> {
       .toISOString()
       .replace(/[:.]/g, '-')
       .slice(0, 19);
-    const backupDir = path.join(resolvedDataDir, 'backups', `backup-${timestamp}`);
+    const backupDir = path.join(
+      resolvedDataDir,
+      'backups',
+      `backup-${timestamp}`,
+    );
     await mkdir(backupDir, { recursive: true });
 
     let filesCount = 0;

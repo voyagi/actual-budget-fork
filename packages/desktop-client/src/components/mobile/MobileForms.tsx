@@ -29,7 +29,6 @@ export function FieldLabel({ title, flush, style }: FieldLabelProps) {
         fontSize: 14,
         color: theme.tableRowHeaderText,
         padding: `0 ${styles.mobileEditingPadding}px`,
-        userSelect: 'none',
         ...style,
       }}
     >
@@ -127,7 +126,6 @@ export function TapField({
         <Text
           style={{
             flex: 1,
-            userSelect: 'none',
             textAlign: 'left',
             ...textStyle,
           }}

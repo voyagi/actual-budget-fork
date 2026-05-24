@@ -411,11 +411,7 @@ export async function fetchOperationalAlerts() {
   }
 }
 
-export function acknowledgeOperationalAlert({
-  alertId,
-}: {
-  alertId: string;
-}) {
+export function acknowledgeOperationalAlert({ alertId }: { alertId: string }) {
   return authedPost('BASE_SERVER', '/alerts/acknowledge', { alertId });
 }
 

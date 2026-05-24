@@ -207,10 +207,9 @@ export function getTotpStatus(userId = 'default-user'): {
   recoveryCodesRemaining: number;
 } {
   const db = getAccountDb();
-  const row = db.first(
-    'SELECT recovery_codes FROM totp WHERE user_id = ?',
-    [userId],
-  ) as { recovery_codes: string } | null;
+  const row = db.first('SELECT recovery_codes FROM totp WHERE user_id = ?', [
+    userId,
+  ]) as { recovery_codes: string } | null;
 
   if (!row) {
     return { enrolled: false, recoveryCodesRemaining: 0 };

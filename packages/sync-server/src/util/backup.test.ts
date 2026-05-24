@@ -1,9 +1,18 @@
-// [eb] Unit tests for backup module
-import Database from 'better-sqlite3';
-import { mkdtempSync, mkdirSync, rmSync, existsSync, statSync, writeFileSync, utimesSync } from 'node:fs';
+import {
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  existsSync,
+  statSync,
+  writeFileSync,
+  utimesSync,
+} from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+
+// [eb] Unit tests for backup module
+import Database from 'better-sqlite3';
 import { beforeEach, afterEach, describe, it, expect } from 'vitest';
 
 import {

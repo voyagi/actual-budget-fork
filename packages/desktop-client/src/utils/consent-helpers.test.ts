@@ -63,9 +63,7 @@ describe('isDismissed / dismiss', () => {
     expect(isDismissed('sess-1')).toBe(true);
 
     // Simulate next day by checking a key with a different date
-    const tomorrowStr = new Date(
-      Date.now() + 24 * 3600 * 1000,
-    ).toDateString();
+    const tomorrowStr = new Date(Date.now() + 24 * 3600 * 1000).toDateString();
     const todayKey = getDismissalKey('sess-1', new Date().toDateString());
     const tomorrowKey = getDismissalKey('sess-1', tomorrowStr);
     expect(localStorage.getItem(todayKey)).toBe('true');
@@ -79,9 +77,7 @@ describe('formatAlertTitle', () => {
   });
 
   it('maps consent_expiry', () => {
-    expect(formatAlertTitle('consent_expiry')).toBe(
-      'Bank connection expiring',
-    );
+    expect(formatAlertTitle('consent_expiry')).toBe('Bank connection expiring');
   });
 
   it('maps auth_failure_burst', () => {
