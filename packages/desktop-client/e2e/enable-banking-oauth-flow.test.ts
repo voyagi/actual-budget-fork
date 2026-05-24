@@ -5,12 +5,13 @@ import { ConfigurationPage } from './page-models/configuration-page';
 import { CreateAccountModal } from './page-models/create-account-modal';
 import { EnableBankingModal } from './page-models/enable-banking-modal';
 
-/**
- * Tests for the Enable Banking OAuth authorization flow.
- * These tests require Enable Banking to be configured on the sync server.
- * Tests that can't be fully simulated (e.g., actual bank auth) focus on
- * verifying UI states during the flow.
- */
+// These tests require Enable Banking configured on a sync server.
+// Skip in CI production builds (no sync server available).
+test.skip(
+  () => !!process.env.E2E_USE_BUILD,
+  'Enable Banking tests require a sync server',
+);
+
 test.describe('Enable Banking OAuth Flow', () => {
   let page: Page;
   let configurationPage: ConfigurationPage;
