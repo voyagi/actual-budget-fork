@@ -22523,7 +22523,7 @@ __metadata:
     "@types/node": "npm:^22.19.3"
     cross-env: "npm:^10.1.0"
     typescript: "npm:^5.9.3"
-    vite: "npm:^8.0.0"
+    vite: "npm:^7.3.2"
     workbox-precaching: "npm:^7.4.0"
   languageName: unknown
   linkType: soft
