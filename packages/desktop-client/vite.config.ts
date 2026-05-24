@@ -1,15 +1,24 @@
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
+import babel from '@rolldown/plugin-babel';
 import inject from '@rollup/plugin-inject';
 import basicSsl from '@vitejs/plugin-basic-ssl';
-import react from '@vitejs/plugin-react';
-import type { PreRenderedAsset } from 'rollup';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import type { PreRenderedAsset } from 'rolldown';
 import { visualizer } from 'rollup-plugin-visualizer';
 /// <reference types="vitest" />
 import { defineConfig, loadEnv } from 'vite';
 import type { Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import viteTsconfigPaths from 'vite-tsconfig-paths';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const reactCompilerInclude = new RegExp(
+  `^${path
+    .resolve(__dirname, 'src')
+    .replaceAll(path.sep, '/')
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/.*\\.[jt]sx$`,
+);
 
 const addWatchers = (): Plugin => ({
   name: 'add-watchers',
@@ -27,41 +36,67 @@ const addWatchers = (): Plugin => ({
   },
 });
 
+const injectPlugin = (options?: Parameters<typeof inject>[0]): Plugin => {
+  // Rollup plugins are currently slightly API-incompatible with Rolldown plugins, but not in a way that prevents them from working here.
+  return inject(options) as unknown as Plugin;
+};
+
 // Inject build shims using the inject plugin
 const injectShims = (): Plugin[] => {
   const buildShims = path.resolve('./src/build-shims.js');
-  const commonInject = {
+  const serveInject: {
+    exclude: string[];
+    global: [string, string];
+  } = {
     exclude: ['src/setupTests.ts'],
+    global: [buildShims, 'global'],
+  };
+  const buildInject: {
+    global: [string, string];
+  } = {
     global: [buildShims, 'global'],
   };
 
   return [
     {
-      name: 'inject-build-process',
+      name: 'define-build-process',
       config: () => ({
         // rename process.env in build mode so it doesn't get set to an empty object up by the vite:define plugin
         // this isn't needed in serve mode, because vite:define doesn't empty it in serve mode. And defines also happen last anyways in serve mode.
-        define: {
-          'process.env': `_process.env`,
+        environments: {
+          client: {
+            define: {
+              'process.env': '_process.env',
+            },
+          },
         },
       }),
       apply: 'build',
     },
     {
-      ...inject({
-        ...commonInject,
-        process: [buildShims, 'process'],
-      }),
       enforce: 'post',
       apply: 'serve',
+      ...injectPlugin({
+        ...serveInject,
+        process: [buildShims, 'process'],
+      }),
     },
     {
-      ...inject({
-        ...commonInject,
-        _process: [buildShims, 'process'],
-      }),
+      name: 'inject-build-process',
       enforce: 'post',
       apply: 'build',
+      config: () => ({
+        build: {
+          rolldownOptions: {
+            transform: {
+              inject: {
+                ...buildInject,
+                _process: [buildShims, 'process'],
+              },
+            },
+          },
+        },
+      }),
     },
   ];
 };
@@ -82,10 +117,6 @@ export default defineConfig(async ({ mode }) => {
   }
 
   let resolveExtensions = [
-    '.web.js',
-    '.web.jsx',
-    '.web.ts',
-    '.web.tsx',
     '.mjs',
     '.js',
     '.mts',
@@ -111,7 +142,10 @@ export default defineConfig(async ({ mode }) => {
     base: '/',
     envPrefix: 'REACT_APP_',
     build: {
-      terserOptions: {},
+      terserOptions: {
+        compress: false,
+        mangle: false,
+      },
       target: 'es2022',
       sourcemap: true,
       outDir: mode === 'desktop' ? 'build-electron' : 'build',
@@ -119,7 +153,7 @@ export default defineConfig(async ({ mode }) => {
       manifest: true,
       assetsInlineLimit: 0,
       chunkSizeWarningLimit: 1500,
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           assetFileNames: (assetInfo: PreRenderedAsset) => {
             const info = assetInfo.name?.split('.') ?? [];
@@ -151,6 +185,15 @@ export default defineConfig(async ({ mode }) => {
     },
     resolve: {
       extensions: resolveExtensions,
+      alias: {
+        '@desktop-client': path.join(__dirname, 'src'),
+        // TODO: remove this once all loot-core imports are replaced with @actual-app/core
+        'loot-core': path.join(__dirname, '../loot-core/src'),
+      },
+      ...(!env.IS_GENERIC_BROWSER && {
+        conditions: ['electron', 'module', 'browser', 'default'],
+      }),
+      tsconfigPaths: true,
     },
     plugins: [
       // electron (desktop) builds do not support PWA
@@ -188,13 +231,12 @@ export default defineConfig(async ({ mode }) => {
           }),
       injectShims(),
       addWatchers(),
-      react({
-        babel: {
-          // n.b. Must be a string to ensure plugin resolution order. See https://github.com/actualbudget/actual/pull/5853
-          plugins: ['babel-plugin-react-compiler'],
-        },
+      react(),
+      babel({
+        include: [reactCompilerInclude],
+        // n.b. Must be a string to ensure plugin resolution order. See https://github.com/actualbudget/actual/pull/5853
+        presets: [reactCompilerPreset()],
       }),
-      viteTsconfigPaths({ root: '../..' }),
       visualizer({ template: 'raw-data' }),
       !!env.HTTPS && basicSsl(),
     ],
