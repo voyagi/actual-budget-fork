@@ -323,146 +323,78 @@ export async function checkSecret(name: string) {
 // Enable Banking provider status handlers
 // ---------------------------------------------------------------------------
 
-export async function enableBankingStatus() {
+async function authedPost(
+  serverKey: keyof NonNullable<ReturnType<typeof getServer>>,
+  path: string,
+  body: Record<string, unknown> = {},
+) {
   const userToken = await asyncStorage.getItem('user-token');
-
-  if (!userToken) {
-    return { error: 'unauthorized' };
-  }
+  if (!userToken) return { error: 'unauthorized' };
 
   const serverConfig = getServer();
-  if (!serverConfig) {
-    throw new Error('Failed to get server config.');
-  }
+  if (!serverConfig) throw new Error('Failed to get server config.');
 
-  return post(
-    serverConfig.ENABLEBANKING_SERVER + '/status',
-    {},
-    {
-      'X-ACTUAL-TOKEN': userToken,
-    },
-  );
+  return post(serverConfig[serverKey] + path, body, {
+    'X-ACTUAL-TOKEN': userToken,
+  });
 }
 
-export async function enableBankingGetBanks({ country }: { country: string }) {
+async function authedGet(path: string) {
   const userToken = await asyncStorage.getItem('user-token');
-
-  if (!userToken) {
-    return { error: 'unauthorized' };
-  }
+  if (!userToken) return { error: 'unauthorized' };
 
   const serverConfig = getServer();
-  if (!serverConfig) {
-    throw new Error('Failed to get server config.');
-  }
+  if (!serverConfig) throw new Error('Failed to get server config.');
 
-  return post(
-    serverConfig.ENABLEBANKING_SERVER + '/get-banks',
-    { country },
-    {
-      'X-ACTUAL-TOKEN': userToken,
-    },
-  );
+  return get(serverConfig.BASE_SERVER + path, {
+    'X-ACTUAL-TOKEN': userToken,
+  });
 }
 
-export async function enableBankingCreateAuth({
+export function enableBankingStatus() {
+  return authedPost('ENABLEBANKING_SERVER', '/status');
+}
+
+export function enableBankingGetBanks({ country }: { country: string }) {
+  return authedPost('ENABLEBANKING_SERVER', '/get-banks', { country });
+}
+
+export function enableBankingCreateAuth({
   aspspName,
   aspspCountry,
 }: {
   aspspName: string;
   aspspCountry: string;
 }) {
-  const userToken = await asyncStorage.getItem('user-token');
-
-  if (!userToken) {
-    return { error: 'unauthorized' };
-  }
-
-  const serverConfig = getServer();
-  if (!serverConfig) {
-    throw new Error('Failed to get server config.');
-  }
-
-  return post(
-    serverConfig.ENABLEBANKING_SERVER + '/create-auth',
-    { aspspName, aspspCountry },
-    {
-      'X-ACTUAL-TOKEN': userToken,
-    },
-  );
+  return authedPost('ENABLEBANKING_SERVER', '/create-auth', {
+    aspspName,
+    aspspCountry,
+  });
 }
 
-export async function enableBankingPollSession({ state }: { state: string }) {
-  const userToken = await asyncStorage.getItem('user-token');
-
-  if (!userToken) {
-    return { error: 'unauthorized' };
-  }
-
-  const serverConfig = getServer();
-  if (!serverConfig) {
-    throw new Error('Failed to get server config.');
-  }
-
-  return post(
-    serverConfig.ENABLEBANKING_SERVER + '/get-accounts',
-    { state },
-    {
-      'X-ACTUAL-TOKEN': userToken,
-    },
-  );
+export function enableBankingPollSession({ state }: { state: string }) {
+  return authedPost('ENABLEBANKING_SERVER', '/get-accounts', { state });
 }
 
-export async function enableBankingSyncStatus({
+export function enableBankingSyncStatus({
   accountIds,
 }: {
   accountIds: string[];
 }) {
-  const userToken = await asyncStorage.getItem('user-token');
-
-  if (!userToken) {
-    return { error: 'unauthorized' };
-  }
-
-  const serverConfig = getServer();
-  if (!serverConfig) {
-    throw new Error('Failed to get server config.');
-  }
-
-  return post(
-    serverConfig.ENABLEBANKING_SERVER + '/sync-status',
-    { accountIds },
-    {
-      'X-ACTUAL-TOKEN': userToken,
-    },
-  );
+  return authedPost('ENABLEBANKING_SERVER', '/sync-status', { accountIds });
 }
 
-export async function enableBankingReauthComplete({
+export function enableBankingReauthComplete({
   newSessionId,
   oldSessionId,
 }: {
   newSessionId: string;
   oldSessionId: string;
 }) {
-  const userToken = await asyncStorage.getItem('user-token');
-
-  if (!userToken) {
-    return { error: 'unauthorized' };
-  }
-
-  const serverConfig = getServer();
-  if (!serverConfig) {
-    throw new Error('Failed to get server config.');
-  }
-
-  return post(
-    serverConfig.ENABLEBANKING_SERVER + '/reauth-complete',
-    { newSessionId, oldSessionId },
-    {
-      'X-ACTUAL-TOKEN': userToken,
-    },
-  );
+  return authedPost('ENABLEBANKING_SERVER', '/reauth-complete', {
+    newSessionId,
+    oldSessionId,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -470,15 +402,8 @@ export async function enableBankingReauthComplete({
 // ---------------------------------------------------------------------------
 
 export async function fetchOperationalAlerts() {
-  const userToken = await asyncStorage.getItem('user-token');
-  if (!userToken) return { error: 'unauthorized' };
-
-  const serverConfig = getServer();
-  if (!serverConfig) throw new Error('Failed to get server config.');
-
-  const text = await get(serverConfig.BASE_SERVER + '/alerts', {
-    headers: { 'X-ACTUAL-TOKEN': userToken },
-  });
+  const text = await authedGet('/alerts');
+  if (typeof text !== 'string') return text;
   try {
     return JSON.parse(text);
   } catch {
@@ -486,22 +411,12 @@ export async function fetchOperationalAlerts() {
   }
 }
 
-export async function acknowledgeOperationalAlert({
+export function acknowledgeOperationalAlert({
   alertId,
 }: {
   alertId: string;
 }) {
-  const userToken = await asyncStorage.getItem('user-token');
-  if (!userToken) return { error: 'unauthorized' };
-
-  const serverConfig = getServer();
-  if (!serverConfig) throw new Error('Failed to get server config.');
-
-  return post(
-    serverConfig.BASE_SERVER + '/alerts/acknowledge',
-    { alertId },
-    { 'X-ACTUAL-TOKEN': userToken },
-  );
+  return authedPost('BASE_SERVER', '/alerts/acknowledge', { alertId });
 }
 
 // ---------------------------------------------------------------------------
@@ -509,15 +424,8 @@ export async function acknowledgeOperationalAlert({
 // ---------------------------------------------------------------------------
 
 export async function fetchProductionTrustStatus() {
-  const userToken = await asyncStorage.getItem('user-token');
-  if (!userToken) return { error: 'unauthorized' };
-
-  const serverConfig = getServer();
-  if (!serverConfig) throw new Error('Failed to get server config.');
-
-  const text = await get(serverConfig.BASE_SERVER + '/production-trust', {
-    headers: { 'X-ACTUAL-TOKEN': userToken },
-  });
+  const text = await authedGet('/production-trust');
+  if (typeof text !== 'string') return text;
   try {
     const response = JSON.parse(text);
     return response.status === 'ok'
@@ -528,7 +436,7 @@ export async function fetchProductionTrustStatus() {
   }
 }
 
-export async function recordProductionTrustUntrusted({
+export function recordProductionTrustUntrusted({
   condition,
   reason,
   message,
@@ -539,40 +447,28 @@ export async function recordProductionTrustUntrusted({
   message?: string;
   evidence?: unknown;
 }) {
-  const userToken = await asyncStorage.getItem('user-token');
-  if (!userToken) return { error: 'unauthorized' };
-
-  const serverConfig = getServer();
-  if (!serverConfig) throw new Error('Failed to get server config.');
-
-  return post(
-    serverConfig.BASE_SERVER + '/production-trust/record',
-    { condition, reason, message, evidence },
-    { 'X-ACTUAL-TOKEN': userToken },
-  );
+  return authedPost('BASE_SERVER', '/production-trust/record', {
+    condition,
+    reason,
+    message,
+    evidence,
+  });
 }
 
-export async function runProductionTrustCheck({
+export function runProductionTrustCheck({
   condition,
   maxAgeMs,
 }: {
   condition?: string;
   maxAgeMs?: number;
 } = {}) {
-  const userToken = await asyncStorage.getItem('user-token');
-  if (!userToken) return { error: 'unauthorized' };
-
-  const serverConfig = getServer();
-  if (!serverConfig) throw new Error('Failed to get server config.');
-
-  return post(
-    serverConfig.BASE_SERVER + '/production-trust/check',
-    { condition, maxAgeMs },
-    { 'X-ACTUAL-TOKEN': userToken },
-  );
+  return authedPost('BASE_SERVER', '/production-trust/check', {
+    condition,
+    maxAgeMs,
+  });
 }
 
-export async function verifyProductionTrustManually({
+export function verifyProductionTrustManually({
   condition,
   message,
   evidence,
@@ -581,15 +477,9 @@ export async function verifyProductionTrustManually({
   message?: string;
   evidence?: unknown;
 }) {
-  const userToken = await asyncStorage.getItem('user-token');
-  if (!userToken) return { error: 'unauthorized' };
-
-  const serverConfig = getServer();
-  if (!serverConfig) throw new Error('Failed to get server config.');
-
-  return post(
-    serverConfig.BASE_SERVER + '/production-trust/manual-verify',
-    { condition, message, evidence },
-    { 'X-ACTUAL-TOKEN': userToken },
-  );
+  return authedPost('BASE_SERVER', '/production-trust/manual-verify', {
+    condition,
+    message,
+    evidence,
+  });
 }
