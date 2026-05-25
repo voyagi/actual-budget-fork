@@ -50,17 +50,19 @@ if (process.env.NODE_ENV !== 'development') {
   );
 }
 
-const authRateLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  legacyHeaders: false,
-  standardHeaders: true,
-  message: { status: 'error', reason: 'too-many-login-attempts' },
-});
-app.use('/account/login', authRateLimit);
-app.use('/account/bootstrap', authRateLimit);
-app.use('/account/change-password', authRateLimit);
-app.use('/openid', authRateLimit);
+if (process.env.NODE_ENV !== 'test') {
+  const authRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    legacyHeaders: false,
+    standardHeaders: true,
+    message: { status: 'error', reason: 'too-many-login-attempts' },
+  });
+  app.use('/account/login', authRateLimit);
+  app.use('/account/bootstrap', authRateLimit);
+  app.use('/account/change-password', authRateLimit);
+  app.use('/openid', authRateLimit);
+}
 
 app.use(express.json({ limit: `${config.get('upload.fileSizeLimitMB')}mb` }));
 
