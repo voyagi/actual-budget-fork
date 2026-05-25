@@ -16,6 +16,10 @@ export class BudgetPage {
     this.budgetTableTotals = this.budgetTable.getByTestId('budget-totals');
   }
 
+  async waitFor(...options: Parameters<Locator['waitFor']>) {
+    await this.budgetTable.waitFor(...options);
+  }
+
   async getTotalBudgeted() {
     const totalBudgetedText = await this.budgetTableTotals
       .getByTestId(/total-budgeted$/)
