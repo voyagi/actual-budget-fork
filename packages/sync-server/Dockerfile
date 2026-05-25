@@ -35,8 +35,18 @@ RUN yarn workspace loot-core build:browser
 # and extracts REACT_APP_BACKEND_WORKER_HASH from the kcab worker filename
 RUN yarn workspace @actual-app/web build:browser
 
+# Create a non-root user
+ARG USERNAME=actual
+ARG USER_UID=1001
+ARG USER_GID=$USER_UID
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
+
 # Data directory for Actual user files and server files
 ENV ACTUAL_DATA_DIR=/data
+RUN mkdir -p /data && chown -R ${USERNAME}:${USERNAME} /data
+
+USER actual
 
 EXPOSE 5006
 
