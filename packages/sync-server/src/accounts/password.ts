@@ -90,7 +90,7 @@ export function loginWithPassword(password: string): PasswordResult {
   }
 
   let expiration: number = TOKEN_EXPIRATION_NEVER;
-  const tokenExp = config.get('token_expiration');
+  const tokenExp: unknown = config.get('token_expiration');
   if (
     tokenExp !== 'never' &&
     tokenExp !== 'openid-provider' &&

@@ -62,13 +62,13 @@ describe('/user-get-key', () => {
     });
   });
 
-  it('returns 400 if the file is not found', async () => {
+  it('returns 404 if the file is not found', async () => {
     const res = await request(app)
       .post('/user-get-key')
       .set('x-actual-token', 'valid-token')
       .send({ fileId: 'non-existent-file-id' });
 
-    expect(res.statusCode).toEqual(400);
+    expect(res.statusCode).toEqual(404);
     expect(res.text).toBe('file-not-found');
   });
 
@@ -127,13 +127,13 @@ describe('/user-create-key', () => {
     });
   });
 
-  it('returns 400 if the file is not found', async () => {
+  it('returns 404 if the file is not found', async () => {
     const res = await request(app)
       .post('/user-create-key')
       .set('x-actual-token', 'valid-token')
       .send({ fileId: 'non-existent-file-id' });
 
-    expect(res.statusCode).toEqual(400);
+    expect(res.statusCode).toEqual(404);
     expect(res.text).toBe('file-not-found');
   });
 
@@ -287,7 +287,7 @@ describe('/reset-user-file', () => {
       .set('x-actual-token', 'valid-token')
       .send({ fileId: 'non-existent-file-id' });
 
-    expect(res.statusCode).toEqual(400);
+    expect(res.statusCode).toEqual(404);
     expect(res.text).toBe('User or file not found');
   });
 
@@ -660,13 +660,13 @@ describe('/download-user-file', () => {
       });
     });
 
-    it('returns 400 error if the file does not exist in the database', async () => {
+    it('returns 404 error if the file does not exist in the database', async () => {
       const res = await request(app)
         .get('/download-user-file')
         .set('x-actual-token', 'valid-token')
         .set('x-actual-file-id', 'non-existing-file-id');
 
-      expect(res.statusCode).toEqual(400);
+      expect(res.statusCode).toEqual(404);
       expect(res.text).toBe('User or file not found');
     });
 
@@ -814,7 +814,7 @@ describe('/update-user-filename', () => {
       .set('x-actual-token', 'valid-token')
       .send({ fileId: 'non-existent-file-id', name: 'new-filename' });
 
-    expect(res.statusCode).toEqual(400);
+    expect(res.statusCode).toEqual(404);
     expect(res.text).toBe('file-not-found');
   });
 
@@ -997,7 +997,7 @@ describe('/get-user-file-info', () => {
       .set('x-actual-token', 'valid-token')
       .set('x-actual-file-id', fileId);
 
-    expect(res.statusCode).toEqual(400);
+    expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({ status: 'error', reason: 'file-not-found' });
   });
 
@@ -1085,13 +1085,13 @@ describe('/delete-user-file', () => {
     });
   });
 
-  it('returns 400 if the file does not exist', async () => {
+  it('returns 404 if the file does not exist', async () => {
     const res = await request(app)
       .post('/delete-user-file')
       .set('x-actual-token', 'valid-token')
       .send({ fileId: 'non-existing-file-id' });
 
-    expect(res.statusCode).toEqual(400);
+    expect(res.statusCode).toEqual(404);
     expect(res.text).toEqual('file-not-found');
   });
 
@@ -1262,7 +1262,7 @@ describe('/sync', () => {
     });
   });
 
-  it('returns 400 if the file does not exist in the database', async () => {
+  it('returns 404 if the file does not exist in the database', async () => {
     const syncRequest = createMinimalSyncRequest(
       'non-existant-file-id',
       'group-id',
@@ -1273,7 +1273,7 @@ describe('/sync', () => {
 
     const res = await sendSyncRequest(syncRequest);
 
-    expect(res.statusCode).toEqual(400);
+    expect(res.statusCode).toEqual(404);
     expect(res.text).toEqual('file-not-found');
   });
 
