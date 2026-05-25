@@ -27,7 +27,7 @@ const createUser = (userId, userName, role, owner = 0, enabled = 1) => {
 
   try {
     getAccountDb().mutate(
-      'INSERT INTO users (id, user_name, display_name, enabled, owner, role) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT OR IGNORE INTO users (id, user_name, display_name, enabled, owner, role) VALUES (?, ?, ?, ?, ?, ?)',
       [userId, userName, userName, enabled, owner, role],
     );
   } catch (error) {
@@ -74,16 +74,16 @@ export async function setup() {
 
     await db.mutate('DELETE FROM sessions');
     await db.mutate(
-      'INSERT INTO sessions (token, expires_at, user_id) VALUES (?, ?, ?)',
+      'INSERT OR IGNORE INTO sessions (token, expires_at, user_id) VALUES (?, ?, ?)',
       ['valid-token', NEVER_EXPIRES, 'genericAdmin'],
     );
     await db.mutate(
-      'INSERT INTO sessions (token, expires_at, user_id) VALUES (?, ?, ?)',
+      'INSERT OR IGNORE INTO sessions (token, expires_at, user_id) VALUES (?, ?, ?)',
       ['valid-token-admin', NEVER_EXPIRES, 'genericAdmin'],
     );
 
     await db.mutate(
-      'INSERT INTO sessions (token, expires_at, user_id) VALUES (?, ?, ?)',
+      'INSERT OR IGNORE INTO sessions (token, expires_at, user_id) VALUES (?, ?, ?)',
       ['valid-token-user', NEVER_EXPIRES, 'genericUser'],
     );
 
@@ -100,5 +100,11 @@ export async function setup() {
 }
 
 export async function teardown() {
-  await runMigrations('down');
+  try {
+    await runMigrations('down');
+  } catch {
+    // On Windows, better-sqlite3 may still hold a file lock from test
+    // workers when teardown runs, causing EBUSY on unlink. All tests
+    // have already completed at this point so the error is harmless.
+  }
 }
