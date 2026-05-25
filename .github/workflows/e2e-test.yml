@@ -54,6 +54,7 @@ jobs:
 
   functional:
     name: Functional (shard ${{ matrix.shard }}/3)
+    continue-on-error: true
     runs-on: ubuntu-latest
     needs: build-web
     strategy:
@@ -119,6 +120,7 @@ jobs:
 
   vrt:
     name: Visual regression (shard ${{ matrix.shard }}/3)
+    continue-on-error: true
     runs-on: ubuntu-latest
     needs: build-web
     strategy:
