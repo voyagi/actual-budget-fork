@@ -298,6 +298,13 @@ const configSchema = convict({
       env: 'ACTUAL_CORS_PROXY_ENABLED',
     },
   },
+
+  corsOrigins: {
+    doc: 'Allowed CORS origins (comma-separated). If empty, CORS is disabled in production and permissive in development.',
+    format: String,
+    default: '',
+    env: 'ACTUAL_CORS_ORIGINS',
+  },
 });
 
 let configPath: string | null = null;
