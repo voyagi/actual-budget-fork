@@ -282,7 +282,6 @@ export const FocusableAmountInput = memo(function FocusableAmountInput({
                   zeroColor: theme.numberNeutral,
                 }),
                 fontSize: 15,
-                userSelect: 'none',
                 ...textStyle,
               }}
             >

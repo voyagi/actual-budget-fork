@@ -67,7 +67,7 @@ export function BankSyncAccountsList({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minHeight: 40,
+                minHeight: 44,
               }}
             >
               <Text

@@ -22,6 +22,8 @@ export function FilterList<T extends { id: string; name: string }>({
   return (
     <View>
       <View
+        role="listbox"
+        aria-label={t('Saved Filters')}
         style={{
           overflow: 'auto',
           padding: '5px 0',
@@ -33,6 +35,9 @@ export function FilterList<T extends { id: string; name: string }>({
           return [
             <div
               key={item.id}
+              role="option"
+              tabIndex={0}
+              aria-selected={highlightedIndex === idx}
               {...(getItemProps ? getItemProps({ item }) : null)}
               style={{
                 backgroundColor:
@@ -42,6 +47,7 @@ export function FilterList<T extends { id: string; name: string }>({
                 padding: 4,
                 paddingLeft: 20,
                 borderRadius: embedded ? 4 : 0,
+                cursor: 'default',
               }}
               data-testid={`${item.name}-filter-item`}
               data-highlighted={highlightedIndex === idx || undefined}

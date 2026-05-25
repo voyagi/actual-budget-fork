@@ -9,11 +9,12 @@ import * as prefs from '../prefs';
 import { getServer } from '../server-config';
 import { makeTestMessage, resetSync } from '../sync';
 
-import * as encryption from '.';
 import {
   PBKDF2_ITERATIONS,
   PBKDF2_ITERATIONS_LEGACY,
 } from './encryption-internals';
+
+import * as encryption from '.';
 
 export type EncryptionHandlers = {
   'key-make': typeof keyMake;

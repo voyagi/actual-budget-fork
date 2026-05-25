@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-23T22:23:00Z",
+  "title": "Design System: Actual Budget (Buddy Fork)",
+  "extensions": {
+    "colorMeta": {
+      "soft-amethyst": {
+        "role": "primary",
+        "displayName": "Soft Amethyst",
+        "canonical": "#6C5CE7",
+        "tonalRamp": ["#1A1733", "#2D2859", "#3D3566", "#5A4BD4", "#6C5CE7", "#7D6FEE", "#EDE8FF", "#F4F1FF"]
+      },
+      "warm-coral": {
+        "role": "secondary",
+        "displayName": "Warm Coral",
+        "canonical": "#FF6B8A",
+        "tonalRamp": ["#4D1422", "#7A2038", "#A62D4E", "#D44A6A", "#FF6B8A", "#FF8FA5", "#FFB3C0", "#FFD9E0"]
+      },
+      "steady-teal": {
+        "role": "tertiary",
+        "displayName": "Steady Teal",
+        "canonical": "#2DD4A8",
+        "tonalRamp": ["#033D2E", "#066347", "#0D9B6A", "#1DB88A", "#2DD4A8", "#5DE0BF", "#8EEDC7", "#C6F7E2"]
+      },
+      "parchment": {
+        "role": "neutral",
+        "displayName": "Parchment",
+        "canonical": "#F4F3F0",
+        "tonalRamp": ["#1A1B2E", "#5A5D6E", "#9295A5", "#D1D0CC", "#E2E1DD", "#F0F0ED", "#F4F3F0", "#FDFCFB"]
+      },
+      "night-sky": {
+        "role": "neutral",
+        "displayName": "Night Sky",
+        "canonical": "#0D1117",
+        "tonalRamp": ["#0D1117", "#1A1B2E", "#252638", "#2E2F42", "#2A2B3D", "#555566", "#8E8E93", "#F5F5FF"]
+      },
+      "signal-negative": {
+        "role": "tertiary",
+        "displayName": "Signal Red",
+        "canonical": "#E12D39",
+        "tonalRamp": ["#610316", "#8A041A", "#AB091E", "#CF1124", "#E12D39", "#F86A6A", "#FF9B9B", "#FFE3E3"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Net worth totals, account balances on hero cards. The largest number on any screen." },
+      "headline": { "displayName": "Headline", "purpose": "Page titles, account names in headers. One per view." },
+      "title": { "displayName": "Title", "purpose": "Section headings within a page. Secondary balance displays." },
+      "body": { "displayName": "Body", "purpose": "Transaction descriptions, category names, form labels, all running text." },
+      "label": { "displayName": "Label", "purpose": "Timestamps, status badges, column headers in dense tables." }
+    },
+    "shadows": [
+      { "name": "card-light", "value": "0 1px 3px rgba(0, 0, 0, 0.08)", "purpose": "Ambient card separation on light theme." },
+      { "name": "card-dark", "value": "0 1px 3px rgba(0, 0, 0, 0.3)", "purpose": "Ambient card separation on dark theme." },
+      { "name": "button-primary", "value": "0 1px 2px rgba(0, 0, 0, 0.1)", "purpose": "Subtle depth under primary buttons." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for state transitions (hover, focus)." },
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Exit and entrance easing. Exponential deceleration." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "640px" },
+      { "name": "tablet", "value": "768px" },
+      { "name": "desktop", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action button. Soft Amethyst Deep background, white text.",
+      "html": "<button class=\"ds-btn-primary\">Save Budget</button>",
+      "css": ".ds-btn-primary { background: #5B4ED4; color: #fff; padding: 8px 16px; font-size: 13px; font-weight: 500; font-family: system-ui, -apple-system, sans-serif; border: 1px solid #5B4ED4; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); cursor: pointer; transition: background 0.15s ease-out; } .ds-btn-primary:hover { background: #6C5CE7; border-color: #6C5CE7; } .ds-btn-primary:focus-visible { outline: 2px solid #6C5CE7; outline-offset: 2px; } .ds-btn-primary:disabled { background: #F0F0ED; color: #9295A5; border-color: #F0F0ED; box-shadow: none; cursor: default; }"
+    },
+    {
+      "name": "Normal Button",
+      "kind": "button",
+      "refersTo": "button-normal",
+      "description": "Secondary action button. Warm White background, subtle border.",
+      "html": "<button class=\"ds-btn-normal\">Cancel</button>",
+      "css": ".ds-btn-normal { background: #FDFCFB; color: #1A1B2E; padding: 8px 16px; font-size: 13px; font-weight: 400; font-family: system-ui, -apple-system, sans-serif; border: 1px solid #D1D0CC; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); cursor: pointer; transition: background 0.15s ease-out; } .ds-btn-normal:hover { background: #F0F0ED; } .ds-btn-normal:focus-visible { outline: 2px solid #6C5CE7; outline-offset: 2px; }"
+    },
+    {
+      "name": "Bare Button",
+      "kind": "button",
+      "refersTo": "button-bare",
+      "description": "Tertiary action. Transparent until hovered.",
+      "html": "<button class=\"ds-btn-bare\">More options</button>",
+      "css": ".ds-btn-bare { background: transparent; color: #1A1B2E; padding: 8px 16px; font-size: 13px; font-weight: 400; font-family: system-ui, -apple-system, sans-serif; border: none; border-radius: 8px; cursor: pointer; transition: background 0.15s ease-out; } .ds-btn-bare:hover { background: rgba(0,0,0,0.06); } .ds-btn-bare:active { background: rgba(0,0,0,0.10); } .ds-btn-bare:focus-visible { outline: 2px solid #6C5CE7; outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Content container. Warm White with gentle border and ambient shadow.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card-title\">Checking Account</p><p class=\"ds-card-amount\">$2,450.00</p></div>",
+      "css": ".ds-card { background: #FDFCFB; border: 1px solid #E2E1DD; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); } .ds-card-title { margin: 0 0 8px 0; font-size: 13px; color: #5A5D6E; font-family: system-ui, -apple-system, sans-serif; } .ds-card-amount { margin: 0; font-size: 22px; font-weight: 400; color: #1A1B2E; font-family: system-ui, -apple-system, sans-serif; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard text input. Clean border, amethyst focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search transactions...\" />",
+      "css": ".ds-input { background: #FDFCFB; color: #1A1B2E; border: 1px solid #E2E1DD; border-radius: 4px; padding: 6px 10px; font-size: 13px; font-family: system-ui, -apple-system, sans-serif; width: 100%; box-sizing: border-box; transition: border-color 0.15s ease-out; } .ds-input::placeholder { color: #9295A5; } .ds-input:focus { border-color: #6C5CE7; outline: none; } .ds-input:focus-visible { outline: 2px solid #6C5CE7; outline-offset: -1px; }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Sidebar navigation link with amethyst selected indicator.",
+      "html": "<nav class=\"ds-sidebar\"><a class=\"ds-nav-item\" href=\"#\">Accounts</a><a class=\"ds-nav-item ds-nav-selected\" href=\"#\">Budget</a><a class=\"ds-nav-item\" href=\"#\">Reports</a></nav>",
+      "css": ".ds-sidebar { display: flex; flex-direction: column; gap: 2px; padding: 8px; } .ds-nav-item { display: block; padding: 8px 12px; font-size: 13px; font-family: system-ui, -apple-system, sans-serif; color: #5A5D6E; text-decoration: none; border-radius: 8px; transition: background 0.15s ease-out; } .ds-nav-item:hover { background: rgba(0,0,0,0.04); color: #1A1B2E; } .ds-nav-selected { color: #1A1B2E; background: rgba(108,92,231,0.08); border-left: 3px solid #6C5CE7; font-weight: 500; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Steady Compass",
+    "overview": "A calm instrument that always points true. This design system exists to make personal finance feel manageable, not intimidating. The interface is a compass needle: it shows you where you stand, responds when you interact, and never adds noise to an already stressful topic.\n\nThe aesthetic is warm but disciplined. Surfaces feel like quality paper: off-white parchment in light mode, deep indigo night sky in dark. The Soft Amethyst purple acts as a steady guide, drawing your eye to what matters without shouting. Every pixel of decoration must earn its place by reducing cognitive load or reinforcing trust.",
+    "keyCharacteristics": [
+      "Warm neutrals over pure whites. Parchment, not #FFFFFF. Night Sky, not #000000.",
+      "Single accent discipline. Soft Amethyst is the only interactive color.",
+      "Tactile components. Slight rounding, gentle shadows, responsive hover states.",
+      "Data-first hierarchy. Numbers and financial data dominate; chrome recedes.",
+      "Financial color semantics. Teal means positive. Red means negative. Never decorative."
+    ],
+    "rules": [
+      { "name": "The Compass Needle Rule", "body": "Soft Amethyst appears on no more than 10% of any screen. Its power comes from scarcity.", "section": "colors" },
+      { "name": "The Honest Numbers Rule", "body": "Teal means money coming in. Red means money going out. These colors are never decorative, never branded, never overridden.", "section": "colors" },
+      { "name": "The Weight Ladder Rule", "body": "Each step in the hierarchy uses a different weight. Weight and size together create contrast.", "section": "typography" },
+      { "name": "The Flat Rest Rule", "body": "Surfaces are flat at rest. Tonal layering creates depth. Change background color before reaching for a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Parchment (#F4F3F0) and Night Sky (#0D1117) as page backgrounds. Never pure white or pure black.",
+      "Do use Soft Amethyst exclusively for interactive affordances: buttons, links, focus rings, selected borders.",
+      "Do pair financial colors with icons or +/- labels so color is never the sole indicator.",
+      "Do use tonal surface shifts to create depth before reaching for shadows.",
+      "Do keep body text at 13px for data-dense screens.",
+      "Do test every color combination against WCAG AAA contrast ratios where practical."
+    ],
+    "donts": [
+      "Don't use Warm Coral for buttons, alerts, or interactive elements. It is decorative and navigational only.",
+      "Don't use generic fintech colors (navy, gold, teal-on-dark-blue).",
+      "Don't add confetti, achievement badges, streaks, or gamification.",
+      "Don't leave components unstyled or with browser defaults.",
+      "Don't add gratuitous gradients, hero metric cards, or excessive whitespace.",
+      "Don't use border-left or border-right greater than 1px as a colored accent stripe.",
+      "Don't apply gradient text (background-clip: text) anywhere.",
+      "Don't use glassmorphism decoratively.",
+      "Don't animate CSS layout properties. Use opacity and transform only.",
+      "Don't use bounce or elastic easing."
+    ]
+  }
+}

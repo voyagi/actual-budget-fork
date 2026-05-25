@@ -206,9 +206,7 @@ export function TwoFactorSettings() {
             <Trans>Cancel</Trans>
           </Button>
         </View>
-        {error && (
-          <Text style={{ color: theme.errorText }}>{error}</Text>
-        )}
+        {error && <Text style={{ color: theme.errorText }}>{error}</Text>}
       </Setting>
     );
   }
@@ -254,9 +252,7 @@ export function TwoFactorSettings() {
             <Trans>Cancel</Trans>
           </Button>
         </View>
-        {error && (
-          <Text style={{ color: theme.errorText }}>{error}</Text>
-        )}
+        {error && <Text style={{ color: theme.errorText }}>{error}</Text>}
       </Setting>
     );
   }
@@ -302,7 +298,9 @@ export function TwoFactorSettings() {
             </ButtonWithLoading>
           )}
           {error && (
-            <Text style={{ color: theme.errorText, marginTop: 5 }}>{error}</Text>
+            <Text style={{ color: theme.errorText, marginTop: 5 }}>
+              {error}
+            </Text>
           )}
         </>
       }

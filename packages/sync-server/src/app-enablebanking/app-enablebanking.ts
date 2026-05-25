@@ -368,9 +368,7 @@ app.post(
        ) latest ON l.id = latest.max_id`,
       ids,
     );
-    const syncMap = new Map(
-      syncRows.map((r: any) => [r.actual_account_id, r]),
-    );
+    const syncMap = new Map(syncRows.map((r: any) => [r.actual_account_id, r]));
 
     const mapRows = db.all(
       `SELECT m.actual_account_id, m.session_id,

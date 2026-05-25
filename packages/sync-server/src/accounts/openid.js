@@ -18,12 +18,12 @@ import {
   getAccountDb,
   listLoginMethods,
 } from '../account-db';
-import { writeAuditLog } from '../util/audit.js';
 import { config } from '../load-config';
 import {
   getUserByUsername,
   transferAllFilesFromUser,
 } from '../services/user-service';
+import { writeAuditLog } from '../util/audit.js';
 import { TOKEN_EXPIRATION_NEVER } from '../util/validate-user';
 
 import { checkPassword } from './password';

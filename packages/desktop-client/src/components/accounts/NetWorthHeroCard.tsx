@@ -17,9 +17,8 @@ export function NetWorthHeroCard() {
     <View
       style={{
         backgroundColor: theme.heroCardNetWorthStart,
-        borderLeft: `3px solid ${theme.heroCardNetWorthEnd}`,
-        borderRadius: 16,
-        padding: '20px 24px',
+        borderRadius: 8,
+        padding: '16px 20px',
         margin: '12px 16px 0',
       }}
       aria-label={t('Net worth summary')}
@@ -27,10 +26,8 @@ export function NetWorthHeroCard() {
       <Text
         style={{
           color: theme.heroCardTextSubdued,
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: 500,
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
           whiteSpace: 'nowrap',
           marginBottom: 4,
         }}
@@ -46,8 +43,8 @@ export function NetWorthHeroCard() {
             {...props}
             style={{
               color: theme.heroCardText,
-              fontSize: 32,
-              fontWeight: 700,
+              fontSize: 26,
+              fontWeight: 600,
               lineHeight: '1.2',
             }}
           />

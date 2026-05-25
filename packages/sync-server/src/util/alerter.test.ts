@@ -32,10 +32,8 @@ describe('alerter', () => {
     });
 
     expect(fetch).toHaveBeenCalledOnce();
-    const [url, options] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      string,
-      RequestInit,
-    ];
+    const [url, options] = (fetch as ReturnType<typeof vi.fn>).mock
+      .calls[0] as [string, RequestInit];
     expect(url).toBe('https://hooks.example.com/alert');
     expect(options.method).toBe('POST');
     const body = JSON.parse(options.body as string);
@@ -61,8 +59,16 @@ describe('alerter', () => {
 
   it('respects 1-hour cooldown per event_type (second call within 1h is suppressed)', async () => {
     vi.stubEnv('ALERT_WEBHOOK_URL', 'https://hooks.example.com/alert');
-    await triggerAlert({ event_type: 'quota_exceeded', message: 'first', severity: 'warning' });
-    await triggerAlert({ event_type: 'quota_exceeded', message: 'second', severity: 'warning' });
+    await triggerAlert({
+      event_type: 'quota_exceeded',
+      message: 'first',
+      severity: 'warning',
+    });
+    await triggerAlert({
+      event_type: 'quota_exceeded',
+      message: 'second',
+      severity: 'warning',
+    });
 
     // Only one fetch and one alert stored
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -71,15 +77,26 @@ describe('alerter', () => {
 
   it('does not throw when fetch fails (logs warning instead)', async () => {
     vi.stubEnv('ALERT_WEBHOOK_URL', 'https://hooks.example.com/alert');
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network error')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new Error('network error')),
+    );
 
     await expect(
-      triggerAlert({ event_type: 'test_failure', message: 'oops', severity: 'error' }),
+      triggerAlert({
+        event_type: 'test_failure',
+        message: 'oops',
+        severity: 'error',
+      }),
     ).resolves.toBeUndefined();
   });
 
   it('stores alert in recentAlerts; getRecentAlerts returns it with correct shape', async () => {
-    await triggerAlert({ event_type: 'consent_expiry', message: 'expiring soon', severity: 'info' });
+    await triggerAlert({
+      event_type: 'consent_expiry',
+      message: 'expiring soon',
+      severity: 'info',
+    });
 
     const alerts = getRecentAlerts();
     expect(alerts).toHaveLength(1);
@@ -92,7 +109,11 @@ describe('alerter', () => {
   });
 
   it('acknowledgeAlert removes alert by id; getRecentAlerts no longer returns it', async () => {
-    await triggerAlert({ event_type: 'consent_expiry', message: 'expiring', severity: 'info' });
+    await triggerAlert({
+      event_type: 'consent_expiry',
+      message: 'expiring',
+      severity: 'info',
+    });
     const [alert] = getRecentAlerts();
     expect(alert).toBeDefined();
 

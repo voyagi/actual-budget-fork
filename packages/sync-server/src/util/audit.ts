@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import { getAccountDb } from '../account-db.js';
+
 import logger from './logger.js';
 
 export type AuditEventType =

@@ -72,7 +72,9 @@ type BackupStatusData = {
   backupCount: number;
 };
 
-function parseApiData<T>(text: string): (T & { error?: never }) | { error: string } {
+function parseApiData<T>(
+  text: string,
+): (T & { error?: never }) | { error: string } {
   const res = JSON.parse(text) as ApiResponse<T>;
   if (res.status === 'ok') {
     return res.data as T & { error?: never };

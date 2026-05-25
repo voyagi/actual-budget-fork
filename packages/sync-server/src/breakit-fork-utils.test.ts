@@ -246,9 +246,7 @@ describe('BREAKIT: alerter', () => {
         severity: 'error',
       });
       const alerts = getRecentAlerts();
-      expect(alerts[0].message).toBe(
-        '<script>alert(document.cookie)</script>',
-      );
+      expect(alerts[0].message).toBe('<script>alert(document.cookie)</script>');
     });
 
     it('SQL injection payload in event_type', async () => {
@@ -283,10 +281,10 @@ describe('BREAKIT: alerter', () => {
       // triggerAlert calls Date.now() twice per invocation:
       // once for cooldown check, once for cooldowns.set
       vi.spyOn(Date, 'now')
-        .mockReturnValueOnce(now)               // 1st alert: cooldown check
-        .mockReturnValueOnce(now)               // 1st alert: cooldowns.set
-        .mockReturnValueOnce(now + 3600000)     // 2nd alert: cooldown check (exactly 1h)
-        .mockReturnValueOnce(now + 3600000);    // 2nd alert: cooldowns.set
+        .mockReturnValueOnce(now) // 1st alert: cooldown check
+        .mockReturnValueOnce(now) // 1st alert: cooldowns.set
+        .mockReturnValueOnce(now + 3600000) // 2nd alert: cooldown check (exactly 1h)
+        .mockReturnValueOnce(now + 3600000); // 2nd alert: cooldowns.set
 
       await triggerAlert({
         event_type: 'cooldown_test',
@@ -308,10 +306,10 @@ describe('BREAKIT: alerter', () => {
     it('cooldown boundary: alert at COOLDOWN_MS - 1 should be suppressed', async () => {
       const now = 1000000000000;
       vi.spyOn(Date, 'now')
-        .mockReturnValueOnce(now)               // 1st alert: cooldown check
-        .mockReturnValueOnce(now)               // 1st alert: cooldowns.set
-        .mockReturnValueOnce(now + 3599999)     // 2nd alert: cooldown check
-        .mockReturnValueOnce(now + 3599999);    // 2nd alert: cooldowns.set
+        .mockReturnValueOnce(now) // 1st alert: cooldown check
+        .mockReturnValueOnce(now) // 1st alert: cooldowns.set
+        .mockReturnValueOnce(now + 3599999) // 2nd alert: cooldown check
+        .mockReturnValueOnce(now + 3599999); // 2nd alert: cooldowns.set
 
       await triggerAlert({
         event_type: 'cooldown_test2',
@@ -422,7 +420,7 @@ describe('BREAKIT: alerter', () => {
 
       // pre_fill should be gone
       const remaining = getRecentAlerts();
-      expect(remaining.find((a) => a.event_type === 'pre_fill')).toBeUndefined();
+      expect(remaining.find(a => a.event_type === 'pre_fill')).toBeUndefined();
     });
   });
 });
@@ -701,9 +699,7 @@ describe('BREAKIT: scheduler', () => {
 
     it('RateLimitError bypasses retry - propagates immediately', async () => {
       // We need to import the actual error class
-      const { RateLimitError } = await import(
-        './app-enablebanking/errors.js'
-      );
+      const { RateLimitError } = await import('./app-enablebanking/errors.js');
       const syncFn = vi.fn().mockRejectedValue(new RateLimitError('429'));
       const sleepFn = vi.fn().mockResolvedValue(undefined);
       const policy = {
@@ -722,9 +718,8 @@ describe('BREAKIT: scheduler', () => {
     });
 
     it('SessionExpiredError bypasses retry - propagates immediately', async () => {
-      const { SessionExpiredError } = await import(
-        './app-enablebanking/errors.js'
-      );
+      const { SessionExpiredError } =
+        await import('./app-enablebanking/errors.js');
       const syncFn = vi
         .fn()
         .mockRejectedValue(new SessionExpiredError('expired'));
@@ -963,4 +958,3 @@ describe('ESCALATION: scheduler', () => {
     expect(sleepFn.mock.calls[2][0]).toBe(0);
   });
 });
-

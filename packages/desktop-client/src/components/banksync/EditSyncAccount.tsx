@@ -203,9 +203,9 @@ export function EditSyncAccount({ account }: EditSyncAccountProps) {
             rightContent={<ModalCloseButton onPress={close} />}
           />
 
-          <h3 style={{ fontSize: 15, margin: 0, fontWeight: 'inherit' }}>
+          <h2 style={{ fontSize: 15, margin: 0, fontWeight: 'inherit' }}>
             <Trans>Field mapping</Trans>
-          </h3>
+          </h2>
 
           <FieldMapping
             transactionDirection={transactionDirection}

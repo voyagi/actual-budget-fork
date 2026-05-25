@@ -15,6 +15,22 @@ import { theme } from '@actual-app/components/theme';
 export type ConsentUrgency = 'expired' | 'urgent' | 'soon' | 'ok';
 
 /**
+ * Compute the number of days until a consent expires.
+ */
+export function getDaysUntilExpiry(validUntil: string): number {
+  const now = new Date();
+  const expiry = new Date(validUntil);
+  return (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+}
+
+/**
+ * Check whether a consent has already expired.
+ */
+export function isConsentExpired(validUntil: string): boolean {
+  return new Date(validUntil) <= new Date();
+}
+
+/**
  * Derive urgency level from days until expiry.
  * Thresholds: <=0 → expired, <=7 → urgent, <=14 → soon, else → ok
  */

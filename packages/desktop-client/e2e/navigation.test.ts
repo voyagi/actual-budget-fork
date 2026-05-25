@@ -106,9 +106,7 @@ test.describe('Budget Category Drill-Down', () => {
     const rowCount = await budgetRows.count();
 
     if (rowCount > 0) {
-      const spentCell = budgetRows
-        .first()
-        .getByTestId('category-month-spent');
+      const spentCell = budgetRows.first().getByTestId('category-month-spent');
       const isClickable = await spentCell.isVisible().catch(() => false);
 
       if (isClickable) {

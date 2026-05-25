@@ -23,19 +23,19 @@ import { listen } from 'loot-core/platform/client/connection';
 import { isElectron } from 'loot-core/shared/environment';
 
 import { AuthSettings } from './AuthSettings';
-import { BackupStatus } from './BackupStatus';
 import { Backups } from './Backups';
+import { BackupStatus } from './BackupStatus';
 import { BudgetTypeSettings } from './BudgetTypeSettings';
 import { CurrencySettings } from './Currency';
 import { EncryptionSettings } from './Encryption';
 import { ExperimentalFeatures } from './Experimental';
-import { TwoFactorSettings } from './TwoFactorSettings';
 import { ExportBudget } from './Export';
 import { FormatSettings } from './Format';
 import { LanguageSettings } from './LanguageSettings';
 import { RepairTransactions } from './RepairTransactions';
 import { ResetCache, ResetSync } from './Reset';
 import { ThemeSettings } from './Themes';
+import { TwoFactorSettings } from './TwoFactorSettings';
 import { AdvancedToggle, Setting } from './UI';
 
 import { getLatestAppVersion } from '@desktop-client/app/appSlice';

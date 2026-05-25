@@ -95,3 +95,4 @@ packages/ci-actions/dist
 project-audit.json
 project-audit-benchmark.json
 PROJECT-AUDIT.md
+.impeccable-critique.md

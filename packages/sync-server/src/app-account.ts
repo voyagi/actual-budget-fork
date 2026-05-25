@@ -480,9 +480,7 @@ app.post('/totp/verify-setup', (req: Request, res: Response) => {
 
   const pending = setupToken ? pendingTotpSetup.get(setupToken) : undefined;
   if (!pending) {
-    res
-      .status(400)
-      .send({ status: 'error', reason: 'no-pending-totp-setup' });
+    res.status(400).send({ status: 'error', reason: 'no-pending-totp-setup' });
     return;
   }
 

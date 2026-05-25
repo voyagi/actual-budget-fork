@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import * as Handlebars from 'handlebars';
+import { describe, expect, it } from 'vitest';
 
 import { registerHandlebarsHelpers } from './handlebars-helpers';
 
@@ -307,45 +307,45 @@ describe('BREAKIT: handlebars-helpers', () => {
     });
 
     it('setDay: day 15 to day 1', () => {
-      expect(
-        compileAndRun('{{setDay d n}}', { d: '2025-01-15', n: 1 }),
-      ).toBe('2025-01-01');
+      expect(compileAndRun('{{setDay d n}}', { d: '2025-01-15', n: 1 })).toBe(
+        '2025-01-01',
+      );
     });
 
     it('setDay: day 1 to day 31 (January)', () => {
-      expect(
-        compileAndRun('{{setDay d n}}', { d: '2025-01-01', n: 31 }),
-      ).toBe('2025-01-31');
+      expect(compileAndRun('{{setDay d n}}', { d: '2025-01-01', n: 31 })).toBe(
+        '2025-01-31',
+      );
     });
 
     it('setDay: day 0 wraps to previous month last day', () => {
-      expect(
-        compileAndRun('{{setDay d n}}', { d: '2025-02-15', n: 0 }),
-      ).toBe('2025-01-31');
+      expect(compileAndRun('{{setDay d n}}', { d: '2025-02-15', n: 0 })).toBe(
+        '2025-01-31',
+      );
     });
 
     it('setDay: negative day goes further back', () => {
-      expect(
-        compileAndRun('{{setDay d n}}', { d: '2025-02-15', n: -1 }),
-      ).toBe('2025-01-30');
+      expect(compileAndRun('{{setDay d n}}', { d: '2025-02-15', n: -1 })).toBe(
+        '2025-01-30',
+      );
     });
 
     it('setDay: day 32 overflows to next month', () => {
-      expect(
-        compileAndRun('{{setDay d n}}', { d: '2025-01-15', n: 32 }),
-      ).toBe('2025-02-01');
+      expect(compileAndRun('{{setDay d n}}', { d: '2025-01-15', n: 32 })).toBe(
+        '2025-02-01',
+      );
     });
 
     it('setDay: Feb 29 leap year', () => {
-      expect(
-        compileAndRun('{{setDay d n}}', { d: '2024-02-01', n: 29 }),
-      ).toBe('2024-02-29');
+      expect(compileAndRun('{{setDay d n}}', { d: '2024-02-01', n: 29 })).toBe(
+        '2024-02-29',
+      );
     });
 
     it('setDay: Feb 29 non-leap year overflows to Mar 1', () => {
-      expect(
-        compileAndRun('{{setDay d n}}', { d: '2025-02-01', n: 29 }),
-      ).toBe('2025-03-01');
+      expect(compileAndRun('{{setDay d n}}', { d: '2025-02-01', n: 29 })).toBe(
+        '2025-03-01',
+      );
     });
   });
 
@@ -471,10 +471,9 @@ describe('BREAKIT: handlebars-helpers', () => {
 
     it('deeply nested Handlebars subexpressions', () => {
       // {{add (add (add (add 1 1) 1) 1) 1}} = 5
-      const result = compileAndRun(
-        '{{add (add (add (add a a) a) a) a}}',
-        { a: 1 },
-      );
+      const result = compileAndRun('{{add (add (add (add a a) a) a) a}}', {
+        a: 1,
+      });
       expect(result).toBe('5');
     });
   });
@@ -524,9 +523,9 @@ describe('ESCALATION: handlebars-helpers', () => {
 
   describe('Extreme numeric inputs to math helpers', () => {
     it('add Infinity + -Infinity = NaN', () => {
-      expect(
-        compileAndRun('{{add a b}}', { a: Infinity, b: -Infinity }),
-      ).toBe('NaN');
+      expect(compileAndRun('{{add a b}}', { a: Infinity, b: -Infinity })).toBe(
+        'NaN',
+      );
     });
 
     it('mul MAX_SAFE_INTEGER * 2 loses precision', () => {
@@ -541,9 +540,9 @@ describe('ESCALATION: handlebars-helpers', () => {
     });
 
     it('fixed with 100 digits throws RangeError', () => {
-      expect(() =>
-        compileAndRun('{{fixed a d}}', { a: 3.14, d: 101 }),
-      ).toThrow(RangeError);
+      expect(() => compileAndRun('{{fixed a d}}', { a: 3.14, d: 101 })).toThrow(
+        RangeError,
+      );
     });
 
     it('sub of two very close floats has precision issues', () => {

@@ -23,9 +23,8 @@ export function BudgetHeroCard() {
     <View
       style={{
         backgroundColor: theme.heroCardBudgetStart,
-        borderLeft: `3px solid ${theme.heroCardBudgetEnd}`,
-        borderRadius: 16,
-        padding: '20px 24px',
+        borderRadius: 8,
+        padding: '16px 20px',
         margin: '12px 16px 0',
       }}
       aria-label={t('Budget summary')}
@@ -33,10 +32,8 @@ export function BudgetHeroCard() {
       <Text
         style={{
           color: theme.heroCardTextSubdued,
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: 500,
-          textTransform: 'uppercase',
-          letterSpacing: 0.5,
           whiteSpace: 'nowrap',
           marginBottom: 12,
         }}

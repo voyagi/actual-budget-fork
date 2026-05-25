@@ -20,7 +20,8 @@ export function getLatencyPercentiles(): {
     (a, b) => a - b,
   );
   const p = (pct: number) =>
-    sorted[Math.floor((sorted.length * pct) / 100)] ?? sorted[sorted.length - 1];
+    sorted[Math.floor((sorted.length * pct) / 100)] ??
+    sorted[sorted.length - 1];
   return { p50: p(50), p95: p(95), p99: p(99) };
 }
 
