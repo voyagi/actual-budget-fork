@@ -6,6 +6,11 @@ import { CreateAccountModal } from './page-models/create-account-modal';
 import { EnableBankingModal } from './page-models/enable-banking-modal';
 import { Navigation } from './page-models/navigation';
 
+test.skip(
+  () => !!process.env.E2E_USE_BUILD,
+  'Enable Banking tests require a sync server',
+);
+
 test.describe('Enable Banking', () => {
   let page: Page;
   let navigation: Navigation;

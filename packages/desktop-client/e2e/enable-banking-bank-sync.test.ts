@@ -5,6 +5,11 @@ import { BankSyncPage } from './page-models/bank-sync-page';
 import { ConfigurationPage } from './page-models/configuration-page';
 import { Navigation } from './page-models/navigation';
 
+test.skip(
+  () => !!process.env.E2E_USE_BUILD,
+  'Enable Banking tests require a sync server',
+);
+
 test.describe('Bank Sync Page - Enable Banking Accounts', () => {
   let page: Page;
   let navigation: Navigation;

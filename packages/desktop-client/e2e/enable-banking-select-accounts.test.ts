@@ -41,6 +41,11 @@ const MOCK_EB_ACCOUNTS = [
   },
 ];
 
+test.skip(
+  () => !!process.env.E2E_USE_BUILD,
+  'Enable Banking tests require a sync server',
+);
+
 test.describe('Select Linked Accounts - Enable Banking', () => {
   let page: Page;
   let configurationPage: ConfigurationPage;
