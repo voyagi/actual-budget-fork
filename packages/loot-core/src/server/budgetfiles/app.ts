@@ -264,10 +264,11 @@ async function closeBudget() {
 
   try {
     await asyncStorage.setItem('lastBudget', '');
-  } catch {
+  } catch (e) {
     // This might fail if we are shutting down after failing to load a
     // budget. We want to unload whatever has already been loaded but
     // be resilient to anything failing
+    logger.warn('Failed to clear lastBudget during unload', e);
   }
 
   prefs.unloadPrefs();
@@ -441,9 +442,8 @@ async function createBudget({
   if (!avoidUpload && !testMode) {
     try {
       await cloudStorage.upload();
-    } catch {
-      // Ignore any errors uploading. If they are offline they should
-      // still be able to create files.
+    } catch (e) {
+      logger.warn('Cloud upload failed after budget creation (offline?)', e);
     }
   }
 
