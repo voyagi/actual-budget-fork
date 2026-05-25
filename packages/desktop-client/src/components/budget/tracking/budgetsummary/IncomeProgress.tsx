@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { theme } from '@actual-app/components/theme';
 
@@ -14,6 +15,7 @@ type IncomeProgressProps = {
   target: ComponentProps<typeof CellValue>['binding'];
 };
 export function IncomeProgress({ current, target }: IncomeProgressProps) {
+  const { t } = useTranslation();
   let totalIncome = useSheetValue(current) || 0;
   const totalBudgeted = useSheetValue(target) || 0;
 
@@ -25,6 +27,7 @@ export function IncomeProgress({ current, target }: IncomeProgressProps) {
   }
 
   const frac = fraction(totalIncome, totalBudgeted);
+  const percent = Math.round(frac * 100);
 
   return (
     <PieProgress
@@ -32,6 +35,11 @@ export function IncomeProgress({ current, target }: IncomeProgressProps) {
       color={over ? theme.numberNegative : theme.numberPositive}
       backgroundColor={over ? theme.errorBackground : theme.budgetCurrentMonth}
       style={{ width: 20, height: 20 }}
+      aria-label={
+        over
+          ? t('Income is negative: {{percent}}%', { percent })
+          : t('Income received: {{percent}}%', { percent })
+      }
     />
   );
 }

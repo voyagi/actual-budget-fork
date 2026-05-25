@@ -10,7 +10,8 @@ import * as db from '../db';
 
 /**
  * EU merchant patterns covering grocery chains, subscriptions, transport,
- * utilities, and shopping across major EU markets.
+ * utilities, and shopping. Includes pan-EU chains and Finnish/Nordic-specific
+ * merchants (HSL, VR, Fortum, Helen, Elenia, K-Market, S-Market, Tokmanni).
  *
  * Each entry maps a payee substring (case-insensitive at rule application time)
  * to a category name that must already exist in the budget.

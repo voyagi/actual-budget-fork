@@ -9,6 +9,13 @@ function isValidPassword(password: unknown): password is string {
   return password != null && password !== '';
 }
 
+function validatePasswordStrength(password: string): { error?: string } {
+  if (password.length < 8) {
+    return { error: 'password-too-short' };
+  }
+  return {};
+}
+
 function hashPassword(password: string): string {
   return bcrypt.hashSync(password, 12);
 }
@@ -21,6 +28,11 @@ interface PasswordResult {
 export function bootstrapPassword(password: string): PasswordResult {
   if (!isValidPassword(password)) {
     return { error: 'invalid-password' };
+  }
+
+  const strengthCheck = validatePasswordStrength(password);
+  if (strengthCheck.error) {
+    return strengthCheck;
   }
 
   const hashed = hashPassword(password);
@@ -121,6 +133,11 @@ export function changePassword(newPassword: string): { error?: string } {
 
   if (!isValidPassword(newPassword)) {
     return { error: 'invalid-password' };
+  }
+
+  const strengthCheck = validatePasswordStrength(newPassword);
+  if (strengthCheck.error) {
+    return strengthCheck;
   }
 
   const hashed = hashPassword(newPassword);

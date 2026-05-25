@@ -28,28 +28,30 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Automation
 
-- [ ] **AUTO-01**: Transactions sync automatically 4x/day without manual intervention (node-cron scheduler)
-- [ ] **AUTO-02**: Consent expiry date is stored from Enable Banking session response (reads `maximum_consent_validity` per bank, not hardcoded)
-- [ ] **AUTO-03**: User sees an in-app banner when PSD2 consent is within 14 days of expiry
-- [ ] **AUTO-04**: User can re-authorize bank access through the consent renewal flow (reuses OAuth redirect)
-- [ ] **AUTO-05**: App triggers a sync on open if last sync was more than 6 hours ago
-- [ ] **AUTO-06**: User can see per-account last-synced timestamp in the account view
+- [x] **AUTO-01**: Transactions sync automatically 4x/day without manual intervention (node-cron scheduler)
+- [x] **AUTO-02**: Consent expiry date is stored from Enable Banking session response (reads `maximum_consent_validity` per bank, not hardcoded)
+- [x] **AUTO-03**: User sees an in-app banner when PSD2 consent is within 14 days of expiry
+- [x] **AUTO-04**: User can re-authorize bank access through the consent renewal flow (reuses OAuth redirect)
+- [x] **AUTO-05**: App triggers a sync on open if last sync was more than 6 hours ago
+- [x] **AUTO-06**: User can see per-account last-synced timestamp in the account view
 
 ### PWA
 
-- [ ] **PWA-01**: Web app manifest is complete (name, icons 192px + 512px, start_url, display: standalone, theme_color)
-- [ ] **PWA-02**: Service worker provides offline read of previously loaded budget data (cache-first for app shell, network-first for data)
-- [ ] **PWA-03**: User can install the app on Android home screen from Chrome and it launches without browser chrome
-- [ ] **PWA-04**: User can install the app on iOS home screen from Safari and it launches without browser chrome
-- [ ] **PWA-05**: UI is usable on mobile without horizontal scrolling or cut-off elements (verify existing responsive design)
-- [ ] **PWA-06**: Installed PWA has a polished splash screen and branded theme color
+- [x] **PWA-01**: Web app manifest is complete (name, icons 192px + 512px, start_url, display: standalone, theme_color)
+- [x] **PWA-02**: Service worker provides offline read of previously loaded budget data (cache-first for app shell, network-first for data)
+- [x] **PWA-03**: User can install the app on Android home screen from Chrome and it launches without browser chrome
+- [x] **PWA-04**: User can install the app on iOS home screen from Safari and it launches without browser chrome
+- [x] **PWA-05**: UI is usable on mobile without horizontal scrolling or cut-off elements (verify existing responsive design)
+- [x] **PWA-06**: Installed PWA has a polished splash screen and branded theme color
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Docker Compose deploys sync-server + desktop-client + Caddy in a single `docker compose up`
-- [ ] **INFRA-02**: HTTPS termination via Caddy with automatic local CA (or Cloudflare Tunnel for phone access)
-- [ ] **INFRA-03**: Multi-device sync works (phone and desktop see the same budget data via sync-server)
-- [ ] **INFRA-04**: Docker volumes persist data across container restarts (verified explicitly)
+- [x] **INFRA-01**: Docker Compose deploys sync-server + desktop-client + Caddy in a single `docker compose up`
+- [x] **INFRA-02**: HTTPS termination via Caddy with automatic local CA (or Cloudflare Tunnel for phone access)
+- [x] **INFRA-03**: Multi-device sync works (phone and desktop see the same budget data via sync-server)
+- [x] **INFRA-04**: Docker volumes persist data across container restarts (verified explicitly)
+- [ ] **INFRA-05**: App shows a whole-app production trust warning when access, data persistence, multi-device sync, or bank sync is stale/untrusted
+- [ ] **INFRA-06**: Whole-app production trust warning clears only after a successful automated recovery check or a verified manual fix
 
 ## v2 Requirements
 
@@ -106,30 +108,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SYNC-07     | Phase 2 | Complete |
 | SYNC-08     | Phase 2 | Complete |
 | SYNC-09     | Phase 2 | Pending  |
-| AUTO-01     | Phase 3 | Pending  |
-| AUTO-02     | Phase 3 | Pending  |
-| AUTO-03     | Phase 3 | Pending  |
-| AUTO-04     | Phase 3 | Pending  |
-| AUTO-05     | Phase 3 | Pending  |
-| AUTO-06     | Phase 3 | Pending  |
-| PWA-01      | Phase 4 | Pending  |
-| PWA-02      | Phase 4 | Pending  |
-| PWA-03      | Phase 4 | Pending  |
-| PWA-04      | Phase 4 | Pending  |
-| PWA-05      | Phase 4 | Pending  |
-| PWA-06      | Phase 4 | Pending  |
-| INFRA-01    | Phase 5 | Pending  |
-| INFRA-02    | Phase 5 | Pending  |
-| INFRA-03    | Phase 5 | Pending  |
-| INFRA-04    | Phase 5 | Pending  |
+| AUTO-01     | Phase 3 | Complete |
+| AUTO-02     | Phase 3 | Complete |
+| AUTO-03     | Phase 3 | Complete |
+| AUTO-04     | Phase 3 | Complete |
+| AUTO-05     | Phase 3 | Complete |
+| AUTO-06     | Phase 3 | Complete |
+| PWA-01      | Phase 4 | Complete |
+| PWA-02      | Phase 4 | Complete |
+| PWA-03      | Phase 4 | Complete |
+| PWA-04      | Phase 4 | Complete |
+| PWA-05      | Phase 4 | Complete |
+| PWA-06      | Phase 4 | Complete |
+| INFRA-01    | Phase 5 | Complete |
+| INFRA-02    | Phase 5 | Complete |
+| INFRA-03    | Phase 5 | Complete |
+| INFRA-04    | Phase 5 | Complete |
+| INFRA-05    | Phase 5 | Pending  |
+| INFRA-06    | Phase 5 | Pending  |
 
 **Coverage:**
 
-- v1 requirements: 29 total
-- Mapped to phases: 29
+- v1 requirements: 31 total
+- Mapped to phases: 31
 - Unmapped: 0
 
 ---
 
 _Requirements defined: 2026-02-18_
-_Last updated: 2026-02-18 after Plan 01-04 (FOUND-04 marked complete)_
+_Last updated: 2026-05-04 after production trust-state exploration_

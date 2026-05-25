@@ -150,17 +150,18 @@ export function Page({ header, style, padding, children, footer }: PageProps) {
       }}
     >
       {headerToRender}
-      <View
+      <main
         id="main-content"
-        role="main"
         style={{
+          display: 'flex',
+          flexDirection: 'column',
           flex: 1,
           overflowY: isNarrowWidth ? 'auto' : undefined,
           padding: `0 ${childrenPadding}px`,
         }}
       >
         {children}
-      </View>
+      </main>
       {footer}
     </View>
   );

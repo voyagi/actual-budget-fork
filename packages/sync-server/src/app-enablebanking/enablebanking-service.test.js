@@ -5,6 +5,7 @@ import { SessionExpiredError, RateLimitError } from './errors';
 // Mock axios at module level before importing the service.
 vi.mock('axios', () => ({
   default: vi.fn(),
+  isAxiosError: vi.fn(err => err?.isAxiosError === true),
 }));
 
 // Mock jose so we don't need a real RSA key.
@@ -101,6 +102,7 @@ describe('enablebanking-service', () => {
 
     it('throws SessionExpiredError on 401 response', async () => {
       const axiosError = new Error('Unauthorized');
+      axiosError.isAxiosError = true;
       axiosError.response = {
         status: 401,
         data: { message: 'Token expired' },
@@ -114,6 +116,7 @@ describe('enablebanking-service', () => {
 
     it('throws SessionExpiredError on 403 response', async () => {
       const axiosError = new Error('Forbidden');
+      axiosError.isAxiosError = true;
       axiosError.response = { status: 403, data: {} };
       axios.mockRejectedValueOnce(axiosError);
 
@@ -124,6 +127,7 @@ describe('enablebanking-service', () => {
 
     it('throws RateLimitError on 429 response', async () => {
       const axiosError = new Error('Too Many Requests');
+      axiosError.isAxiosError = true;
       axiosError.response = { status: 429, data: {} };
       axios.mockRejectedValueOnce(axiosError);
 
@@ -160,7 +164,8 @@ describe('enablebanking-service', () => {
       const result = await getAspsps('FI');
       expect(axios).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringContaining('/aspsps?country=FI'),
+          url: expect.stringContaining('/aspsps'),
+          params: { country: 'FI' },
         }),
       );
       expect(result.aspsps).toHaveLength(1);
@@ -169,6 +174,20 @@ describe('enablebanking-service', () => {
 
   describe('createAuth', () => {
     it('calls POST /auth with correct payload', async () => {
+      // createAuth now calls getAspsps() first (GET /aspsps) then POST /auth.
+      // Mock GET /aspsps response (first call - consumed by getAspsps() internally)
+      axios.mockResolvedValueOnce({
+        data: {
+          aspsps: [
+            {
+              name: 'Nordea',
+              country: 'FI',
+              maximum_consent_validity: 7776000,
+            },
+          ],
+        },
+      });
+      // Mock POST /auth response (second call)
       axios.mockResolvedValueOnce({
         data: { url: 'https://bank.example/auth', state: 'test-state' },
       });
@@ -180,7 +199,8 @@ describe('enablebanking-service', () => {
         state: 'test-state',
       });
 
-      expect(axios).toHaveBeenCalledWith(
+      expect(axios).toHaveBeenCalledTimes(2);
+      expect(axios.mock.calls[1][0]).toEqual(
         expect.objectContaining({
           method: 'POST',
           data: expect.objectContaining({
@@ -194,8 +214,16 @@ describe('enablebanking-service', () => {
       expect(result.url).toBe('https://bank.example/auth');
     });
 
-    it('sets valid_until to ~90 days in the future', async () => {
+    it('sets valid_until based on ASPSP maximum_consent_validity', async () => {
       const before = Date.now();
+      // 7776000 seconds = 90 days
+      axios.mockResolvedValueOnce({
+        data: {
+          aspsps: [
+            { name: 'Test', country: 'FI', maximum_consent_validity: 7776000 },
+          ],
+        },
+      });
       axios.mockResolvedValueOnce({ data: {} });
 
       await createAuth({
@@ -205,11 +233,51 @@ describe('enablebanking-service', () => {
         state: 's',
       });
 
-      const callData = axios.mock.calls[0][0].data;
+      const callData = axios.mock.calls[1][0].data;
       const validUntil = new Date(callData.access.valid_until).getTime();
       const ninetyDays = 90 * 24 * 60 * 60 * 1000;
       expect(validUntil).toBeGreaterThanOrEqual(before + ninetyDays - 1000);
       expect(validUntil).toBeLessThanOrEqual(before + ninetyDays + 5000);
+    });
+
+    it('falls back to 180-day validity when ASPSP has no maximum_consent_validity', async () => {
+      const before = Date.now();
+      axios.mockResolvedValueOnce({
+        data: { aspsps: [{ name: 'TestBank', country: 'FI' }] },
+      });
+      axios.mockResolvedValueOnce({ data: {} });
+
+      await createAuth({
+        aspspName: 'TestBank',
+        aspspCountry: 'FI',
+        redirectUrl: 'http://localhost/callback',
+        state: 's',
+      });
+
+      const callData = axios.mock.calls[1][0].data;
+      const validUntil = new Date(callData.access.valid_until).getTime();
+      const oneEightyDays = 180 * 24 * 60 * 60 * 1000;
+      expect(validUntil).toBeGreaterThanOrEqual(before + oneEightyDays - 5000);
+    });
+
+    it('warns when ASPSP name not found in listing', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      axios.mockResolvedValueOnce({
+        data: { aspsps: [{ name: 'OtherBank', country: 'FI' }] },
+      });
+      axios.mockResolvedValueOnce({ data: {} });
+
+      await createAuth({
+        aspspName: 'Nordea',
+        aspspCountry: 'FI',
+        redirectUrl: 'http://localhost/callback',
+        state: 's',
+      });
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('ASPSP "Nordea" not found'),
+      );
+      warnSpy.mockRestore();
     });
   });
 
@@ -321,7 +389,7 @@ describe('enablebanking-service', () => {
       await getTransactions('acct-uid', '2026-02-15');
       expect(axios).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringContaining('date_from=2026-02-15'),
+          params: expect.objectContaining({ date_from: '2026-02-15' }),
         }),
       );
     });
@@ -332,7 +400,10 @@ describe('enablebanking-service', () => {
       await getTransactions('acct-uid', '2026-01-01', 'existing-key');
       expect(axios).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: expect.stringContaining('continuation_key=existing-key'),
+          params: expect.objectContaining({
+            date_from: '2026-01-01',
+            continuation_key: 'existing-key',
+          }),
         }),
       );
     });

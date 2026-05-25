@@ -185,7 +185,7 @@ export function Modals() {
           return <PluggyAiInitialiseModal key={key} {...modal.options} />;
 
         case 'enablebanking-external-msg':
-          return <EnableBankingExternalMsgModal key={key} />;
+          return <EnableBankingExternalMsgModal key={key} {...modal.options} />;
 
         case 'gocardless-external-msg':
           return (

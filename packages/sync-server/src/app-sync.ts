@@ -122,7 +122,7 @@ app.post('/sync', async (req, res): Promise<void> => {
   const fileAccessError = requireFileAccess(currentFile, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -160,7 +160,7 @@ app.post('/user-get-key', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -187,7 +187,7 @@ app.post('/user-create-key', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -221,7 +221,7 @@ app.post('/reset-user-file', async (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -282,7 +282,7 @@ app.post('/upload-user-file', async (req, res) => {
     : null;
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -365,7 +365,7 @@ app.get('/download-user-file', async (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -394,7 +394,7 @@ app.post('/update-user-filename', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -444,7 +444,7 @@ app.get('/get-user-file-info', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 
@@ -485,7 +485,7 @@ app.post('/delete-user-file', (req, res) => {
   const fileAccessError = requireFileAccess(file, res.locals.user_id);
   if (fileAccessError) {
     res.status(403);
-    res.send(fileAccessError);
+    res.json(fileAccessError);
     return;
   }
 

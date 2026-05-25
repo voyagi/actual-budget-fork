@@ -215,5 +215,9 @@ export async function postBinary(url, data, headers) {
 }
 
 export function get(url, opts?) {
-  return fetch(url, opts).then(res => res.text());
+  return fetch(url, opts).then(async res => {
+    const text = await res.text();
+    throwIfNot200(res, text);
+    return text;
+  });
 }

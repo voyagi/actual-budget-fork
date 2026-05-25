@@ -96,14 +96,14 @@ export const buddyLightPositiveBg = '#ECFDF5';
 // Buddy V2 - Dark text
 export const buddyDarkTextPrimary = '#F5F5FF';
 export const buddyDarkTextSecondary = '#8E8E93';
-export const buddyDarkTextMuted = '#555566';
+export const buddyDarkTextMuted = '#777788';
 export const buddyDarkTextSubdued = 'rgba(245, 245, 255, 0.85)';
 export const buddyDarkFormLabel = '#9E9EB8';
 
 // Buddy V2 - Light text
 export const buddyLightTextPrimary = '#1A1B2E';
 export const buddyLightTextSecondary = '#5A5D6E';
-export const buddyLightTextMuted = '#9295A5';
+export const buddyLightTextMuted = '#6E7185';
 export const buddyLightTextDark = '#0D0E1A';
 
 // Chart colors - Qualitative scale (9 colors)

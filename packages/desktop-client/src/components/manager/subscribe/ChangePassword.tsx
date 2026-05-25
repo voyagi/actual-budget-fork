@@ -25,6 +25,8 @@ export function ChangePassword() {
     switch (error) {
       case 'invalid-password':
         return t('Password cannot be empty');
+      case 'password-too-short':
+        return t('Password must be at least 8 characters');
       case 'password-match':
         return t('Passwords do not match');
       case 'network-failure':

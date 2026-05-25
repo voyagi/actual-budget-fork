@@ -1,4 +1,4 @@
-import { getAccountDb } from './src/account-db';
+import { closeAccountDb, getAccountDb } from './src/account-db';
 import { run as runMigrations } from './src/migrations';
 
 const GENERIC_ADMIN_ID = 'genericAdmin';
@@ -100,5 +100,17 @@ export async function setup() {
 }
 
 export async function teardown() {
-  await runMigrations('down');
+  // Close the singleton DB connection before running DOWN migrations.
+  // On Windows, better-sqlite3 can hold an open file handle that causes
+  // EBUSY when the migration tries to delete the test-server-files directory.
+  closeAccountDb();
+  try {
+    await runMigrations('down');
+  } catch (err) {
+    // Ignore EBUSY on Windows - test results are already recorded by vitest.
+    // The test-server-files directory will be cleaned up on next test run's setup.
+    if (err?.code !== 'EBUSY') {
+      throw err;
+    }
+  }
 }

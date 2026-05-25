@@ -9,31 +9,32 @@ import { View } from '@actual-app/components/view';
 import { css } from '@emotion/css';
 import { useQuery } from '@tanstack/react-query';
 
+import { send } from 'loot-core/platform/client/connection';
 import * as undo from 'loot-core/platform/client/undo';
 
-import { UserAccessPage } from './admin/UserAccess/UserAccessPage';
-import { BankSyncStatus } from './BankSyncStatus';
 import { CommandBar } from './CommandBar';
 import { GlobalKeys } from './GlobalKeys';
 import { MobileBankSyncAccountEditPage } from './mobile/banksync/MobileBankSyncAccountEditPage';
 import { MobileNavTabs } from './mobile/MobileNavTabs';
 import { TransactionEdit } from './mobile/transactions/TransactionEdit';
 import { Notifications } from './Notifications';
-import { Reports } from './reports';
+import { ProductionTrustWarning } from './ProductionTrustWarning';
 import { LoadingIndicator } from './reports/LoadingIndicator';
 import { NarrowAlternate, WideComponent } from './responsive';
-import { UserDirectoryPage } from './responsive/wide';
 import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { useMultiuserEnabled } from './ServerContext';
-import { Settings } from './settings';
 import { FloatableSidebar } from './sidebar';
-import { ManageTagsPage } from './tags/ManageTagsPage';
 import { Titlebar } from './Titlebar';
 
 import { accountQueries } from '@desktop-client/accounts';
 import { getLatestAppVersion, sync } from '@desktop-client/app/appSlice';
 import { ProtectedRoute } from '@desktop-client/auth/ProtectedRoute';
 import { Permissions } from '@desktop-client/auth/types';
+import {
+  useConsentExpiryNotifications,
+  useBankSyncNotification,
+  useOperationalAlerts,
+} from '@desktop-client/hooks/useEnableBankingStatus';
 import { useGlobalPref } from '@desktop-client/hooks/useGlobalPref';
 import { useLocalPref } from '@desktop-client/hooks/useLocalPref';
 import { useMetaThemeColor } from '@desktop-client/hooks/useMetaThemeColor';
@@ -41,6 +42,66 @@ import { useNavigate } from '@desktop-client/hooks/useNavigate';
 import { ScrollProvider } from '@desktop-client/hooks/useScrollListener';
 import { addNotification } from '@desktop-client/notifications/notificationsSlice';
 import { useDispatch, useSelector } from '@desktop-client/redux';
+import { isConsentExpired } from '@desktop-client/utils/consent-urgency';
+
+async function getStaleAccountIds(
+  staleThresholdHours: number | undefined,
+): Promise<string[]> {
+  const allAccounts = await send('accounts-get');
+  const linkedAccounts = (allAccounts || []).filter(
+    (a: { account_sync_source: string | null; account_id: string | null }) =>
+      a.account_sync_source && a.account_id,
+  );
+  const effectiveThreshold = (staleThresholdHours ?? 6) * 60 * 60 * 1000;
+  const now = Date.now();
+
+  const linkedIds = linkedAccounts.map((a: { id: string }) => a.id);
+  const syncStatuses =
+    linkedIds.length > 0
+      ? ((
+          await send('enablebanking-sync-status', {
+            accountIds: linkedIds,
+          })
+        )?.statuses ?? {})
+      : {};
+
+  return linkedAccounts
+    .filter((a: { id: string; last_sync: string | null }) => {
+      const ebStatus = syncStatuses[a.id];
+      if (
+        ebStatus?.consent_valid_until &&
+        isConsentExpired(ebStatus.consent_valid_until)
+      ) {
+        return false;
+      }
+      const lastSync = a.last_sync ? parseInt(a.last_sync, 10) : 0;
+      return now - lastSync > effectiveThreshold;
+    })
+    .map((a: { id: string }) => a.id);
+}
+
+// Route-level code splitting: lazy-load heavy page components so they are
+// bundled as separate JS chunks and only fetched when the user visits each
+// route. App-shell components (Sidebar, Titlebar, Notifications, etc.) remain
+// eagerly loaded. NarrowAlternate/WideComponent already do internal lazy
+// loading and are also kept eager.
+const Reports = React.lazy(() =>
+  import('./reports').then(m => ({ default: m.Reports })),
+);
+const Settings = React.lazy(() =>
+  import('./settings').then(m => ({ default: m.Settings })),
+);
+const UserDirectoryPage = React.lazy(() =>
+  import('./responsive/wide').then(m => ({ default: m.UserDirectoryPage })),
+);
+const UserAccessPage = React.lazy(() =>
+  import('./admin/UserAccess/UserAccessPage').then(m => ({
+    default: m.UserAccessPage,
+  })),
+);
+const ManageTagsPage = React.lazy(() =>
+  import('./tags/ManageTagsPage').then(m => ({ default: m.ManageTagsPage })),
+);
 
 function NarrowNotSupported({
   redirectTo = '/budget',
@@ -105,14 +166,40 @@ export function FinancesApp() {
   const [lastUsedVersion, setLastUsedVersion] = useLocalPref(
     'flags.updateNotificationShownForVersion',
   );
+  const [staleThresholdHours] = useLocalPref('bankSyncStaleThresholdHours');
 
   const multiuserEnabled = useMultiuserEnabled();
+
+  // Mutex for background bank sync triggered by visibility/focus changes.
+  // useRef persists across re-renders and effect re-creations (the effect
+  // depends on staleThresholdHours, so a closure-scoped let would reset to
+  // false whenever the pref changes, allowing concurrent syncs).
+  const isSyncingRef = useRef(false);
 
   const init = useEffectEvent(() => {
     // Wait a little bit to make sure the sync button will get the
     // sync start event. This can be improved later.
     setTimeout(async () => {
       await dispatch(sync());
+
+      try {
+        const staleIds = await getStaleAccountIds(staleThresholdHours);
+        if (staleIds.length > 0) {
+          send('accounts-bank-sync', { ids: staleIds }).catch(() => {
+            dispatch(
+              addNotification({
+                notification: {
+                  id: 'sync-on-open-failed',
+                  type: 'warning',
+                  message: t('Background sync failed - check your connection'),
+                },
+              }),
+            );
+          });
+        }
+      } catch {
+        // Non-blocking: don't surface errors from the sync-on-open check
+      }
     }, 100);
 
     async function run() {
@@ -142,6 +229,34 @@ export function FinancesApp() {
   });
 
   useEffect(() => init(), []);
+
+  // Bank sync check on visibility/focus changes. Lives in FinancesApp (not
+  // App.tsx) because useLocalPref requires budget context - App.tsx renders
+  // before any budget is loaded, so useLocalPref there produces the wrong
+  // localStorage key ('undefined-bankSyncStaleThresholdHours').
+  useEffect(() => {
+    async function onVisibilityOrFocus() {
+      if (document.hidden || isSyncingRef.current) return;
+      isSyncingRef.current = true;
+      try {
+        const staleIds = await getStaleAccountIds(staleThresholdHours);
+        if (staleIds.length > 0) {
+          send('accounts-bank-sync', { ids: staleIds }).catch(() => {});
+        }
+      } catch {
+        // Non-blocking: don't surface errors from background sync check
+      } finally {
+        isSyncingRef.current = false;
+      }
+    }
+
+    window.addEventListener('visibilitychange', onVisibilityOrFocus);
+    window.addEventListener('focus', onVisibilityOrFocus);
+    return () => {
+      window.removeEventListener('visibilitychange', onVisibilityOrFocus);
+      window.removeEventListener('focus', onVisibilityOrFocus);
+    };
+  }, [staleThresholdHours]);
 
   useEffect(() => {
     dispatch(getLatestAppVersion());
@@ -192,6 +307,10 @@ export function FinancesApp() {
     t,
     versionInfo,
   ]);
+
+  useConsentExpiryNotifications();
+  useBankSyncNotification();
+  useOperationalAlerts();
 
   const scrollableRef = useRef<HTMLDivElement>(null);
 
@@ -266,142 +385,144 @@ export function FinancesApp() {
                 }}
               />
               <Notifications />
-              <BankSyncStatus />
+              <ProductionTrustWarning />
 
-              <RouteErrorBoundary>
-                <Routes>
-                  <Route
-                    path="/"
-                    element={
-                      isAccountsFetching || !accounts ? (
-                        <LoadingIndicator />
-                      ) : accounts.length > 0 ? (
-                        <Navigate to="/budget" replace />
-                      ) : (
-                        // If there are no accounts, we want to redirect the user to
-                        // the All Accounts screen which will prompt them to add an account
-                        <Navigate to="/accounts" replace />
-                      )
-                    }
-                  />
-
-                  <Route path="/reports/*" element={<Reports />} />
-
-                  <Route
-                    path="/budget"
-                    element={<NarrowAlternate name="Budget" />}
-                  />
-
-                  <Route
-                    path="/schedules"
-                    element={<NarrowAlternate name="Schedules" />}
-                  />
-                  <Route
-                    path="/schedules/:id"
-                    element={
-                      <WideNotSupported>
-                        <NarrowAlternate name="ScheduleEdit" />
-                      </WideNotSupported>
-                    }
-                  />
-
-                  <Route
-                    path="/payees"
-                    element={<NarrowAlternate name="Payees" />}
-                  />
-                  <Route
-                    path="/payees/:id"
-                    element={
-                      <WideNotSupported>
-                        <NarrowAlternate name="PayeeEdit" />
-                      </WideNotSupported>
-                    }
-                  />
-                  <Route
-                    path="/rules"
-                    element={<NarrowAlternate name="Rules" />}
-                  />
-                  <Route
-                    path="/rules/:id"
-                    element={<NarrowAlternate name="RuleEdit" />}
-                  />
-                  <Route
-                    path="/bank-sync"
-                    element={<NarrowAlternate name="BankSync" />}
-                  />
-                  <Route
-                    path="/bank-sync/account/:accountId/edit"
-                    element={
-                      <WideNotSupported redirectTo="/bank-sync">
-                        <MobileBankSyncAccountEditPage />
-                      </WideNotSupported>
-                    }
-                  />
-                  <Route path="/tags" element={<ManageTagsPage />} />
-                  <Route path="/settings" element={<Settings />} />
-
-                  <Route
-                    path="/gocardless/link"
-                    element={
-                      <NarrowNotSupported>
-                        <WideComponent name="GoCardlessLink" />
-                      </NarrowNotSupported>
-                    }
-                  />
-
-                  <Route
-                    path="/accounts"
-                    element={<NarrowAlternate name="Accounts" />}
-                  />
-
-                  <Route
-                    path="/accounts/:id"
-                    element={<NarrowAlternate name="Account" />}
-                  />
-
-                  <Route
-                    path="/transactions/:transactionId"
-                    element={
-                      <WideNotSupported>
-                        <TransactionEdit />
-                      </WideNotSupported>
-                    }
-                  />
-
-                  <Route
-                    path="/categories/:id"
-                    element={<NarrowAlternate name="Category" />}
-                  />
-                  {multiuserEnabled && (
+              <React.Suspense fallback={<LoadingIndicator />}>
+                <RouteErrorBoundary>
+                  <Routes>
                     <Route
-                      path="/user-directory"
+                      path="/"
                       element={
-                        <ProtectedRoute
-                          permission={Permissions.ADMINISTRATOR}
-                          element={<UserDirectoryPage />}
-                        />
+                        isAccountsFetching || !accounts ? (
+                          <LoadingIndicator />
+                        ) : accounts.length > 0 ? (
+                          <Navigate to="/budget" replace />
+                        ) : (
+                          // If there are no accounts, we want to redirect the user to
+                          // the All Accounts screen which will prompt them to add an account
+                          <Navigate to="/accounts" replace />
+                        )
                       }
                     />
-                  )}
-                  {multiuserEnabled && (
+
+                    <Route path="/reports/*" element={<Reports />} />
+
                     <Route
-                      path="/user-access"
+                      path="/budget"
+                      element={<NarrowAlternate name="Budget" />}
+                    />
+
+                    <Route
+                      path="/schedules"
+                      element={<NarrowAlternate name="Schedules" />}
+                    />
+                    <Route
+                      path="/schedules/:id"
                       element={
-                        <ProtectedRoute
-                          permission={Permissions.ADMINISTRATOR}
-                          validateOwner
-                          element={<UserAccessPage />}
-                        />
+                        <WideNotSupported>
+                          <NarrowAlternate name="ScheduleEdit" />
+                        </WideNotSupported>
                       }
                     />
-                  )}
-                  {/* redirect all other traffic to the budget page */}
-                  <Route
-                    path="/*"
-                    element={<Navigate to="/budget" replace />}
-                  />
-                </Routes>
-              </RouteErrorBoundary>
+
+                    <Route
+                      path="/payees"
+                      element={<NarrowAlternate name="Payees" />}
+                    />
+                    <Route
+                      path="/payees/:id"
+                      element={
+                        <WideNotSupported>
+                          <NarrowAlternate name="PayeeEdit" />
+                        </WideNotSupported>
+                      }
+                    />
+                    <Route
+                      path="/rules"
+                      element={<NarrowAlternate name="Rules" />}
+                    />
+                    <Route
+                      path="/rules/:id"
+                      element={<NarrowAlternate name="RuleEdit" />}
+                    />
+                    <Route
+                      path="/bank-sync"
+                      element={<NarrowAlternate name="BankSync" />}
+                    />
+                    <Route
+                      path="/bank-sync/account/:accountId/edit"
+                      element={
+                        <WideNotSupported redirectTo="/bank-sync">
+                          <MobileBankSyncAccountEditPage />
+                        </WideNotSupported>
+                      }
+                    />
+                    <Route path="/tags" element={<ManageTagsPage />} />
+                    <Route path="/settings" element={<Settings />} />
+
+                    <Route
+                      path="/gocardless/link"
+                      element={
+                        <NarrowNotSupported>
+                          <WideComponent name="GoCardlessLink" />
+                        </NarrowNotSupported>
+                      }
+                    />
+
+                    <Route
+                      path="/accounts"
+                      element={<NarrowAlternate name="Accounts" />}
+                    />
+
+                    <Route
+                      path="/accounts/:id"
+                      element={<NarrowAlternate name="Account" />}
+                    />
+
+                    <Route
+                      path="/transactions/:transactionId"
+                      element={
+                        <WideNotSupported>
+                          <TransactionEdit />
+                        </WideNotSupported>
+                      }
+                    />
+
+                    <Route
+                      path="/categories/:id"
+                      element={<NarrowAlternate name="Category" />}
+                    />
+                    {multiuserEnabled && (
+                      <Route
+                        path="/user-directory"
+                        element={
+                          <ProtectedRoute
+                            permission={Permissions.ADMINISTRATOR}
+                            element={<UserDirectoryPage />}
+                          />
+                        }
+                      />
+                    )}
+                    {multiuserEnabled && (
+                      <Route
+                        path="/user-access"
+                        element={
+                          <ProtectedRoute
+                            permission={Permissions.ADMINISTRATOR}
+                            validateOwner
+                            element={<UserAccessPage />}
+                          />
+                        }
+                      />
+                    )}
+                    {/* redirect all other traffic to the budget page */}
+                    <Route
+                      path="/*"
+                      element={<Navigate to="/budget" replace />}
+                    />
+                  </Routes>
+                </RouteErrorBoundary>
+              </React.Suspense>
             </View>
 
             <Routes>

@@ -1,0 +1,64 @@
+{
+  "reviewedAt": "2026-03-19T00:00:00.000Z",
+  "planFile": ".planning/phases/07-observability-and-monitoring/07-02-PLAN.md",
+  "planGoal": "Wire observability utilities into existing sync-server code: structured logging, audit callsites, latency middleware, alert triggers, enriched /metrics endpoint",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "category": "assumption",
+      "step": "Task 2B: openid.js — body.ip_address injection",
+      "description": "The plan instructs passing `{ ...req.body, ip_address: req.ip }` to loginWithOpenIdFinalize(). This assumes req.body is a plain object safe to spread. If the OpenID callback receives a URL-encoded body or a body that is not a plain object, the spread will fail or produce unexpected behavior. More critically: req.body comes from the client (the OpenID provider redirects the user's browser here with POST). The client controls req.body, meaning a malicious client could pass ip_address in req.body and have it used directly by the function if the spread order is wrong. The plan's spread `{ ...req.body, ip_address: req.ip }` correctly overrides any client-supplied ip_address with the real req.ip, so this specific attack is mitigated. But the plan does not call this out.",
+      "suggestion": "Explicitly document that the spread order (req.ip comes last, overrides any client-supplied ip_address) is intentional and security-relevant. Add a comment in the code."
+    },
+    {
+      "severity": "HIGH",
+      "category": "edge-case",
+      "step": "Task 1: consent_expiry alert uses same event_type for both expired and expiring-soon",
+      "description": "Both the 'already expired, skip session' path and the 'expiring within 14 days, continue sync' path use event_type: 'consent_expiry'. The alerter's 1-hour cooldown is keyed by event_type. This means if a session fires the 'expiry warning' alert, the 'session already expired' alert is suppressed for 1 hour (and vice versa). These are distinct operational situations that warrant independent alerting. The plan acknowledges this sharing as 'intentional' but the consequence — losing an expired-session alert because an expiring-soon alert fired first — is a silent operational gap.",
+      "suggestion": "Use distinct event_types: 'consent_expiry_warning' (expiring within 14 days, continue sync) and 'consent_expiry_expired' (already expired, skip session). Each gets its own 1-hour cooldown."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "assumption",
+      "step": "Task 3A: errorMiddleware — field rename from requestUrl to url",
+      "description": "The plan renames the existing 'requestUrl' field to 'url' and 'stacktrace' to 'stack'. If any external log aggregation tooling, dashboards, or alerts are keyed to 'requestUrl' or 'stacktrace' field names, this is a silent breaking change. The plan does not mention checking for downstream consumers of the log format.",
+      "suggestion": "Acceptable for a new project without established log consumers. Note this as a schema-breaking change if log aggregation (e.g., Loki, Elasticsearch) is added later."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 3B: runAuditMigrations() at startup — comment says 'will run on first request via getAccountDb()'",
+      "description": "The try/catch comment reads 'migrations will run on first request via getAccountDb()'. This is incorrect — getAccountDb() does not call runAuditMigrations(). If the startup catch fires, audit migrations never run until the next server restart. The comment creates a false sense of safety.",
+      "suggestion": "Fix the comment to: 'If DB not yet bootstrapped, audit migrations will be deferred until next server restart.' Or add a fallback trigger (e.g., a one-time retry after bootstrap completes)."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 2A: authFailureTracker — memory leak on unique IPs",
+      "description": "The authFailureTracker Map is never pruned for IPs that don't reach the threshold. Each unique IP that fails authentication once stays in the Map indefinitely. Under a scanning attack with rotating IPs, this grows without bound. The plan does not mention this leak.",
+      "suggestion": "Add a size cap (e.g., evict oldest entry when Map exceeds 10,000 entries) or use a TTL-based cleanup (e.g., periodically delete entries older than AUTH_FAILURE_WINDOW_MS). A simpler approach: delete entries that haven't been updated in the window during the trackAuthFailure call."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "verification",
+      "step": "Task 2B: openid.js audit for failure path — console.error not replaced",
+      "description": "The plan instructs adding writeAuditLog after the existing console.error in the failure catch block. The plan does not instruct replacing that console.error with logger.error. Task 1 only covers scheduler.ts console replacements. openid.js retains console.error calls for the failure path, inconsistent with the structured logging goal.",
+      "suggestion": "Replace console.error in openid.js failure catch with the appropriate logger call as part of Task 2B."
+    }
+  ],
+  "missingSteps": [
+    "No test coverage for the auth failure rate tracker (trackAuthFailure) — the plan adds integration-level audit calls but does not add or update unit tests for app-account.ts.",
+    "No verification that the latency middleware is mounted BEFORE route handlers (order matters — if mounted after, routes already handled won't be timed)."
+  ],
+  "assumptions": [
+    "req.ip is correctly set in Express (trust proxy is configured for reverse-proxy deployments).",
+    "getAccountDb() inside the /metrics handler is safe to call when the database has not been bootstrapped — the try/catch around the sessions queries handles this.",
+    "The convict schema entry for alertWebhookUrl is documentation-only; the alerter reads process.env.ALERT_WEBHOOK_URL directly and does not go through convict."
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 2,
+    "medium": 4,
+    "passed": false
+  }
+}

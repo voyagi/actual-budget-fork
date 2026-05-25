@@ -7,12 +7,14 @@ type PieProgressProps = {
   progress: number;
   color: string;
   backgroundColor: string;
+  'aria-label'?: string;
 };
 export function PieProgress({
   style,
   progress,
   color,
   backgroundColor,
+  'aria-label': ariaLabel,
 }: PieProgressProps) {
   const { t } = useTranslation();
   const radius = 4;
@@ -25,9 +27,12 @@ export function PieProgress({
       viewBox="0 0 20 20"
       style={style}
       role="img"
-      aria-label={t('Budget progress: {{percent}}%', {
-        percent: Math.round(progress * 100),
-      })}
+      aria-label={
+        ariaLabel ??
+        t('Budget progress: {{percent}}%', {
+          percent: Math.round(progress * 100),
+        })
+      }
     >
       <circle r="10" cx="10" cy="10" fill={backgroundColor} />
       <circle

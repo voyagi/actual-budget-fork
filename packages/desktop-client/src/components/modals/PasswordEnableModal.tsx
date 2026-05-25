@@ -49,6 +49,7 @@ export function PasswordEnableModal({
 
   const errorMessages = {
     'invalid-password': t('Invalid password'),
+    'password-too-short': t('Password must be at least 8 characters'),
     'password-match': t('Passwords do not match'),
     'network-failure': t('Unable to contact the server'),
     'unable-to-change-file-config-enabled': t(

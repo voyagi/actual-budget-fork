@@ -13,6 +13,15 @@ import type { AccountEntity } from 'loot-core/types/models';
 
 import { Cell, Row } from '@desktop-client/components/table';
 import { useEnableBankingSyncStatus } from '@desktop-client/hooks/useEnableBankingStatus';
+import { pushModal } from '@desktop-client/modals/modalsSlice';
+import { useDispatch } from '@desktop-client/redux';
+import { formatExpiryDate } from '@desktop-client/utils/consent-helpers';
+import {
+  getDaysUntilExpiry,
+  getUrgencyLevel,
+  isConsentExpired,
+  urgencyColors,
+} from '@desktop-client/utils/consent-urgency';
 
 type AccountRowProps = {
   account: AccountEntity;
@@ -24,6 +33,7 @@ type AccountRowProps = {
 
 export const AccountRow = memo(
   ({ account, hovered, onHover, onAction, locale }: AccountRowProps) => {
+    const dispatch = useDispatch();
     const backgroundFocus = hovered;
 
     const lastSyncString = tsToRelativeTime(account.last_sync, locale, {
@@ -42,6 +52,34 @@ export const AccountRow = memo(
       account.account_sync_source === 'enableBanking' ? [account.id] : [],
     );
     const ebStatus = ebStatuses?.[account.id];
+    const consentUrgencyColor = (() => {
+      const validUntil = ebStatus?.consent_valid_until;
+      if (!validUntil) return null;
+      const urgency = getUrgencyLevel(getDaysUntilExpiry(validUntil));
+      return urgency !== 'ok' ? { text: urgencyColors[urgency].text } : null;
+    })();
+    const consentValidUntil = ebStatus?.consent_valid_until
+      ? formatExpiryDate(ebStatus.consent_valid_until, 'short')
+      : null;
+    const consentIsExpired =
+      ebStatus?.consent_valid_until &&
+      isConsentExpired(ebStatus.consent_valid_until);
+
+    function handleReauth() {
+      dispatch(
+        pushModal({
+          modal: {
+            name: 'enablebanking-external-msg',
+            options: {
+              sessionId: ebStatus?.session_id ?? undefined,
+              aspspName: ebStatus?.aspsp_name ?? undefined,
+              aspspCountry: ebStatus?.aspsp_country ?? undefined,
+              reauth: true,
+            },
+          },
+        }),
+      );
+    }
 
     const potentiallyTruncatedAccountName =
       account.name.length > 30
@@ -119,6 +157,33 @@ export const AccountRow = memo(
                     }}
                   >
                     {ebStatus.error_message}
+                  </span>
+                ) : null}
+                {consentValidUntil && consentUrgencyColor ? (
+                  <span
+                    style={{
+                      color: consentUrgencyColor.text,
+                      fontSize: 11,
+                      fontWeight: 'normal',
+                    }}
+                  >
+                    {consentIsExpired ? (
+                      <Trans>Consent expired</Trans>
+                    ) : (
+                      <Trans>Consent expires {{ consentValidUntil }}</Trans>
+                    )}{' '}
+                    <Button
+                      variant="bare"
+                      onPress={handleReauth}
+                      style={{
+                        color: consentUrgencyColor.text,
+                        fontSize: 11,
+                        textDecoration: 'underline',
+                        padding: 0,
+                      }}
+                    >
+                      <Trans>Re-authorize</Trans>
+                    </Button>
                   </span>
                 ) : null}
               </div>

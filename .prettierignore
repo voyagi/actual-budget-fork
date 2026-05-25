@@ -1,0 +1,17 @@
+# Whitelist strategy: ignore everything, un-ignore fork source files.
+# Upstream files were never formatted with oxfmt.
+*
+!*/
+
+# Fork source files
+!packages/sync-server/src/**
+!packages/desktop-client/src/**
+!packages/desktop-client/e2e/**
+!packages/loot-core/src/**
+!bin/**
+!/package.json
+
+# Re-ignore non-source files that leak through
+*.json
+*.scss
+packages/desktop-client/e2e/data/

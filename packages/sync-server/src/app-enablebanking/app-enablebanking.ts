@@ -2,6 +2,8 @@
 import express from 'express';
 
 import { getAccountDb } from '../account-db.js';
+import { writeAuditLog } from '../util/audit.js';
+import logger from '../util/logger.js';
 import {
   requestLoggerMiddleware,
   validateSessionMiddleware,
@@ -95,6 +97,14 @@ app.get(
         [ebAccountUid, session_id],
       );
     }
+
+    writeAuditLog({
+      event_type: 'eb_consent_auth',
+      actor: 'system',
+      ip_address: req.ip,
+      outcome: 'success',
+      details: { sessionId: session_id, accountCount: accounts.length },
+    });
 
     // Redirect to the link page which auto-closes the popup.
     res.redirect('/enablebanking/link?state=' + encodeURIComponent(state));
@@ -256,7 +266,7 @@ app.post(
       });
     }
 
-    const ebAccountUid = mapRow.eb_account_uid;
+    const ebAccountUid = String(mapRow.eb_account_uid);
 
     // actual_account_id from the map row is the Actual Budget UUID (populated
     // at link time by /update-account-map). We use it for the sync log so that
@@ -270,10 +280,12 @@ app.post(
         ebAccountUid,
         startDate,
       );
-      const normalizedBooked = booked.map(t => normalizeTransaction(t, true));
-      const normalizedPending = pending.map(t =>
-        normalizeTransaction(t, false),
-      );
+      const normalizedBooked = booked
+        .map(t => normalizeTransaction(t, true))
+        .filter(Boolean);
+      const normalizedPending = pending
+        .map(t => normalizeTransaction(t, false))
+        .filter(Boolean);
 
       const balancesData = await getBalances(ebAccountUid);
       const extractedBalance = extractBalance(
@@ -324,25 +336,110 @@ app.post(
   }),
 );
 
-// Returns the last sync log entry per requested account (by Actual UUID).
-// The UI has Actual UUIDs from the account entity - these match eb_sync_log
-// because /transactions logs actual_account_id (populated at link time).
+// Returns the last sync log entry per requested account (by Actual UUID),
+// extended with consent expiry and session identity from eb_sessions so
+// the client can display banner warnings and the per-account consent column.
+//
+// Never-synced accounts (null lastEntry) receive explicit defaults so the
+// client always sees all expected fields rather than undefined.
+//
+// Note: synced_at is stored as a Unix epoch INTEGER in eb_sync_log.
+// It is converted to an ISO string here so the client receives a consistent
+// format regardless of how the value was written.
 app.post(
   '/sync-status',
   handleError(async (req, res) => {
     const { accountIds } = req.body || {};
-    const db = getAccountDb();
-    const statuses = {};
+    const ids: string[] = accountIds || [];
+    if (ids.length === 0) {
+      return res.send({ status: 'ok', data: { statuses: {} } });
+    }
 
-    for (const accountId of accountIds || []) {
-      const lastEntry = db.first(
-        'SELECT * FROM eb_sync_log WHERE actual_account_id = ? ORDER BY id DESC LIMIT 1',
-        [accountId],
-      );
-      statuses[accountId] = lastEntry;
+    const db = getAccountDb();
+    const placeholders = ids.map(() => '?').join(',');
+
+    const syncRows = db.all(
+      `SELECT l.* FROM eb_sync_log l
+       INNER JOIN (
+         SELECT actual_account_id, MAX(id) as max_id
+         FROM eb_sync_log
+         WHERE actual_account_id IN (${placeholders})
+         GROUP BY actual_account_id
+       ) latest ON l.id = latest.max_id`,
+      ids,
+    );
+    const syncMap = new Map(syncRows.map((r: any) => [r.actual_account_id, r]));
+
+    const mapRows = db.all(
+      `SELECT m.actual_account_id, m.session_id,
+              s.valid_until, s.aspsp_name, s.aspsp_country
+       FROM eb_account_map m
+       LEFT JOIN eb_sessions s ON s.id = m.session_id
+       WHERE m.actual_account_id IN (${placeholders})`,
+      ids,
+    );
+    const accountMap = new Map(
+      mapRows.map((r: any) => [r.actual_account_id, r]),
+    );
+
+    const defaultEntry = {
+      synced_at: null,
+      status: null,
+      error_message: null,
+      transactions_added: 0,
+      transactions_updated: 0,
+      error_code: null,
+    };
+
+    const statuses = {};
+    for (const accountId of ids) {
+      const lastEntry = syncMap.get(accountId) ?? null;
+      const mapInfo = accountMap.get(accountId) ?? null;
+
+      statuses[accountId] = {
+        ...(lastEntry ?? defaultEntry),
+        synced_at: lastEntry?.synced_at
+          ? new Date(Number(lastEntry.synced_at) * 1000).toISOString()
+          : null,
+        consent_valid_until: mapInfo?.valid_until ?? null,
+        session_id: mapInfo?.session_id ?? null,
+        aspsp_name: mapInfo?.aspsp_name ?? null,
+        aspsp_country: mapInfo?.aspsp_country ?? null,
+      };
     }
 
     res.send({ status: 'ok', data: { statuses } });
+  }),
+);
+
+// Updates eb_account_map to point all accounts from an old session to the new
+// one after a re-authorization flow. Called by the client modal once the OAuth
+// callback has completed and a new session_id is available.
+app.post(
+  '/reauth-complete',
+  handleError(async (req, res) => {
+    const { newSessionId, oldSessionId } = req.body || {};
+    if (!newSessionId || !oldSessionId) {
+      return res.send({ status: 'ok', data: { error_code: 'INVALID_INPUT' } });
+    }
+    const db = getAccountDb();
+
+    // Update all account map rows from old session to new session
+    db.mutate('UPDATE eb_account_map SET session_id = ? WHERE session_id = ?', [
+      newSessionId,
+      oldSessionId,
+    ]);
+
+    logger.info('Re-auth complete', { oldSessionId, newSessionId });
+    writeAuditLog({
+      event_type: 'eb_consent_renewal',
+      actor: (req.headers['x-actual-token'] as string) ?? 'system',
+      ip_address: req.ip,
+      outcome: 'success',
+      details: { oldSessionId, newSessionId },
+    });
+
+    res.send({ status: 'ok', data: {} });
   }),
 );
 
@@ -388,6 +485,13 @@ app.post(
       'UPDATE eb_account_map SET actual_account_id = ? WHERE eb_account_uid = ?',
       [actualAccountId, ebAccountUid],
     );
+    writeAuditLog({
+      event_type: 'eb_account_link',
+      actor: (req.headers['x-actual-token'] as string) ?? 'system',
+      ip_address: req.ip,
+      outcome: 'success',
+      details: { ebAccountUid, actualAccountId },
+    });
     res.send({ status: 'ok' });
   }),
 );

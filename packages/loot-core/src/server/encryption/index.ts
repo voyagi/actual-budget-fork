@@ -15,8 +15,20 @@ class Key {
     this.id = id || uuidv4();
   }
 
-  async createFromPassword({ password, salt }) {
-    this.value = await internals.createKey({ secret: password, salt });
+  async createFromPassword({
+    password,
+    salt,
+    iterations,
+  }: {
+    password: string;
+    salt: string;
+    iterations?: number;
+  }) {
+    this.value = await internals.createKey({
+      secret: password,
+      salt,
+      iterations,
+    });
   }
 
   async createFromBase64(str) {
@@ -82,8 +94,18 @@ export function unloadAllKeys() {
   keys = {};
 }
 
-export async function createKey({ id, password, salt }) {
+export async function createKey({
+  id,
+  password,
+  salt,
+  iterations,
+}: {
+  id?: string;
+  password: string;
+  salt: string;
+  iterations?: number;
+}) {
   const key = new Key({ id });
-  await key.createFromPassword({ password, salt });
+  await key.createFromPassword({ password, salt, iterations });
   return key;
 }

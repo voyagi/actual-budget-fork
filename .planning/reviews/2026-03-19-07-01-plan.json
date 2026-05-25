@@ -1,0 +1,57 @@
+{
+  "reviewedAt": "2026-03-19T00:00:00.000Z",
+  "planFile": ".planning/phases/07-observability-and-monitoring/07-01-PLAN.md",
+  "planGoal": "Create four observability utility modules: enhanced Winston logger, audit log migration+helper, in-memory metrics collector, and webhook alerter with cooldown",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "category": "edge-case",
+      "step": "Task 3: triggerAlert cooldown — Test 7 behavior mismatch",
+      "description": "The plan states Test 7: 'triggerAlert() does nothing when ALERT_WEBHOOK_URL is not set (but still stores alert in-memory)'. But the actual implementation checks the cooldown BEFORE storing in memory (lines 383-385 in the plan's code). If the cooldown has fired and a second call comes in within 1 hour with no webhook URL set, it returns early WITHOUT storing a new alert. So Test 7's parenthetical '(but still stores alert in-memory)' is misleading — the in-memory store only records one alert per cooldown window regardless of webhook presence. This is correct behavior but the test description is inaccurate.",
+      "suggestion": "The behavior is actually the right design (cooldown applies globally, not just to webhook). Correct the test description to: 'triggerAlert() does not send webhook when ALERT_WEBHOOK_URL is not set, but does store alert in-memory on first call (cooldown still applies).'"
+    },
+    {
+      "severity": "HIGH",
+      "category": "edge-case",
+      "step": "Task 3: alerter — in-memory state is process-scoped singleton",
+      "description": "The alerter module uses module-level variables (recentAlerts, cooldowns, alertCounter). In production this is fine for a single-process server. But the plan does not document the consequence: server restarts clear all alerts, cooldowns reset, and counter resets. An alert that fired just before a restart will re-fire immediately after restart if the triggering condition persists, potentially spamming the webhook. The 1-hour cooldown is lost on restart.",
+      "suggestion": "Document in the module that state is ephemeral and lost on restart. For production webhook spam prevention, consider persisting the cooldown table to SQLite (or accept the restart-reset behavior as a known trade-off)."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 1: Logger — NODE_ENV=test guard",
+      "description": "The DailyRotateFile transport is guarded by NODE_ENV !== 'test'. This means in staging or production deployments where NODE_ENV is not explicitly set, the file transport will be added. But it also means any test that directly imports logger.ts without NODE_ENV=test will create a DailyRotateFile transport writing to /data/logs/ on the host machine. The plan does not specify whether the test runner sets NODE_ENV=test automatically.",
+      "suggestion": "Verify vitest sets NODE_ENV=test by default (it does via the globals config). This is acceptable but worth noting. The LOG_DIR fallback to '/data/logs' will fail on dev machines that don't have that path — during integration tests outside the container. Consider defaulting to a relative path in development."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 2: writeAuditLog — migration not guaranteed before first write",
+      "description": "writeAuditLog() calls getAccountDb() and INSERTs directly. If called before runAuditMigrations() has run (e.g., a request comes in before app startup completes the migration call in app.ts), the INSERT fails silently because the table doesn't exist. The best-effort catch swallows this. The plan acknowledges this for app.ts startup but does not address the race window between server start accepting requests and runAuditMigrations() completing.",
+      "suggestion": "This is an acceptable trade-off given the best-effort design. Document explicitly that audit log writes before the migration runs will be silently dropped. Alternatively, call runAuditMigrations() at module load time of audit.ts itself (guarded by try/catch)."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 3: metrics — percentile calculation for small sample sets",
+      "description": "The percentile formula `sorted[Math.floor(sorted.length * pct / 100)]` with a small array (e.g., 2 samples) produces: p50 = sorted[1], p95 = sorted[1], p99 = sorted[1]. All three percentiles collapse to the same value for tiny sample sets. For p99 with 100 samples, index = floor(99) = 99 which is sorted[99] (the max). This is the 'nearest rank' method and is technically valid but differs from the more common 'interpolation' method. Not a bug, but worth documenting.",
+      "suggestion": "Document the percentile method used. No code change required."
+    }
+  ],
+  "missingSteps": [
+    "No integration test verifies that runAuditMigrations() is safe to call when the account DB does not yet exist (bootstrap hasn't run). The best-effort try/catch in app.ts swallows this silently but it should be an explicit test case in audit.test.ts."
+  ],
+  "assumptions": [
+    "winston-daily-rotate-file can be added with yarn workspace without disrupting the lockfile for CI.",
+    "The /data/logs/ directory exists and is writable in the Docker container deployment target.",
+    "Node.js fetch() is available in the sync-server runtime (Node 18+).",
+    "vitest sets NODE_ENV=test automatically, preventing file transport from activating during tests."
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 2,
+    "medium": 3,
+    "passed": false
+  }
+}

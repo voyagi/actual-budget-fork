@@ -23,6 +23,7 @@ import {
   getUserByUsername,
   transferAllFilesFromUser,
 } from '../services/user-service';
+import { writeAuditLog } from '../util/audit.js';
 import { TOKEN_EXPIRATION_NEVER } from '../util/validate-user';
 
 import { checkPassword } from './password';
@@ -405,9 +406,24 @@ export async function loginWithOpenIdFinalize(body) {
 
     clearExpiredSessions();
 
+    writeAuditLog({
+      event_type: 'openid_auth',
+      actor: token,
+      ip_address: body.ip_address,
+      outcome: 'success',
+      details: { identity, userId },
+    });
+
     return { url: `${return_url}/openid-cb?token=${token}` };
   } catch (err) {
     console.error('OpenID grant failed:', err);
+    writeAuditLog({
+      event_type: 'openid_auth',
+      actor: 'unauthenticated',
+      ip_address: body.ip_address,
+      outcome: 'fail',
+      details: { error: err instanceof Error ? err.message : String(err) },
+    });
     return { error: 'openid-grant-failed' };
   }
 }
@@ -439,14 +455,18 @@ export function isValidRedirectUrl(url) {
     const redirectUrl = new URL(url);
     const serverUrl = new URL(serverHostname);
 
-    if (
-      redirectUrl.hostname === serverUrl.hostname ||
-      redirectUrl.hostname === 'localhost'
-    ) {
+    const hostnamesMatch = redirectUrl.hostname === serverUrl.hostname;
+    const portsMatch = redirectUrl.port === serverUrl.port;
+    const schemesMatch = redirectUrl.protocol === serverUrl.protocol;
+
+    if (hostnamesMatch && portsMatch && schemesMatch) {
       return true;
-    } else {
-      return false;
     }
+
+    console.warn(
+      `[openid] Blocked redirect URL: ${url} (server: ${serverHostname})`,
+    );
+    return false;
   } catch {
     return false;
   }

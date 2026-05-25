@@ -5,6 +5,11 @@ import { ConfigurationPage } from './page-models/configuration-page';
 import { EnableBankingModal } from './page-models/enable-banking-modal';
 import { MobileNavigation } from './page-models/mobile-navigation';
 
+test.skip(
+  () => !!process.env.E2E_USE_BUILD,
+  'Enable Banking tests require a sync server',
+);
+
 test.describe('Mobile Enable Banking', () => {
   let page: Page;
   let navigation: MobileNavigation;

@@ -1,0 +1,40 @@
+{
+  "reviewedAt": "2026-03-19T00:00:00.000Z",
+  "planFile": ".planning/phases/06-design-refinement/06-02-PLAN.md",
+  "planGoal": "Extract scheduler retry logic into syncAccountWithRetry() with exponential backoff and jitter, replace inline try/catch/sleep nesting",
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "category": "edge-case",
+      "step": "Task 1 / Task 2: Test 9 — log verification",
+      "description": "Test 9 mocks console.log to verify retry logging. But Task 2 implementation uses logger.info (Winston) not console.log. The test mocking console.log will never capture anything from the actual implementation, causing the log-verification test to trivially pass (no calls recorded) rather than meaningfully verify behavior. This is a test quality gap, not a runtime bug.",
+      "suggestion": "Mock the Winston logger instance (or the logger module) instead of console.log in Test 9. Alternatively, accept a logger parameter in syncAccountWithRetry for full DI (consistent with the sleepFn injection pattern)."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "over-engineering",
+      "step": "Task 2: applyJitter cap logic correction mid-action",
+      "description": "The plan contains a self-correction mid-action (lines 276-289), showing the first proposed implementation is wrong and then correcting it. The final implementation correctly caps the base delay before applying jitter. However, the plan leaves the incorrect implementation in the document body, which is confusing for readers and could cause an executor to implement the first (wrong) version.",
+      "suggestion": "Plan documents should remove superseded code blocks. This is a documentation hygiene issue that does not affect the executed output."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "assumption",
+      "step": "Task 2: DEFAULT_RETRY_POLICY — 60s max delay in production",
+      "description": "The 60-second maxDelay cap means in the worst case (many accounts, all failing), runScheduledSync blocks for minutes before completing. The scheduler runs every 6 hours via cron. The plan does not document or bound the worst-case wall time for a full sync run with retries active. With N accounts each needing 3 retries at 5s+10s+20s = 35s of sleep, 20 accounts = 700 seconds of blocking. The sync is synchronous within a single cron tick.",
+      "suggestion": "Document a max-accounts bound or note that the sync loop is synchronous and could exceed the cron interval under pathological conditions. Consider a per-run wall time budget check."
+    }
+  ],
+  "missingSteps": [],
+  "assumptions": [
+    "The vitest config's globalSetup is compatible with isolated unit tests for syncAccountWithRetry (no DB required for the retry logic tests).",
+    "The scheduler test file did not previously exist — the plan creates it fresh.",
+    "console.log spy in Test 9 was eventually adjusted to match the Winston logger calls in the actual implementation."
+  ],
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 3,
+    "passed": true
+  }
+}

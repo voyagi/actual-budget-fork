@@ -30,7 +30,7 @@ export function LabeledCheckbox({
         flexDirection: 'row',
         alignItems: 'center',
         userSelect: 'none',
-        minHeight: 28,
+        minHeight: 44,
         ...style,
       }}
     >

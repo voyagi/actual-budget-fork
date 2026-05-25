@@ -2,6 +2,8 @@
 import crypto from 'crypto';
 
 const ENCRYPTION_ALGORITHM = 'aes-256-gcm' as const;
+export const PBKDF2_ITERATIONS = 100_000;
+export const PBKDF2_ITERATIONS_LEGACY = 10_000;
 
 export function randomBytes(n) {
   return crypto.randomBytes(n);
@@ -28,6 +30,7 @@ export function encrypt(masterKey, value) {
       algorithm: ENCRYPTION_ALGORITHM,
       iv: iv.toString('base64'),
       authTag: authTag.toString('base64'),
+      iterations: PBKDF2_ITERATIONS,
     },
   };
 }
@@ -46,11 +49,20 @@ export function decrypt(masterKey, encrypted, meta) {
   return decrypted;
 }
 
-export function createKey({ secret, salt }) {
-  const buffer = createKeyBuffer({ secret, salt });
+export function createKey({
+  secret,
+  salt,
+  iterations,
+}: {
+  secret: string;
+  salt: string;
+  iterations?: number;
+}) {
+  const buffer = createKeyBuffer({ secret, salt, iterations });
   return {
     raw: buffer,
     base64: buffer.toString('base64'),
+    iterations: iterations ?? PBKDF2_ITERATIONS,
   };
 }
 
@@ -70,15 +82,17 @@ function createKeyBuffer({
   numBytes,
   secret,
   salt,
+  iterations,
 }: {
   numBytes?: number;
   secret?: string;
   salt?: string;
+  iterations?: number;
 }) {
   return crypto.pbkdf2Sync(
     secret || crypto.randomBytes(128).toString('base64'),
     salt || crypto.randomBytes(32).toString('base64'),
-    10000,
+    iterations ?? PBKDF2_ITERATIONS,
     numBytes || 32,
     'sha512',
   );

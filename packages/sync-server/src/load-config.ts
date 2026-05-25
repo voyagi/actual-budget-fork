@@ -298,6 +298,18 @@ const configSchema = convict({
       env: 'ACTUAL_CORS_PROXY_ENABLED',
     },
   },
+  corsOrigin: {
+    doc: 'Allowed CORS origin for the web client. Set to your domain in production.',
+    format: String,
+    default: 'http://localhost:3001',
+    env: 'ACTUAL_CORS_ORIGIN',
+  },
+  alertWebhookUrl: {
+    doc: 'Optional webhook URL for operational alerts (sync failures, auth anomalies). Receives JSON POST.',
+    format: String,
+    default: '',
+    env: 'ALERT_WEBHOOK_URL',
+  },
 });
 
 let configPath: string | null = null;

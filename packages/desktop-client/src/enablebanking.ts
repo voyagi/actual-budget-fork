@@ -20,6 +20,7 @@ const POLL_INTERVAL_MS = 3000;
 export async function authorizeEnableBank(
   aspspName: string,
   aspspCountry: string,
+  signal?: AbortSignal,
 ): Promise<{ accounts: SyncServerEnableBankingAccount[]; state: string }> {
   // Step 1: Create auth session and get the redirect URL
   const authResult = await send('enablebanking-create-auth', {
@@ -47,6 +48,11 @@ export async function authorizeEnableBank(
     const startTime = Date.now();
 
     const pollTimer = setInterval(async () => {
+      if (signal?.aborted) {
+        clearInterval(pollTimer);
+        reject(new Error('aborted'));
+        return;
+      }
       if (Date.now() - startTime > OAUTH_TIMEOUT_MS) {
         clearInterval(pollTimer);
         reject(new Error('timeout'));

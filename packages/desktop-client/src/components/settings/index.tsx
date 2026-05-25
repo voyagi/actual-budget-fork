@@ -24,6 +24,7 @@ import { isElectron } from 'loot-core/shared/environment';
 
 import { AuthSettings } from './AuthSettings';
 import { Backups } from './Backups';
+import { BackupStatus } from './BackupStatus';
 import { BudgetTypeSettings } from './BudgetTypeSettings';
 import { CurrencySettings } from './Currency';
 import { EncryptionSettings } from './Encryption';
@@ -34,6 +35,7 @@ import { LanguageSettings } from './LanguageSettings';
 import { RepairTransactions } from './RepairTransactions';
 import { ResetCache, ResetSync } from './Reset';
 import { ThemeSettings } from './Themes';
+import { TwoFactorSettings } from './TwoFactorSettings';
 import { AdvancedToggle, Setting } from './UI';
 
 import { getLatestAppVersion } from '@desktop-client/app/appSlice';
@@ -329,7 +331,9 @@ export function Settings() {
         {isCurrencyExperimentalEnabled && <CurrencySettings />}
         <LanguageSettings />
         <AuthSettings />
+        <TwoFactorSettings />
         <EncryptionSettings />
+        <BackupStatus />
         <BudgetTypeSettings />
         {isElectron() && <Backups />}
         <ExportBudget />

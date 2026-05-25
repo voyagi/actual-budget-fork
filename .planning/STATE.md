@@ -1,7 +1,22 @@
+---
+gsd_state_version: 1.0
+milestone: v1.58
+milestone_name: milestone
+status: executing
+stopped_at: Phase 5 context gathered
+last_updated: "2026-05-04T14:40:34.348Z"
+progress:
+  total_phases: 13
+  completed_phases: 12
+  total_plans: 33
+  completed_plans: 32
+  percent: 97
+---
+
 # Project State: Actual Budget Fork - Enable Banking Edition
 
-**Last updated:** 2026-02-28
-**Session:** Non-GSD maintenance complete (tech debt, CI, upstream merge)
+**Last updated:** 2026-05-04
+**Session:** Evolve research follow-up: GOALS now split fast local fitness from deep checks, knip is baseline-gated, VRT update image matches Playwright 1.58.2, and Phase 08 remains complete (2/2 plans done).
 
 ## Project Reference
 
@@ -9,38 +24,106 @@
 
 **Milestone:** v1 (initial release)
 
-**Current Focus:** Phase 2 Plans 01-04 complete. Full Enable Banking UI and backend pipeline done. Scheduler (02-05) is the final plan in Phase 2.
+**Current Focus:** Phase 5 production verification update is pending; Phase 8 and Phase 9 are complete.
 
 ## Current Position
 
-**Active Phase:** 02-bank-sync-pipeline
-**Active Plan:** 02-04 complete (desktop UI, OAuth flow, account linking, category rules)
-**Status:** In progress
+**Active Phase:** 05-infrastructure-and-production
+**Active Plan:** Update 05-02 production verification with stale/untrusted whole-app warning behavior
+**Status:** Ready to execute
 
 **Progress:**
-[████████░░] 82%
-Phase 1: Foundation and API Client [4/4] Awaiting human checkpoint
-Phase 2: Bank Sync Pipeline [4/5] In progress (02-01 through 02-04 complete)
-Phase 3: Automation and Consent [ ] Not started
-Phase 4: PWA Completion [ ] Not started
-Phase 5: Infrastructure and Production[ ] Not started
+[██████████] 97%
+Phase 1: Foundation and API Client [4/4] Complete
+Phase 2: Bank Sync Pipeline [5/5] Complete (E2E verified, 3 tests deferred to Phase 5)
+Phase 3: Automation and Consent [2/2] Complete
+Phase 4: PWA Completion [2/2] Complete
+Phase 4.1: Audit Quick Wins [3/3] Complete (INSERTED)
+Phase 4.2: Dependency Security Updates [1/1] Complete (INSERTED)
+Phase 5: Infrastructure and Production [1/2] In Progress
+Phase 5.1: Accessibility Overhaul [2/2] Complete (INSERTED)
+Phase 5.2: Security Hardening [2/2] Complete (INSERTED)
+Phase 6: Design Refinement [2/2] Complete
+Phase 7: Observability and Monitoring [3/3] Complete
+Phase 8: Quality and Test Infrastructure [2/2] Complete
+Phase 9: Feature Expansion [3/3] Complete
 
-Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
+Overall: 12/13 phases complete (32/33 plans complete across all phases)
 
 ## Performance Metrics
 
-| Metric                          | Value |
-| ------------------------------- | ----- | ------- | -------- |
-| Phases total                    | 5     |
-| Requirements mapped             | 29/29 |
-| Plans complete                  | 9     |
-| Phases complete                 | 0     |
-| Phase 02-bank-sync-pipeline P04 | 45min | 3 tasks | 11 files |
+| Metric                                    | Value | Tasks   | Files    |
+| ----------------------------------------- | ----- | ------- | -------- |
+| Phases total                              | 5     |         |          |
+| Requirements mapped                       | 29/29 |         |          |
+| Plans complete                            | 12    |         |          |
+| Phases complete                           | 3     |         |          |
+| Phase 02-bank-sync-pipeline P04           | 45min | 3 tasks | 11 files |
+| Phase 02-bank-sync-pipeline P05           | 90min | 2 tasks | 0 files (verification only) |
+| Phase 03-automation-consent-lifecycle P01 | 70min | 2 tasks | 10 files |
+| Phase 03-automation-consent-lifecycle P02 | 65min | 2 tasks | 12 files |
+| Phase 04.1-audit-quick-wins P01           | 21min | 3 tasks | 6 files  |
+| Phase 04.1-audit-quick-wins P02           | 7min  | 2 tasks | 4 files  |
+| Phase 04.1-audit-quick-wins P03           | 12min | 3 tasks | 5 files  |
+| Phase 04.2-dependency-security-updates P01| 15min | 3 tasks | 2 files  |
+| Phase 05.1-accessibility-overhaul P01 | 8min | 1 tasks | 4 files |
+| Phase 05.1-accessibility-overhaul P02 | 35min | 2 tasks | 7 files |
+| Phase 05.2-security-hardening P02     | 6min  | 2 tasks | 6 files |
+| Phase 05.2-security-hardening P01 | 7min | 2 tasks | 5 files |
+| Phase 06-design-refinement P01 | 5min | 2 tasks | 4 files |
+| Phase 06-design-refinement P02 | 8min | 2 tasks | 2 files |
+| Phase 07-observability-and-monitoring P01 | 20min | 3 tasks | 8 files |
+| Phase 07-observability-and-monitoring P01 | 20min | 3 tasks | 8 files |
+| Phase 07-observability-and-monitoring P02 | 35min | 3 tasks | 9 files |
+| Phase 07-observability-and-monitoring P03 | 25min | 2 tasks | 5 files |
+| Phase 08-quality-and-test-infrastructure P01 | 8min | 2 tasks | 4 files |
+| Phase 08-quality-and-test-infrastructure P02 | 12min | 3 tasks | 2 files |
+| Phase 09-feature-expansion P02 | 5min | 2 tasks | 5 files |
+| Phase 09-feature-expansion P09-01 | 45min | 2 tasks | 6 files |
+| Phase 09-feature-expansion P09-03 | 25min | 4 tasks | 5 files |
+| Phase 04-pwa-completion P01 | 10min | 2 tasks | 2 files |
+| Phase 04-pwa-completion P02 | 2min | 2 tasks | 0 files |
+| Phase 05-infrastructure-and-production P01 | 8min | 2 tasks | 3 files |
 
 ## Key Decisions Recorded
 
 | Decision                                                                               | Rationale                                                                                                                                                                                    | Date       |
 | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| winston-daily-rotate-file side-effect import + NODE_ENV!==test guard in logger.ts | Package already in deps; guard prevents file transport in test runs where /data/logs is unavailable | 2026-03-18 |
+| Audit actor hashed to 8-char hex (sha256), 'system' stored verbatim | Balances privacy (no raw tokens in DB) with traceability; system actor has no secret to protect | 2026-03-18 |
+| writeAuditLog() best-effort: swallows DB errors via logger.error | Audit must never break auth flows; partial audit log beats broken login | 2026-03-18 |
+| Alerter stores in-memory regardless of webhook config; cooldown keyed by event_type | Client polling works without webhook; 1h cooldown prevents spam without DB persistence | 2026-03-18 |
+| syncAccountWithRetry uses dependency injection (syncFn, sleepFn params) for pure unit testing without DB or API calls | Enables vi.fn() stub-based unit tests with no real DB/API setup required; function exported for testability | 2026-03-18 |
+| Base delay capped before jitter in exponential backoff: applyJitter(Math.min(delay, maxDelay), jitterFraction) | Allows jitter to slightly exceed maxDelay per standard pattern; base delay capped so compounding stays bounded | 2026-03-18 |
+| Consent/sync alert hooks: useEffect deps [sessionCount, sessionIdsKey] and wasActive ref | Avoids re-dispatch on referential churn; wasActive prevents orphan removeNotification on mount before any sync has started | 2026-03-18 |
+| fetchOperationalAlerts uses get() not post() to match GET /alerts server endpoint | Plan template showed post() but server exposes GET /alerts; get() returns text so JSON.parse applied manually | 2026-03-18 |
+| knownAlertIds via useRef<Set<string>> in useOperationalAlerts | Prevents re-dispatching alerts already shown this session; Set persists across re-renders and poll intervals without triggering re-render | 2026-03-18 |
+| React.Suspense wraps RouteErrorBoundary (not inside it) for code-split routes | Chunk load errors propagate as render errors to RouteErrorBoundary, enabling recoverable Try again button. Suspense inside boundary would swallow chunk errors. | 2026-03-19 |
+| 5 route components lazy-loaded: Reports, Settings, UserDirectoryPage, UserAccessPage, ManageTagsPage | NarrowAlternate/WideComponent kept eager (already do internal lazy loading). App shell kept eager. Named exports use .then(m => ({ default: m.X })) pattern. | 2026-03-19 |
+| fq-1 audit: Phase 7 useOperationalAlerts confirmed to cover all 3 alert event types | sync_failure (scheduler.ts), consent_expiry (scheduler.ts x2), auth_failure_burst (app-account.ts). Client maps all 3 in formatAlertTitle with 60s polling and server-side ack. | 2026-03-19 |
+| Synchronous regex pre-check instead of worker_threads for Handlebars ReDoS protection  | Handlebars templates called synchronously (action.ts line 150), Promise return renders as [object Promise]. isRegexSafe + try/catch used instead. | 2026-03-06 |
+| keyTest uses stored iterations from metadata with 10K legacy fallback                  | PBKDF2 default changed from 10K to 100K. Without reading stored iterations, old files would fail to decrypt. Fallback to PBKDF2_ITERATIONS_LEGACY ensures backward compat. | 2026-03-06 |
+| Re-encryption best-effort via /user-create-key                                         | After successful decrypt with old iterations, re-encrypt test message with 100K key and push to server. Failure logs but does not block. Retries on next access. | 2026-03-06 |
+| escapeRegExp on replace/replaceAll non-regex branches for consistency                  | Per locked CONTEXT.md decision. String.replace with string arg does literal match, so escaping is harmless defense-in-depth. | 2026-03-06 |
+| Yarn resolutions >=X.Y.Z range form for CVE overrides                                  | Ranges allow Dependabot to auto-bump future security fixes; exact pins freeze forever. Upper bound added only for rollup (>=4.59.0 <5.0.0) to prevent 5.x breaking changes. | 2026-03-03 |
+| minimatch 3.x/5.x/9.x CVEs accepted as unfixable transitive risk                       | Fixing requires incompatible major API override (3.x API != 10.x API), breaks build toolchain. DoS requires attacker-controlled glob patterns that never occur in build config. | 2026-03-03 |
+| SvgDelete from @actual-app/components/icons/v0 for consent banner dismiss buttons              | v0 is the correct icon set for delete/close icons in Actual design system. Replaces HTML entity &times; (dsg-2). | 2026-03-03 |
+| Two-pass localStorage cleanup for consent-dismissed-* keys                                     | Collect stale keys into array first, then delete. Deleting during index iteration corrupts i and skips keys (dsg-5). | 2026-03-03 |
+| clamp(400px, 30vw, 600px) for EnableBankingExternalMsgModal width                             | 400px readable minimum, 30vw scales with viewport, 600px prevents over-stretching on large screens (dsg-4). | 2026-03-03 |
+| Button variant='bare' replaces raw button element in AccountRow re-authorize link              | Design system Button provides background:none, border:none, cursor:pointer + hover/focus-visible/active automatically (dsg-3). | 2026-03-03 |
+| aria-live="polite" on animated container (not nested text) for BankSyncStatus                  | Prevents double-announcements from nested aria-live regions. Outer role="status" provides semantic container. | 2026-03-03 |
+| urgencyIcons module-level const mapping urgency to SVG component                               | Module-level avoids recreation on render. Null for ok urgency renders no icon (non-alert state). Shared by SessionBanner and MultiSessionBanner. | 2026-03-03 |
+| consent-urgency.ts placed in utils/ (not components/ or hooks/)                                | It is domain logic shared across multiple concerns, not tied to a component or hook lifecycle. utils/ is established as the canonical location. | 2026-03-04 |
+| ConsentUrgency type re-exported from hook for backward compat                                  | Any existing import of ConsentUrgency from useEnableBankingStatus still works without changes after extraction to shared utility. | 2026-03-04 |
+| h2/h3 inline styles reset browser defaults (margin:0, fontWeight:'inherit')                    | Browser h2/h3 default bold weight and top/bottom margin would change visual appearance. Inline reset preserves exact look of replaced styled Text elements. | 2026-03-04 |
+| AmountInput aria-label/aria-required forwarded to inner Input (not sign Button)                 | The sign toggle Button already has its own aria-label. Forwarding ARIA attrs to the data input gives screen readers the correct label for the numeric field. | 2026-03-04 |
+| aria-required on StartingOptionsFields inputs - both layout branches                            | StartingOptionsFields only renders when new account creation is active. Both date and amount are required fields when visible. Both inline and stacked branches need the attribute. | 2026-03-04 |
+| :focus-visible + :focus:not(:focus-visible) pattern for DateSelect calendar buttons            | Removes blanket outline:none (which blocked keyboard focus ring). :focus-visible shows 2px boxShadow for keyboard users, :focus:not(:focus-visible) suppresses for mouse. | 2026-03-03 |
+| CORS single-origin String format (not Array) via ACTUAL_CORS_ORIGIN                   | Single allowed origin per deployment simplifies configuration. Set to production domain; defaults to localhost:3001 for dev.                                                                  | 2026-03-03 |
+| CSP style-src includes unsafe-inline                                                   | Required because React uses inline style objects extensively throughout the frontend. Removing it would break UI.                                                                             | 2026-03-03 |
+| 404 FileNotFound deferred (kept as 400)                                                | Tests confirm frontend expects 400 for file-not-found; the original FIXME said "make sure frontend is ok with it" - it is not. Requires coordinated frontend + backend change.               | 2026-03-03 |
+| boolToInt to Boolean conversion deferred                                               | Tests confirm integer 0/1 values for deleted field are expected by test suite. Frontend code uses truthy/falsy, but changing without test suite update is unsafe.                            | 2026-03-03 |
+| res.json tests use res.body not res.text                                               | res.json('string') JSON-encodes string with quotes. res.body is the parsed JSON value (string without quotes). Tests updated to check res.body for semantic correctness.                     | 2026-03-03 |
 | 5-phase structure (not 6)                                                              | All 29 requirements fit cleanly into 5 delivery boundaries. Research's "Phase 6 production cutover" is absorbed into Phase 5 success criteria as an explicit production smoke test milestone | 2026-02-18 |
 | Phases 4 and 5 can run in parallel with Phase 3                                        | PWA and infrastructure work is independent of automation logic once Phase 2 (manual sync) is stable                                                                                          | 2026-02-18 |
 | Enable Banking over GoCardless                                                         | GoCardless stopped accepting EU users July 2025, Enable Banking is free for personal use and covers 4,709+ banks                                                                             | 2026-02-18 |
@@ -69,6 +152,14 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 | authorizeEnableBank uses polling not callback                                          | Polling matches GoCardless pattern, avoids needing a callback listener in the desktop client - works naturally with OAuth redirect flow                                                      | 2026-02-19 |
 | useEnableBankingSyncStatus accepts Actual UUIDs                                        | UI always has account.id (Actual UUID), never the internal EB UID - IPC layer handles mapping                                                                                                | 2026-02-19 |
 | EU merchant rules look up category by name not UUID                                    | Adapts to any budget's category setup without hardcoding UUIDs - missing categories skipped gracefully                                                                                       | 2026-02-19 |
+| 5-field cron `0 0,6,12,18 * * *` preferred over 6-field node-cron v4 format          | 5-field form is version-stable and easier to verify; 6-field second-precision format is node-cron-version-sensitive                                                                          | 2026-03-01 |
+| Session-grouped sync loop: consent expiry checked once per bank connection              | One OAuth session = one bank connection = one group. Prevents per-account consent checks (wasteful) and ensures one session's failure doesn't block other users.                             | 2026-03-01 |
+| RateLimitError breaks session account loop without sleep                               | 429 applies to entire API connection. Sleeping 30s per account compounds to N*30s (e.g. 50 accounts = 25 minutes). Break immediately and continue to next session.                          | 2026-03-01 |
+| closeAccountDb() + EBUSY catch in vitest teardown                                     | Windows holds SQLite file handle during teardown rm. closeAccountDb() releases the singleton; EBUSY catch handles race where worker-held handle lingers. Test results recorded before teardown. | 2026-03-01 |
+| useConsentExpiry() hook encapsulates all data fetching and grouping; banner is pure render | Self-contained hook pattern avoids prop drilling: banner needs no props, just drop into JSX. Groups by session_id server-side concept makes sessions the unit of re-auth. | 2026-03-01 |
+| useRef mutex for isSyncingRef in FinancesApp visibility/focus handler (not closure-scoped let) | useRef survives effect re-creation when staleThresholdHours dep changes. Closure-scoped let would be reset on each re-creation, allowing concurrent syncs during dep-triggered effect restart. | 2026-03-01 |
+| Re-auth modal pre-fills country and bank from props to bypass picker and prevent silent abort | onJump() has guard: if (!selectedBankId || !country) return. In re-auth mode, user should not see the picker - pre-fill ensures the guard is satisfied immediately. | 2026-03-01 |
+| aspsp_country added as Plan 01 amendment to /sync-status (trivial JOIN column addition) | No schema change needed - eb_sessions already has aspsp_country column. Required for re-auth createAuth() country param from client side. | 2026-03-01 |
 
 ## Critical Pitfalls (from research)
 
@@ -87,6 +178,10 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 - ~~**Before starting Phase 1:** Create Enable Banking sandbox account at enablebanking.com/cp and download test RSA keypair. This is a manual prerequisite, not automated.~~ (Prerequisite for Plan 01-02, not 01-01)
 
 ## Accumulated Context
+
+### Pending Todos
+
+- [Update Phase 5 verification with production trust-state behavior](todos/pending/2026-05-04-update-phase-5-verification-with-production-trust-state-behavior.md) - Add stale/untrusted whole-app warning behavior to production readiness checks.
 
 ### Stack Versions (verified against npm registry 2026-02-18)
 
@@ -127,6 +222,17 @@ Overall: 0/5 phases complete (9 plans complete across phases 1 and 2)
 - UK banks: 90 days
 - Read `maximum_consent_validity` from Enable Banking session response. Never hardcode either value.
 
+### Roadmap Evolution
+
+- Phase 04.1 inserted after Phase 4: Audit Quick Wins (URGENT) - from project audit 2026-03-03
+- Phase 04.2 inserted after Phase 4: Dependency Security Updates (URGENT) - trivy CVEs
+- Phase 05.1 inserted after Phase 5: Accessibility Overhaul (URGENT) - WCAG/EU Accessibility Act
+- Phase 05.2 inserted after Phase 5: Security Hardening (URGENT) - PBKDF2, OpenID, password strength
+- Phase 6 added: Design Refinement - alert surfaces, design system consistency
+- Phase 7 added: Observability and Monitoring - error tracking, alerting, audit logging
+- Phase 8 added: Quality and Test Infrastructure - code splitting, coverage, E2E
+- Phase 9 added: Feature Expansion - 2FA/TOTP, backup automation
+
 ## Open Questions
 
 - What is the exact reason the service worker build is disabled in `vite.config.mts`? (Determines Phase 4 approach)
@@ -155,7 +261,7 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 ### CI Fixes (Feb 27-28)
 
 - Split lint job: oxfmt `--check` (hard fail) + oxlint (informational `|| true`)
-- E2E tests remain disabled (`if: false`) due to pre-existing Playwright browser version mismatch (`chromium_headless_shell-1208` missing from `mcr.microsoft.com/playwright:v1.57.0-jammy`)
+- VRT update generation now uses the Playwright `v1.58.2-jammy` image; desktop app E2E remains disabled (`if: false`) pending a separate recovery pass.
 - Autofix workflow disabled (pre-existing upstream oxlint errors)
 - Repo made public, GitHub Actions unlimited free minutes
 - Branch protection configured on master
@@ -169,18 +275,20 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 
 ## Session Continuity
 
-**Stopped at:** Non-GSD maintenance complete
+**Stopped at:** Phase 5 context gathered
 
-**Next action:** Phase 2 Plan 02-05 (scheduler and background sync). GSD roadmap unchanged.
+**Next action:** Update Phase 5 verification so stale/untrusted access, persistence, multi-device sync, and bank-sync states show a whole-app warning while preserving app usability, then verify the warning clear path.
 
-**Phase 1 verification results (automated):**
+**Phase 2 E2E verification results (browser automation, 2026-03-01):**
 
-- `GET /enablebanking/test-auth` returns `{"status":"ok","data":{"configured":true}}`
-- RSA key persists across `docker compose down && docker compose up -d`
-- Container logs clean, server healthy at http://localhost:5006
-- All 11 custom commits tagged `[eb]` (FOUND-04 fully satisfied after Plan 01-04 gap closure)
+- OAuth redirect chain: Actual -> EB consent -> Mock ASPSP sign-in (PASS)
+- Account linking: 2 accounts linked in eb_account_map (PASS)
+- Multi-session: 6 sessions across Mock ASPSP + OP (PASS)
+- Sync logging: eb_sync_log entries with ok status (PASS)
+- Balance display: UI shows 5,349.37 for MEIKÄLÄINEN MATTI (PASS)
+- Dedup/pending-booked/category rules: DEFERRED (sandbox returns 0 transactions, verified in code)
 
-**Sandbox credentials ready:**
+**Sandbox credentials:**
 
 - Application ID: `b619fe6c-ab92-4de5-a7c2-901c0e0ef580`
 - Private key: `secrets/eb_private.pem` (PKCS#8, RS256)
@@ -190,4 +298,4 @@ Work outside the Enable Banking GSD roadmap that affects the codebase:
 ---
 
 _State initialized: 2026-02-18_
-_Last updated: 2026-02-19 - Plan 02-04 complete (Enable Banking desktop UI, OAuth flow, category rules)_
+_Last updated: 2026-05-04 - Evolve research follow-up aligned GOALS, knip baseline, VRT image, and Phase 08 state._

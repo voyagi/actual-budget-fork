@@ -9,9 +9,17 @@
 
 - [-] **Phase 1: Foundation and API Client** - Fork is running, Enable Banking API client is sandbox-tested with RSA auth
 - [ ] **Phase 2: Bank Sync Pipeline** - Full manual sync works end-to-end: OAuth, account linking, transaction import, balance update
-- [ ] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI
-- [ ] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support
-- [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and smoke-tested
+- [x] **Phase 3: Automation and Consent Lifecycle** - Sync runs 4x/day automatically, consent expiry is tracked and surfaced in the UI (completed 2026-03-01)
+- [x] **Phase 4: PWA Completion** - App is installable on Android and iOS home screen with offline read support (completed 2026-03-19)
+- [x] **Phase 4.1: Audit Quick Wins** - Small-effort fixes from project audit (security, a11y, perf, design) (INSERTED - completed 2026-03-03)
+- [ ] **Phase 4.2: Dependency Security Updates** - Update deps with known CVEs (INSERTED)
+- [ ] **Phase 5: Infrastructure and Production** - Docker Compose deploys the full stack with HTTPS, volume persistence verified, production Enable Banking credentials connected and durable production trust warnings verified
+- [ ] **Phase 5.1: Accessibility Overhaul** - Heading hierarchy, form ARIA, shared utilities (INSERTED)
+- [ ] **Phase 5.2: Security Hardening** - PBKDF2, OpenID, password strength, ReDoS (INSERTED)
+- [x] **Phase 6: Design Refinement** - Alert surface consolidation, scheduler cleanup (completed 2026-03-18)
+- [x] **Phase 7: Observability and Monitoring** - Error tracking, alerting, audit logging, metrics (completed 2026-03-18)
+- [x] **Phase 8: Quality and Test Infrastructure** - Code splitting, sync failure UI, coverage, E2E (completed 2026-03-18)
+- [x] **Phase 9: Feature Expansion** - 2FA/TOTP, backup automation (completed 2026-03-19)
 
 ## Progress
 
@@ -19,9 +27,17 @@
 | ----------------------------------- | -------------- | ------------------------- | --------- |
 | 1. Foundation and API Client        | 4/4            | Awaiting human checkpoint | -         |
 | 2. Bank Sync Pipeline               | 3/5            | In Progress               |           |
-| 3. Automation and Consent Lifecycle | 0/?            | Not started               | -         |
-| 4. PWA Completion                   | 0/?            | Not started               | -         |
-| 5. Infrastructure and Production    | 0/?            | Not started               | -         |
+| 3. Automation and Consent Lifecycle | 2/2 | Complete   | 2026-03-01 |
+| 4. PWA Completion                   | 2/2 | Complete   | 2026-03-19 |
+| 4.1 Audit Quick Wins (INSERTED)     | 3/3            | Complete                  | 2026-03-03 |
+| 4.2 Dependency Security Updates (INSERTED) | 0/1     | Not started               | -         |
+| 5. Infrastructure and Production    | 1/2 | In Progress|  |
+| 5.1 Accessibility Overhaul (INSERTED) | 2/2 | Complete |  |
+| 5.2 Security Hardening (INSERTED)   | 0/2            | Planned                   | -         |
+| 6. Design Refinement                | 2/2 | Complete   | 2026-03-18 |
+| 7. Observability and Monitoring     | 3/3 | Complete   | 2026-03-18 |
+| 8. Quality and Test Infrastructure  | 2/2 | Complete   | 2026-03-18 |
+| 9. Feature Expansion                | 3/3 | Complete   | 2026-03-19 |
 
 ## Phase Details
 
@@ -100,11 +116,16 @@ Plans:
 5. User clicks the re-authorization banner, completes the OAuth redirect at their bank, and sync resumes without data loss
 6. The consent expiry date stored for each bank reflects the `maximum_consent_validity` from the Enable Banking session response - not a hardcoded 90 or 180 day value
 
-**Plans:** TBD
+**Plans:** 2/2 plans complete
+
+Plans:
+
+- [ ] 03-01-PLAN.md - Server-side cron scheduler, createAuth consent ceiling fix, extended /sync-status with consent data
+- [ ] 03-02-PLAN.md - Client-side consent expiry banner, re-authorization flow, sync-on-open behavior
 
 ### Phase 4: PWA Completion
 
-**Goal:** The app is installable as a standalone PWA on both Android and iOS home screens, and previously loaded budget data is readable offline - resolving the existing service worker blockage in vite.config.mts rather than rebuilding from scratch.
+**Goal:** The app is installable as a standalone PWA on both Android and iOS home screens, and previously loaded budget data is readable offline. The existing PWA infrastructure (VitePWA generateSW, manifest, SW registration) is verified and gap-filled rather than rebuilt from scratch.
 
 **Depends on:** Phase 1 (can be developed in parallel with Phase 3)
 
@@ -120,15 +141,42 @@ Plans:
 
 **Research flag:** Read `packages/desktop-client/vite.config.mts` before planning this phase. The service worker build is known to be disabled - the reason for the disable determines the fix approach.
 
-**Plans:** TBD
+**Plans:** 2/2 plans complete
+
+Plans:
+- [ ] 04-01-PLAN.md -- Build audit: verify SW and manifest generation, fix EnableBanking modal responsive width for 375px
+- [ ] 04-02-PLAN.md -- Chrome DevTools PWA audit, Android install checkpoint, iOS deferral to Phase 5
+
+### Phase 04.1: Audit Quick Wins (INSERTED)
+
+**Goal:** Fix all small-effort findings from the project audit: enable terser, restrict CORS, auth rate limiting, aria-live regions, skip-nav, HSTS, CSP, banner urgency icon, FIXME error codes, unused files, focus-visible, token expiration, Dockerfile USER, Content-Type headers, design system fixes, localStorage cleanup, spelling consistency.
+**Requirements**: Audit findings perf-1, cfg-2, sec-2, a11y-1, a11y-2, sec-6, sec-1, a11y-4, fq-5, dx-6, a11y-5, cfg-1, sec-15, sec-16, dsg-2, dsg-3, dsg-4, dsg-5
+**Depends on:** Phase 3
+**Plans:** 2/2 plans complete
+
+Plans:
+
+- [x] 04.1-01-PLAN.md - Security headers (HSTS, CSP), CORS restriction, rate limiting, auth token expiration, Dockerfile USER
+- [x] 04.1-02-PLAN.md - Accessibility quick wins (aria-live, urgency icons, skip-nav, focus-visible)
+- [x] 04.1-03-PLAN.md - Design system compliance (SvgDelete, Button bare, modal width, spelling, dead code)
+
+### Phase 04.2: Dependency Security Updates (INSERTED)
+
+**Goal:** Update all dependencies with known CVEs: tar 7.5.8, rollup 4.59.0, serialize-javascript 7.0.3, storybook 10.2.10, jws 3.2.3, axios 1.13.5, lodash 4.17.23, minimatch overrides, glob 10.5.0, ajv 8.18.0. Verify build passes after each update.
+**Requirements**: Audit findings sec-8 through sec-14
+**Depends on:** Phase 3
+**Plans:** 1/1 plans complete
+
+Plans:
+- [ ] 04.2-01-PLAN.md -- Lockfile refresh, HIGH severity resolution overrides (rollup, serialize-js, jws), MEDIUM severity overrides (glob, ajv), trivy final gate
 
 ### Phase 5: Infrastructure and Production
 
-**Goal:** A single `docker compose up` deploys the full stack with HTTPS that is trusted by both desktop Chrome and iOS Safari, data persists across restarts, multi-device sync works between phone and desktop, and production Enable Banking credentials are connected with at least one real bank account syncing successfully.
+**Goal:** A single `docker compose up` deploys the full stack with HTTPS that is trusted by both desktop Chrome and iOS Safari, data persists across restarts, multi-device sync works between phone and desktop, production Enable Banking credentials are connected with at least one real bank account syncing successfully, and stale/untrusted production conditions create deterministic whole-app trust warnings.
 
 **Depends on:** Phases 1-4 all complete (production cutover requires proven sandbox integration)
 
-**Requirements:** INFRA-01, INFRA-02, INFRA-03, INFRA-04
+**Requirements:** INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INFRA-06
 
 **Success Criteria** (what must be TRUE when this phase completes):
 
@@ -137,10 +185,84 @@ Plans:
 3. A transaction entered on desktop is visible on the phone within seconds, and a transaction entered on the phone is visible on desktop (multi-device sync confirmed in both directions)
 4. After `docker compose down && docker compose up`, all previously created budgets, accounts, and transactions are intact (volume persistence verified)
 5. With production Enable Banking credentials and a real bank account connected, at least one automatic sync completes successfully and imports real transactions into the correct Actual account
+6. Stale/untrusted access, persistence, multi-device sync, or bank-sync state creates a whole-app non-blocking production trust warning
+7. The production trust warning clears only after an automated passing recovery check or a verified manual fix
 
 **Note:** Production Enable Banking credentials require a separate registration at enablebanking.com/cp. This is distinct from the sandbox credentials used in Phases 1-3. Plan a dedicated smoke test milestone before marking this phase complete.
 
-**Plans:** TBD
+**Plans:** 1/2 plans executed
+
+Plans:
+- [ ] 05-01-PLAN.md -- Docker Compose extension: add Caddy reverse proxy + cloudflared tunnel + healthcheck, create Caddyfile, update .env.example
+- [ ] 05-02-PLAN.md -- Production trust and verification: durable trust state, whole-app warning, deterministic recovery, Docker build + start, desktop HTTPS, phone HTTPS, volume persistence, multi-device sync, production EB OAuth + real bank sync
+
+### Phase 05.1: Accessibility Overhaul (INSERTED)
+
+**Goal:** Add semantic heading hierarchy to fork pages, form ARIA attributes (aria-required, aria-invalid, aria-describedby), and extract consent urgency color/threshold logic to shared utilities.
+**Requirements**: Audit findings a11y-3, a11y-6, dx-3
+**Depends on:** Phase 5
+**Plans:** 2/2 plans complete
+
+Plans:
+- [x] 05.1-01-PLAN.md - Extract consent urgency utility (colors, icons, thresholds) to shared module
+- [x] 05.1-02-PLAN.md - Semantic heading hierarchy on fork pages, FormError default role, form ARIA labels
+
+### Phase 05.2: Security Hardening (INSERTED)
+
+**Goal:** Increase PBKDF2 iterations to 100K+ with data migration strategy, restrict OpenID redirect from localhost in production, add password strength requirements, sanitize non-literal RegExp in handlebars-helpers.
+**Requirements**: Audit findings sec-4, sec-5, sec-7, sec-17
+**Depends on:** Phase 5
+**Plans:** 2/2 plans complete
+
+Plans:
+- [ ] 05.2-01-PLAN.md - PBKDF2 iteration increase to 100K with backward-compatible metadata extension
+- [ ] 05.2-02-PLAN.md - Password strength validation, OpenID redirect restriction, ReDoS metacharacter escape
+
+### Phase 6: Design Refinement
+
+**Goal:** Consolidate alert surfaces into unified notification system, flatten scheduler retry nesting, add exponential backoff for scheduler retry.
+**Requirements**: Audit findings dsg-1, dx-4, fq-4
+**Depends on:** Phase 5
+**Plans:** 2/2 plans complete
+
+Plans:
+- [ ] 06-01-PLAN.md -- Alert surface consolidation: route ConsentExpiryBanner and BankSyncStatus through Notifications Redux system
+- [ ] 06-02-PLAN.md -- Scheduler retry extraction with exponential backoff and jitter (TDD)
+
+### Phase 7: Observability and Monitoring
+
+**Goal:** Structured error tracking via Winston file logs, webhook alerting for operational events, audit logging for auth and EB operations, request latency and sync duration metrics, in-app notification of operational alerts.
+**Requirements**: Audit findings obs-1, obs-2, obs-3, obs-4
+**Depends on:** Phase 6
+**Plans:** 3/3 plans complete
+
+Plans:
+- [ ] 07-01-PLAN.md -- Observability utility modules: Winston file transport, audit migration/helper, metrics collector, webhook alerter with in-memory alert store
+- [ ] 07-02-PLAN.md -- Integration: console.log migration, audit callsites, error context enrichment, latency middleware, /metrics enrichment, all three alert triggers (sync failure, consent expiry, auth failure burst)
+- [ ] 07-03-PLAN.md -- In-app notifications: /alerts server endpoints, loot-core IPC handlers, useOperationalAlerts() client hook wired into FinancesApp
+
+### Phase 8: Quality and Test Infrastructure
+
+**Goal:** Implement route-level code splitting, surface sync failures in UI, configure code coverage, fix E2E tests in CI, add granular error boundaries.
+**Requirements**: Audit findings perf-2, fq-1, dx-2, dx-1, fq-2
+**Depends on:** Phase 7
+**Plans:** 2/2 plans complete
+
+Plans:
+- [ ] 08-01-PLAN.md -- E2E CI workflow fix (Playwright v1.58.2-jammy container) and Vitest v8 coverage config for fork files
+- [ ] 08-02-PLAN.md -- Route-level code splitting (React.lazy + Suspense), EnableBanking error boundary, sync failure UI audit
+
+### Phase 9: Feature Expansion
+
+**Goal:** Implement 2FA/TOTP authentication and automated database backup trigger.
+**Requirements**: Audit findings fc-1, fc-2
+**Depends on:** Phase 8
+**Plans:** 3/3 plans complete
+
+Plans:
+- [ ] 09-01-PLAN.md -- TOTP server-side: totp.ts module, database migration, audit events, login flow intercept, REST endpoints
+- [ ] 09-02-PLAN.md -- Backup server-side: backup.ts module, scheduler cron extension, metrics, manual trigger endpoint
+- [ ] 09-03-PLAN.md -- Client-side integration: loot-core IPC handlers, TOTP login challenge screen, TwoFactorSettings + BackupStatus settings components
 
 ## Coverage
 
@@ -175,10 +297,12 @@ Plans:
 | INFRA-02    | Phase 5 | Infrastructure |
 | INFRA-03    | Phase 5 | Infrastructure |
 | INFRA-04    | Phase 5 | Infrastructure |
+| INFRA-05    | Phase 5 | Infrastructure |
+| INFRA-06    | Phase 5 | Infrastructure |
 
-**Total:** 29/29 v1 requirements mapped. No orphans.
+**Total:** 31/31 v1 requirements mapped. No orphans.
 
 ---
 
 _Roadmap created: 2026-02-18_
-_Last updated: 2026-02-19 after Plan 02-01 complete (data layer, migrations, normalizer)_
+_Last updated: 2026-03-19 - Phase 05 planned (2 plans: Docker Compose + Caddyfile config, production verification checklist)_

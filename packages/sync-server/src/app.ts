@@ -6,7 +6,7 @@ import cors from 'cors';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 
-import { bootstrap } from './account-db';
+import { bootstrap, getAccountDb } from './account-db';
 import * as accountApp from './app-account';
 import * as adminApp from './app-admin';
 import * as corsApp from './app-cors-proxy';
@@ -14,10 +14,19 @@ import * as enableBankingApp from './app-enablebanking/app-enablebanking.js';
 import * as goCardlessApp from './app-gocardless/app-gocardless';
 import * as openidApp from './app-openid';
 import * as pluggai from './app-pluggyai/app-pluggyai';
+import * as productionTrustApp from './app-production-trust.js';
 import * as secretApp from './app-secrets';
 import * as simpleFinApp from './app-simplefin/app-simplefin';
 import * as syncApp from './app-sync';
 import { config } from './load-config';
+import { startScheduler } from './scheduler.js';
+import { getRecentAlerts, acknowledgeAlert } from './util/alerter.js';
+import { runAuditMigrations } from './util/audit-migrations.js';
+import { getLatencyPercentiles, getSyncStats } from './util/metrics.js';
+import {
+  latencyMiddleware,
+  validateSessionMiddleware,
+} from './util/middlewares.js';
 
 const app = express();
 
@@ -26,9 +35,17 @@ process.on('unhandledRejection', reason => {
 });
 
 app.disable('x-powered-by');
-app.use(cors());
+app.use(cors({ origin: config.get('corsOrigin') }));
 app.set('trust proxy', config.get('trustedProxies'));
 if (process.env.NODE_ENV !== 'development') {
+  app.use((_req, res, next) => {
+    res.set('Strict-Transport-Security', 'max-age=31536000');
+    res.set(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+    );
+    next();
+  });
   app.use(
     rateLimit({
       windowMs: 60 * 1000,
@@ -39,7 +56,16 @@ if (process.env.NODE_ENV !== 'development') {
   );
 }
 
+const authRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  legacyHeaders: false,
+  standardHeaders: true,
+  message: { status: 'error', reason: 'too-many-requests' },
+});
+
 app.use(express.json({ limit: `${config.get('upload.fileSizeLimitMB')}mb` }));
+app.use(latencyMiddleware);
 
 app.use(
   express.raw({
@@ -56,6 +82,15 @@ app.use(
 );
 
 app.use('/sync', syncApp.handlers);
+app.use(
+  [
+    '/account/login',
+    '/account/bootstrap',
+    '/account/totp/challenge',
+    '/openid/login',
+  ],
+  authRateLimit,
+);
 app.use('/account', accountApp.handlers);
 app.use('/enablebanking', enableBankingApp.handlers);
 app.use('/gocardless', goCardlessApp.handlers);
@@ -69,6 +104,7 @@ if (config.get('corsProxy.enabled')) {
 
 app.use('/admin', adminApp.handlers);
 app.use('/openid', openidApp.handlers);
+app.use('/production-trust', productionTrustApp.handlers);
 
 app.get('/mode', (req, res) => {
   res.send(config.get('mode'));
@@ -119,11 +155,52 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'UP' });
 });
 
-app.get('/metrics', (_req, res) => {
+app.get('/metrics', validateSessionMiddleware, (_req, res) => {
+  let sessions = null;
+  try {
+    const db = getAccountDb();
+    const now = new Date().toISOString();
+    const in14Days = new Date(Date.now() + 14 * 86400000).toISOString();
+    const activeCount =
+      (
+        db.first(
+          'SELECT COUNT(*) as cnt FROM eb_sessions WHERE valid_until > ?',
+          [now],
+        ) as { cnt: number } | null
+      )?.cnt ?? 0;
+    const expiringCount =
+      (
+        db.first(
+          'SELECT COUNT(*) as cnt FROM eb_sessions WHERE valid_until > ? AND valid_until < ?',
+          [now, in14Days],
+        ) as { cnt: number } | null
+      )?.cnt ?? 0;
+    sessions = { active: activeCount, expiringWithin14Days: expiringCount };
+  } catch {
+    // DB not yet bootstrapped - sessions remains null
+  }
+
   res.status(200).json({
     mem: process.memoryUsage(),
     uptime: process.uptime(),
+    latency: getLatencyPercentiles(),
+    sync: getSyncStats(),
+    sessions,
   });
+});
+
+app.get('/alerts', validateSessionMiddleware, (_req, res) => {
+  res.status(200).json({ alerts: getRecentAlerts() });
+});
+
+app.post('/alerts/acknowledge', validateSessionMiddleware, (req, res) => {
+  const { alertId } = req.body;
+  if (!alertId || typeof alertId !== 'string') {
+    res.status(400).json({ status: 'error', reason: 'missing-alert-id' });
+    return;
+  }
+  const found = acknowledgeAlert(alertId);
+  res.status(found ? 200 : 404).json({ status: found ? 'ok' : 'not-found' });
 });
 
 // The web frontend
@@ -210,4 +287,18 @@ export async function run() {
       sendServerStartedMessage();
     });
   }
+
+  // Create audit_log table if it doesn't exist.
+  // Wrapped in try/catch because on first startup before bootstrap, the account DB may not exist yet.
+  // The CREATE TABLE IF NOT EXISTS is idempotent so running it again later is fine.
+  try {
+    runAuditMigrations();
+  } catch {
+    // DB not bootstrapped yet - migrations will run on first request via getAccountDb()
+  }
+
+  // [eb] Start the 6-hour auto-sync scheduler. No-op when ENABLE_AUTO_SYNC != 'true'.
+  // EB database tables are ready because runMigrations() runs at module load time
+  // in app-enablebanking.ts (before any route or scheduler code).
+  startScheduler();
 }

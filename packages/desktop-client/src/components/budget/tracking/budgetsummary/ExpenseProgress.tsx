@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { theme } from '@actual-app/components/theme';
 
@@ -13,6 +14,7 @@ type ExpenseProgressProps = {
   target: Binding<'tracking-budget', 'total-budgeted'>;
 };
 export function ExpenseProgress({ current, target }: ExpenseProgressProps) {
+  const { t } = useTranslation();
   let totalSpent = useTrackingSheetValue(current) || 0;
   const totalBudgeted = useTrackingSheetValue(target) || 0;
 
@@ -31,12 +33,19 @@ export function ExpenseProgress({ current, target }: ExpenseProgressProps) {
     frac = fraction(totalSpent, totalBudgeted);
   }
 
+  const percent = Math.round(frac * 100);
+
   return (
     <PieProgress
       progress={frac}
       color={over ? theme.numberNegative : theme.numberPositive}
       backgroundColor={over ? theme.errorBackground : theme.budgetCurrentMonth}
       style={{ width: 20, height: 20 }}
+      aria-label={
+        over
+          ? t('Over budget by {{percent}}%', { percent })
+          : t('Budget spent: {{percent}}%', { percent })
+      }
     />
   );
 }
