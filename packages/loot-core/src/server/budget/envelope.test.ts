@@ -472,7 +472,7 @@ describe('Envelope budget', () => {
     expect(result).toBe(true);
     // to-budget should decrease by the buffered amount
     const toBudgetAfter = sheet.getCellValue(sheetName, 'to-budget');
-    expect(toBudgetAfter).toBe(toBudgetBefore - 10000);
+    expect(toBudgetAfter).toBe(Number(toBudgetBefore) - 10000);
   });
 
   // ---------------------------------------------------------------
