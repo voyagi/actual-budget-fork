@@ -112,8 +112,8 @@ export default defineConfig(async ({ mode }) => {
     envPrefix: 'REACT_APP_',
     build: {
       terserOptions: {
-        compress: false,
-        mangle: false,
+        compress: true,
+        mangle: true,
       },
       target: 'es2022',
       sourcemap: true,
