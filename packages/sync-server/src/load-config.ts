@@ -258,9 +258,9 @@ const configSchema = convict({
   },
 
   token_expiration: {
-    doc: 'Token expiration time.',
+    doc: 'Token expiration time in seconds. Use "never" to disable or "openid-provider" to defer to the provider.',
     format: 'tokenExpiration',
-    default: 'never',
+    default: 2592000,
     env: 'ACTUAL_TOKEN_EXPIRATION',
   },
 
