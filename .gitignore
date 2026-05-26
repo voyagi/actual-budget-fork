@@ -57,6 +57,9 @@ bundle.mobile.js.map
 # IntelliJ IDEA
 .idea
 
+# Claude Code
+.mcp.json
+
 # Misc
 .#*
 
