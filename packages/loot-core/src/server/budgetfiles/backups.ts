@@ -178,7 +178,9 @@ export async function loadBackup(id: string, backupId: string) {
     // Re-upload the new file
     try {
       await cloudStorage.upload();
-    } catch {}
+    } catch (e) {
+      logger.warn('Failed to re-upload after backup restore', e);
+    }
     prefs.unloadPrefs();
   } else {
     logger.log('Loading backup', backupId);
@@ -197,7 +199,9 @@ export async function loadBackup(id: string, backupId: string) {
     // Re-upload the new file
     try {
       await cloudStorage.upload();
-    } catch {}
+    } catch (e) {
+      logger.warn('Failed to re-upload after backup load', e);
+    }
 
     prefs.unloadPrefs();
 

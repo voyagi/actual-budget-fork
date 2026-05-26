@@ -13,6 +13,7 @@ export const internal = bundle.lib;
 export * from './methods';
 export * as utils from './utils';
 
+/** Initializes the Actual Budget API. Must be called before any other API method. */
 export async function init(config: InitConfig = {}) {
   if (actualApp) {
     return;
@@ -27,6 +28,7 @@ export async function init(config: InitConfig = {}) {
   return bundle.lib;
 }
 
+/** Syncs data and closes the current budget. Call when done using the API. */
 export async function shutdown() {
   if (actualApp) {
     try {

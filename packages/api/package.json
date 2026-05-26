@@ -16,8 +16,8 @@
     "build:migrations": "cp migrations/*.sql dist/migrations",
     "build:default-db": "cp default-db.sqlite dist/",
     "build": "yarn run clean && yarn run build:app && yarn run build:node && yarn run build:migrations && yarn run build:default-db",
-    "test": "yarn run clean && yarn run build:app && yarn run build:crdt && vitest --run",
-    "clean": "rm -rf dist @types"
+    "test": "yarn run clean && yarn run build:app && yarn run build:crdt && npx vitest --run",
+    "clean": "node -e \"const fs=require('fs');['dist','@types'].forEach(d=>{try{fs.rmSync(d,{recursive:true,force:true})}catch{}})\""
   },
   "dependencies": {
     "@actual-app/crdt": "workspace:^",
