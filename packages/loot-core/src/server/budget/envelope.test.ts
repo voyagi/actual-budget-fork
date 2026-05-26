@@ -324,8 +324,16 @@ describe('Envelope budget', () => {
     const sheet2 = monthUtils.sheetForMonth(month2);
 
     // Set budgets in month1
-    await budgetActions.setBudget({ category: catA, month: month1, amount: 7500 });
-    await budgetActions.setBudget({ category: catB, month: month1, amount: 15000 });
+    await budgetActions.setBudget({
+      category: catA,
+      month: month1,
+      amount: 7500,
+    });
+    await budgetActions.setBudget({
+      category: catB,
+      month: month1,
+      amount: 15000,
+    });
     await sheet.waitOnSpreadsheet();
 
     // Copy to month2
