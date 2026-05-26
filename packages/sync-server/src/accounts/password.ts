@@ -96,7 +96,7 @@ export function loginWithPassword(password: string): PasswordResult {
     tokenExp !== 'openid-provider' &&
     typeof tokenExp === 'number'
   ) {
-    expiration = Math.floor(Date.now() / 1000) + tokenExp * 60;
+    expiration = Math.floor(Date.now() / 1000) + tokenExp;
   }
 
   if (!sessionRow) {
