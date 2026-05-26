@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execSync } from 'node:child_process';
-import { cpSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { cpSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
