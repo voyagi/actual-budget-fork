@@ -6,11 +6,11 @@ For additional context and discussion, see the upstream contributing docs at [ac
 
 ## Prerequisites
 
-| Tool | Version | Notes |
-|------|---------|-------|
-| Node.js | >= 22 | An `.nvmrc` file is provided; run `nvm use` if you use nvm |
-| Yarn | 4.10.3 | Managed via Corepack (see below) |
-| Git | any recent | Husky git hooks are installed automatically |
+| Tool    | Version    | Notes                                                      |
+| ------- | ---------- | ---------------------------------------------------------- |
+| Node.js | >= 22      | An `.nvmrc` file is provided; run `nvm use` if you use nvm |
+| Yarn    | 4.10.3     | Managed via Corepack (see below)                           |
+| Git     | any recent | Husky git hooks are installed automatically                |
 
 **Enable Corepack** (ships with Node 22):
 
@@ -38,32 +38,32 @@ The browser client will be available at `http://localhost:5006` by default (the 
 
 ### Other Start Commands
 
-| Command | What it does |
-|---------|-------------|
-| `yarn start` | Alias for `yarn start:browser` |
-| `yarn start:browser` | Runs the full browser stack (backend + frontend + plugins service) |
-| `yarn start:desktop` | Builds dependencies and runs the Electron desktop app |
-| `yarn start:server` | Runs only the sync server |
-| `yarn start:storybook` | Launches the component library Storybook |
-| `yarn start:docs` | Starts the Docusaurus documentation site locally |
+| Command                | What it does                                                       |
+| ---------------------- | ------------------------------------------------------------------ |
+| `yarn start`           | Alias for `yarn start:browser`                                     |
+| `yarn start:browser`   | Runs the full browser stack (backend + frontend + plugins service) |
+| `yarn start:desktop`   | Builds dependencies and runs the Electron desktop app              |
+| `yarn start:server`    | Runs only the sync server                                          |
+| `yarn start:storybook` | Launches the component library Storybook                           |
+| `yarn start:docs`      | Starts the Docusaurus documentation site locally                   |
 
 ## Package Overview
 
 This is a monorepo managed by Yarn 4 workspaces. All packages live under `packages/`.
 
-| Package | Name on npm | Description |
-|---------|------------|-------------|
-| `api` | `@actual-app/api` | Public Node.js API for Actual |
-| `component-library` | `@actual-app/components` | Shared React components, icons, and hooks (includes Storybook) |
-| `crdt` | `@actual-app/crdt` | CRDT synchronization layer |
-| `desktop-client` | `@actual-app/web` | React frontend (web and Electron renderer) |
-| `desktop-electron` | `desktop-electron` | Electron shell for the desktop app |
-| `loot-core` | `loot-core` | Core business logic, database, syncing, and budgeting engine |
-| `sync-server` | `@actual-app/sync-server` | Node.js server for multi-device sync |
-| `plugins-service` | `plugins-service` | Service worker that manages bank-sync plugins |
-| `docs` | (private) | Docusaurus documentation site |
-| `ci-actions` | (private) | Custom GitHub Actions used in CI |
-| `eslint-plugin-actual` | (private) | Project-specific ESLint rules |
+| Package                | Name on npm               | Description                                                    |
+| ---------------------- | ------------------------- | -------------------------------------------------------------- |
+| `api`                  | `@actual-app/api`         | Public Node.js API for Actual                                  |
+| `component-library`    | `@actual-app/components`  | Shared React components, icons, and hooks (includes Storybook) |
+| `crdt`                 | `@actual-app/crdt`        | CRDT synchronization layer                                     |
+| `desktop-client`       | `@actual-app/web`         | React frontend (web and Electron renderer)                     |
+| `desktop-electron`     | `desktop-electron`        | Electron shell for the desktop app                             |
+| `loot-core`            | `loot-core`               | Core business logic, database, syncing, and budgeting engine   |
+| `sync-server`          | `@actual-app/sync-server` | Node.js server for multi-device sync                           |
+| `plugins-service`      | `plugins-service`         | Service worker that manages bank-sync plugins                  |
+| `docs`                 | (private)                 | Docusaurus documentation site                                  |
+| `ci-actions`           | (private)                 | Custom GitHub Actions used in CI                               |
+| `eslint-plugin-actual` | (private)                 | Project-specific ESLint rules                                  |
 
 ## Development Workflows
 
@@ -169,6 +169,7 @@ type(scope): short description
 **Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `perf`, `build`
 
 **Rules**:
+
 - Use imperative mood ("add feature", not "added feature")
 - Lowercase, no trailing period
 - Keep the subject line under 72 characters

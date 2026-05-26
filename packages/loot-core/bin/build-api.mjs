@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 const apiDir = resolve(root, '..', 'api');
 
-const run = (cmd) => execSync(cmd, { cwd: root, stdio: 'inherit' });
+const run = cmd => execSync(cmd, { cwd: root, stdio: 'inherit' });
 
 // 1. Generate type declarations
 run('npx tsc -p tsconfig.api.json --outDir ../api/@types/loot-core/');
