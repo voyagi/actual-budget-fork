@@ -46,7 +46,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
 ENV ACTUAL_DATA_DIR=/data
 RUN mkdir -p /data && chown -R ${USERNAME}:${USERNAME} /data
 
-USER actual
+USER ${USERNAME}
 
 EXPOSE 5006
 

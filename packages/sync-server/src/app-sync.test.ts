@@ -281,7 +281,7 @@ describe('/reset-user-file', () => {
     expect(rows[0].group_id).toBeNull();
   });
 
-  it('returns 400 if the file is not found', async () => {
+  it('returns 404 if the file is not found', async () => {
     const res = await request(app)
       .post('/reset-user-file')
       .set('x-actual-token', 'valid-token')
@@ -808,7 +808,7 @@ describe('/update-user-filename', () => {
     });
   });
 
-  it('returns 400 if the file is not found', async () => {
+  it('returns 404 if the file is not found', async () => {
     const res = await request(app)
       .post('/update-user-filename')
       .set('x-actual-token', 'valid-token')
