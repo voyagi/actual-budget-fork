@@ -138,6 +138,10 @@ const calendarStyles: CSSProperties = {
     background: theme.calendarItemBackground,
     color: theme.calendarItemText,
     outline: 'none',
+    '&:focus-visible': {
+      outline: `2px solid ${theme.formInputBorderSelected}`,
+      outlineOffset: -2,
+    },
   },
   // Today
   '& td [data-today] [role="button"], & td[data-today] [role="button"]': {

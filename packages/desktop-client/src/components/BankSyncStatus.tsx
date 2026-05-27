@@ -27,6 +27,8 @@ export function BankSyncStatus() {
 
   return (
     <View
+      aria-live="polite"
+      aria-atomic="true"
       style={{
         position: 'absolute',
         top: 0,

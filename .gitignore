@@ -57,6 +57,16 @@ bundle.mobile.js.map
 # IntelliJ IDEA
 .idea
 
+# Claude Code
+.claude/
+.crash-buffers/
+.session-prompts/
+.mcp.json
+
+# Build output (additional)
+packages/ci-actions/dist/
+packages/component-library/dist/
+
 # Misc
 .#*
 

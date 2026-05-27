@@ -26,7 +26,18 @@ process.on('unhandledRejection', reason => {
 });
 
 app.disable('x-powered-by');
-app.use(cors());
+
+const corsOrigins = config.get('corsOrigins');
+if (corsOrigins) {
+  app.use(
+    cors({ origin: corsOrigins.split(',').map((o: string) => o.trim()) }),
+  );
+} else if (process.env.NODE_ENV === 'development') {
+  app.use(cors());
+} else {
+  app.use(cors({ origin: false }));
+}
+
 app.set('trust proxy', config.get('trustedProxies'));
 if (process.env.NODE_ENV !== 'development') {
   app.use(
@@ -37,6 +48,20 @@ if (process.env.NODE_ENV !== 'development') {
       standardHeaders: true,
     }),
   );
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  const authRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    legacyHeaders: false,
+    standardHeaders: true,
+    message: { status: 'error', reason: 'too-many-login-attempts' },
+  });
+  app.use('/account/login', authRateLimit);
+  app.use('/account/bootstrap', authRateLimit);
+  app.use('/account/change-password', authRateLimit);
+  app.use('/openid', authRateLimit);
 }
 
 app.use(express.json({ limit: `${config.get('upload.fileSizeLimitMB')}mb` }));
@@ -54,6 +79,20 @@ app.use(
     limit: `${config.get('upload.syncEncryptedFileSizeLimitMB')}mb`,
   }),
 );
+
+// Security and web frontend headers (must be before route handlers)
+app.use((req, res, next) => {
+  res.set('Cross-Origin-Opener-Policy', 'same-origin');
+  res.set('Cross-Origin-Embedder-Policy', 'require-corp');
+  if (process.env.NODE_ENV !== 'development') {
+    res.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains');
+    res.set(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+    );
+  }
+  next();
+});
 
 app.use('/sync', syncApp.handlers);
 app.use('/account', accountApp.handlers);
@@ -126,12 +165,6 @@ app.get('/metrics', (_req, res) => {
   });
 });
 
-// The web frontend
-app.use((req, res, next) => {
-  res.set('Cross-Origin-Opener-Policy', 'same-origin');
-  res.set('Cross-Origin-Embedder-Policy', 'require-corp');
-  next();
-});
 if (process.env.NODE_ENV === 'development') {
   console.log(
     'Running in development mode - Proxying frontend routes to React Dev Server',

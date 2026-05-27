@@ -258,9 +258,9 @@ const configSchema = convict({
   },
 
   token_expiration: {
-    doc: 'Token expiration time.',
+    doc: 'Token expiration time in seconds. Use "never" to disable or "openid-provider" to defer to the provider.',
     format: 'tokenExpiration',
-    default: 'never',
+    default: 2592000,
     env: 'ACTUAL_TOKEN_EXPIRATION',
   },
 
@@ -297,6 +297,13 @@ const configSchema = convict({
       default: false,
       env: 'ACTUAL_CORS_PROXY_ENABLED',
     },
+  },
+
+  corsOrigins: {
+    doc: 'Allowed CORS origins (comma-separated). If empty, CORS is disabled in production and permissive in development.',
+    format: String,
+    default: '',
+    env: 'ACTUAL_CORS_ORIGINS',
   },
 });
 

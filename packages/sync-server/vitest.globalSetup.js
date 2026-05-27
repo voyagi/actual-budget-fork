@@ -102,9 +102,10 @@ export async function setup() {
 export async function teardown() {
   try {
     await runMigrations('down');
-  } catch {
-    // On Windows, better-sqlite3 may still hold a file lock from test
-    // workers when teardown runs, causing EBUSY on unlink. All tests
-    // have already completed at this point so the error is harmless.
+  } catch (error) {
+    if (error?.code === 'EBUSY' || error?.message?.includes('EBUSY')) {
+      return;
+    }
+    throw error;
   }
 }
