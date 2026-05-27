@@ -80,6 +80,20 @@ app.use(
   }),
 );
 
+// Security and web frontend headers (must be before route handlers)
+app.use((req, res, next) => {
+  res.set('Cross-Origin-Opener-Policy', 'same-origin');
+  res.set('Cross-Origin-Embedder-Policy', 'require-corp');
+  if (process.env.NODE_ENV !== 'development') {
+    res.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains');
+    res.set(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+    );
+  }
+  next();
+});
+
 app.use('/sync', syncApp.handlers);
 app.use('/account', accountApp.handlers);
 app.use('/enablebanking', enableBankingApp.handlers);
@@ -151,19 +165,6 @@ app.get('/metrics', (_req, res) => {
   });
 });
 
-// Security and web frontend headers
-app.use((req, res, next) => {
-  res.set('Cross-Origin-Opener-Policy', 'same-origin');
-  res.set('Cross-Origin-Embedder-Policy', 'require-corp');
-  if (process.env.NODE_ENV !== 'development') {
-    res.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains');
-    res.set(
-      'Content-Security-Policy',
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
-    );
-  }
-  next();
-});
 if (process.env.NODE_ENV === 'development') {
   console.log(
     'Running in development mode - Proxying frontend routes to React Dev Server',
